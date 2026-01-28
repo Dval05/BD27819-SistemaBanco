@@ -1,0 +1,194 @@
+/* Módulo de Contactos */
+.contactos-module {
+  padding: 24px;
+}
+
+.contactos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.contactos-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.add-contacto-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #00377b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-contacto-btn:hover {
+  background: #002659;
+}
+
+.add-contacto-btn.primary {
+  margin-top: 16px;
+}
+
+.contactos-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.contactos-search input {
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: 14px;
+  outline: none;
+}
+
+.contactos-search svg {
+  color: #888;
+}
+
+.contactos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  color: #666;
+}
+
+.contactos-empty svg {
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.contactos-empty h3 {
+  font-size: 18px;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.contactos-empty p {
+  margin-bottom: 24px;
+}
+
+.contactos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contacto-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.contacto-card:hover {
+  border-color: #00377b;
+  box-shadow: 0 4px 12px rgba(0, 55, 123, 0.1);
+}
+
+.contacto-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD100 0%, #e6bc00 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.contacto-info {
+  flex: 1;
+}
+
+.contacto-nombre {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.contacto-cuenta {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.contacto-contacto {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #888;
+}
+
+.contacto-contacto span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.contacto-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn.transfer {
+  background: #00377b;
+  color: white;
+  border: none;
+}
+
+.action-btn.transfer:hover {
+  background: #002659;
+}
+
+.action-btn.delete {
+  background: none;
+  border: 1px solid #e5e7eb;
+  color: #666;
+  padding: 8px;
+}
+
+.action-btn.delete:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.contacto-card .arrow {
+  color: #ccc;
+}

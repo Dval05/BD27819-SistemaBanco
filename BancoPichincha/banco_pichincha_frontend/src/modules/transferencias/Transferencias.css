@@ -1,0 +1,247 @@
+/* Módulo de Transferencias */
+.transferencias-module {
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.transferencias-header {
+  margin-bottom: 24px;
+}
+
+.transferencias-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.tipo-transferencia {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  background: #f5f7fa;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.tipo-transferencia button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tipo-transferencia button.active {
+  background: #fff;
+  color: #00377b;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.transferencia-form {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.form-section h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper select {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  appearance: none;
+  background: #fff;
+  cursor: pointer;
+}
+
+.select-wrapper select:focus {
+  outline: none;
+  border-color: #00377b;
+}
+
+.select-wrapper svg {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  pointer-events: none;
+}
+
+.search-contacto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.search-contacto input {
+  flex: 1;
+  border: none;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-contacto svg {
+  color: #888;
+}
+
+.select-contacto {
+  background: #f5f7fa;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.select-contacto:hover {
+  background: #e8eaed;
+}
+
+.transfer-arrow {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  color: #00377b;
+}
+
+.monto-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.monto-input .currency {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.monto-input input {
+  flex: 1;
+  border: none;
+  font-size: 24px;
+  font-weight: 600;
+  outline: none;
+  text-align: right;
+}
+
+.monto-input input::placeholder {
+  color: #ccc;
+}
+
+.concepto-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.concepto-input:focus {
+  outline: none;
+  border-color: #00377b;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: #00377b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #002659;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Éxito */
+.transferencia-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.transferencia-success .success-icon {
+  color: #16a34a;
+  margin-bottom: 24px;
+}
+
+.transferencia-success h2 {
+  font-size: 24px;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.transferencia-success p {
+  color: #666;
+  margin-bottom: 32px;
+}
+
+.transferencia-success button {
+  padding: 12px 24px;
+  background: #00377b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.transferencia-success button:hover {
+  background: #002659;
+}

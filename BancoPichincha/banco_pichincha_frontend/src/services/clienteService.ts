@@ -1,98 +1,126 @@
 import axios from 'axios';
 import type { Cliente, LoginResponse, RegistroResponse, Transaccion } from '../types';
 
-const API_URL = 'http://localhost:3000/api/clientes';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 interface RegistroData {
-  nombre: string;
-  cedula: string;
+  nombre?: string;
+  primerNombre: string;
+  segundoNombre?: string;
+  primerApellido: string;
+  segundoApellido?: string;
   email: string;
-  telefono?: string;
+  telefono?: number;
   usuario: string;
   password: string;
+  fechaNacimiento?: string;
+}
+
+export interface Cuenta {
+  id: string;
+  tipo: 'cuenta';
+  nombre: string;
+  numero: string;
+  numeroCompleto: string;
+  saldo: number;
+  estado: string;
+  fechaApertura: string;
+}
+
+export interface Tarjeta {
+  id: string;
+  tipo: 'tarjeta';
+  nombre: string;
+  numero: string;
+  numeroCompleto: string;
+  fechaExpiracion: string;
+  estado: string;
+  saldo: number;
+}
+
+export interface InversionProducto {
+  id: string;
+  tipo: 'inversion';
+  nombre: string;
+  monto: number;
+  tasaInteres: number;
+  plazo: number;
+  estado: string;
+  fechaInicio: string;
+}
+
+export interface Movimiento {
+  id: string;
+  fecha: string;
+  tipo: string;
+  tipoDescripcion: string;
+  descripcion: string;
+  monto: number;
+  montoOriginal: number;
+  estado: string;
+  estadoCodigo: string;
+  idCuenta: string;
+}
+
+export interface MovimientosResponse {
+  success: boolean;
+  data: Movimiento[];
+  total: number;
+}
+
+export interface ProductosResponse {
+  ok: boolean;
+  data: {
+    cuentas: Cuenta[];
+    tarjetas: Tarjeta[];
+    inversiones: InversionProducto[];
+  };
 }
 
 const clienteService = {
-  // Login - inicia sesión y regenera código DEUNA
   login: async (usuario: string, password: string): Promise<LoginResponse> => {
-    const response = await axios.post<LoginResponse>(`${API_URL}/login`, { usuario, password });
+    const response = await axios.post<LoginResponse>(`${API_URL}/auth/login`, { usuario, password });
     return response.data;
   },
 
-  // Registro - crear nueva cuenta
   registro: async (clienteData: RegistroData): Promise<RegistroResponse> => {
-    const response = await axios.post<RegistroResponse>(`${API_URL}/registro`, clienteData);
+    const response = await axios.post<RegistroResponse>(`${API_URL}/auth/registro`, clienteData);
     return response.data;
   },
 
-  // Crear un nuevo cliente
-  crearCliente: async (clienteData: Partial<Cliente>): Promise<Cliente> => {
-    const response = await axios.post<Cliente>(API_URL, clienteData);
-    return response.data;
-  },
-
-  // Obtener todos los clientes
-  obtenerClientes: async (): Promise<Cliente[]> => {
-    const response = await axios.get<Cliente[]>(API_URL);
-    return response.data;
-  },
-
-  // Obtener un cliente por ID
-  obtenerClientePorId: async (id: string): Promise<Cliente> => {
-    const response = await axios.get<{ ok: boolean; data: Cliente }>(`${API_URL}/${id}`);
+  obtenerPerfil: async (id: string): Promise<Cliente> => {
+    const response = await axios.get<{ ok: boolean; data: Cliente }>(`${API_URL}/auth/perfil/${id}`);
     return response.data.data;
   },
 
-  // Buscar cliente por código DEUNA
-  buscarPorCodigo: async (codigo: string): Promise<Cliente> => {
-    const response = await axios.get<{ ok: boolean; data: { nombre: string; codigoDeuna: string; _id?: string; usuario?: string } }>(`${API_URL}/codigo/${codigo}`);
-    return response.data.data as Cliente;
+  obtenerProductos: async (idPersona: string): Promise<ProductosResponse['data']> => {
+    const response = await axios.get<ProductosResponse>(`${API_URL}/auth/productos/${idPersona}`);
+    return response.data.data;
   },
 
-  // Actualizar un cliente
-  actualizarCliente: async (id: string, clienteData: Partial<Cliente>): Promise<Cliente> => {
-    const response = await axios.put<Cliente>(`${API_URL}/${id}`, clienteData);
-    return response.data;
-  },
-
-  // Eliminar un cliente
-  eliminarCliente: async (id: string): Promise<void> => {
-    await axios.delete(`${API_URL}/${id}`);
-  },
-
-  // Depositar saldo
-  depositar: async (id: string, monto: number, descripcion: string = ''): Promise<Cliente> => {
-    const response = await axios.post<{ ok: boolean; data: { cliente: Cliente; transaccion: unknown }; msg: string }>(`${API_URL}/${id}/depositar`, { monto, descripcion });
-    return response.data.data.cliente;
-  },
-
-  // Transferir por código DEUNA
-  transferir: async (id: string, codigoDestino: string, monto: number, descripcion: string = ''): Promise<Cliente> => {
-    const response = await axios.post<{ ok: boolean; data: { exito: boolean; clienteOrigen: Cliente; clienteDestino: Cliente }; msg: string }>(`${API_URL}/${id}/transferir`, {
-      codigoDestino,
-      monto,
-      descripcion,
-    });
-    return response.data.data.clienteOrigen;
-  },
-
-  // Obtener transacciones de un cliente
-  obtenerTransacciones: async (id: string): Promise<Transaccion[]> => {
-    const response = await axios.get<{ data: Transaccion[] }>(`${API_URL}/${id}/transacciones`);
+  obtenerTransacciones: async (idCuenta: string): Promise<Transaccion[]> => {
+    const response = await axios.get<{ success: boolean; data: Transaccion[] }>(`${API_URL}/transacciones/cuenta/${idCuenta}`);
     return response.data.data || [];
   },
 
-  // Regenerar código DEUNA
-  regenerarCodigo: async (id: string): Promise<Cliente> => {
-    const response = await axios.post<{ ok: boolean; data: Cliente; msg: string }>(`${API_URL}/${id}/regenerar-codigo`);
-    return response.data.data;
-  },
-
-  // Obtener estadísticas
-  obtenerEstadisticas: async () => {
-    const response = await axios.get(`${API_URL}/estadisticas`);
-    return response.data;
-  },
+  obtenerMovimientos: async (idCuenta: string, filtros?: { tipo?: string; fechaInicio?: string; fechaFin?: string }): Promise<Movimiento[]> => {
+    const params = new URLSearchParams();
+    if (filtros?.tipo && filtros.tipo !== 'todos') {
+      params.append('tipo', filtros.tipo);
+    }
+    if (filtros?.fechaInicio) {
+      params.append('fechaInicio', filtros.fechaInicio);
+    }
+    if (filtros?.fechaFin) {
+      params.append('fechaFin', filtros.fechaFin);
+    }
+    
+    const queryString = params.toString();
+    const url = `${API_URL}/transacciones/cuenta/${idCuenta}${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await axios.get<MovimientosResponse>(url);
+    return response.data.data || [];
+  }
 };
 
 export default clienteService;

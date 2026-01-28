@@ -8,6 +8,13 @@ const express = require('express');
 const cors = require('cors');
 const { supabase } = require('./shared/config/database.config');
 
+// Módulos
+const authRoutes = require('./modules/auth/auth.routes');
+const inversionesRoutes = require('./modules/inversiones/inversiones.routes');
+const cuentasRoutes = require('./modules/cuentas/cuentas.routes');
+const solicitudesRoutes = require('./modules/solicitudes/solicitudes.routes');
+const transaccionesRoutes = require('./modules/transacciones/transacciones.routes');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -15,11 +22,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Rutas de módulos
+app.use('/api/auth', authRoutes);
+app.use('/api/clientes', authRoutes);
+app.use('/api/inversiones', inversionesRoutes);
+app.use('/api/cuentas', cuentasRoutes);
+app.use('/api/solicitudes', solicitudesRoutes);
+app.use('/api/transacciones', transaccionesRoutes);
+
 // Health check endpoint
 app.get('/health', async (req, res) => {
   try {
-    // Test database connection
-    const { data, error } = await supabase.from('clientes').select('count');
     
     if (error) {
       return res.status(500).json({

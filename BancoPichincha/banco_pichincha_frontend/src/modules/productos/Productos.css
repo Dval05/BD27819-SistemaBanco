@@ -1,0 +1,186 @@
+/* Módulo de Productos */
+.productos-module {
+  padding: 24px;
+}
+
+.productos-module.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: #666;
+}
+
+.productos-module.loading .spinner {
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.productos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.productos-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.toggle-saldos {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid #e5e7eb;
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: #00377b;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggle-saldos:hover {
+  background: #f5f7fa;
+}
+
+.productos-section {
+  margin-bottom: 32px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: #00377b;
+}
+
+.section-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.section-header .count {
+  background: #e5e7eb;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #666;
+}
+
+.empty-section {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  color: #666;
+}
+
+.empty-section p {
+  margin-bottom: 16px;
+}
+
+.solicitar-btn {
+  background: #00377b;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.solicitar-btn:hover {
+  background: #002659;
+}
+
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.producto-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.producto-card:hover {
+  border-color: #00377b;
+  box-shadow: 0 4px 12px rgba(0, 55, 123, 0.1);
+}
+
+.producto-card .producto-info {
+  flex: 1;
+}
+
+.producto-nombre {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.producto-numero {
+  font-size: 13px;
+  color: #666;
+}
+
+.producto-saldo {
+  text-align: right;
+}
+
+.producto-saldo .saldo-label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.producto-saldo .saldo-valor {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.producto-card .arrow {
+  color: #ccc;
+  transition: color 0.2s;
+}
+
+.producto-card:hover .arrow {
+  color: #00377b;
+}
+
+/* Colores por tipo */
+.producto-card.cuenta {
+  border-left: 4px solid #FFD100;
+}
+
+.producto-card.tarjeta {
+  border-left: 4px solid #00377b;
+}
+
+.producto-card.inversion {
+  border-left: 4px solid #16a34a;
+}

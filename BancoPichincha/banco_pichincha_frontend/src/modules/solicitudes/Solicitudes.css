@@ -1,0 +1,223 @@
+/* Módulo de Solicitudes */
+.solicitudes-module {
+  padding: 24px;
+}
+
+.solicitudes-header {
+  margin-bottom: 24px;
+}
+
+.solicitudes-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.tipo-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tipo-tabs button {
+  padding: 12px 24px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tipo-tabs button.active {
+  color: #00377b;
+  border-bottom-color: #00377b;
+  font-weight: 500;
+}
+
+.tipo-tabs button:hover:not(.active) {
+  color: #00377b;
+}
+
+.productos-solicitar h2 {
+  font-size: 18px;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.producto-solicitar-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.producto-solicitar-card:hover {
+  border-color: #00377b;
+  box-shadow: 0 4px 12px rgba(0, 55, 123, 0.1);
+}
+
+.producto-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.producto-solicitar-card .producto-info {
+  flex: 1;
+}
+
+.producto-solicitar-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.producto-solicitar-card p {
+  font-size: 13px;
+  color: #666;
+}
+
+.solicitar-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  background: #00377b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.solicitar-btn:hover {
+  background: #002659;
+}
+
+/* Historial */
+.empty-historial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  color: #666;
+}
+
+.empty-historial svg {
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.empty-historial h3 {
+  font-size: 18px;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.empty-historial p {
+  margin-bottom: 24px;
+}
+
+.empty-historial button {
+  padding: 12px 24px;
+  background: #00377b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.empty-historial button:hover {
+  background: #002659;
+}
+
+.solicitudes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.solicitud-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.solicitud-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.solicitud-tipo {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.solicitud-fecha {
+  font-size: 13px;
+  color: #888;
+}
+
+.solicitud-estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.solicitud-estado.pendiente {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.solicitud-estado.aprobada {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.solicitud-estado.rechazada {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.estado-icon.pendiente {
+  color: #d97706;
+}
+
+.estado-icon.aprobada {
+  color: #16a34a;
+}
+
+.estado-icon.rechazada {
+  color: #dc2626;
+}
