@@ -6,7 +6,7 @@ class InversionController {
       const filters = {
         estado: req.query.estado,
         producto: req.query.producto,
-        idCuenta: req.query.idCuenta
+        idCuenta: req.query.idCuenta,
       };
       const inversiones = await inversionService.getAll(filters);
       res.json({ success: true, data: inversiones });
@@ -27,6 +27,15 @@ class InversionController {
   async getByCuenta(req, res) {
     try {
       const inversiones = await inversionService.getByCuenta(req.params.idCuenta);
+      res.json({ success: true, data: inversiones });
+    } catch (error) {
+      res.status(error.status || 500).json({ success: false, message: error.message });
+    }
+  }
+
+  async getByPersona(req, res) {
+    try {
+      const inversiones = await inversionService.getByPersona(req.params.idPersona);
       res.json({ success: true, data: inversiones });
     } catch (error) {
       res.status(error.status || 500).json({ success: false, message: error.message });
@@ -56,6 +65,19 @@ class InversionController {
       const { estado } = req.body;
       const inversion = await inversionService.updateEstado(req.params.id, estado);
       res.json({ success: true, data: inversion });
+    } catch (error) {
+      res.status(error.status || 500).json({ success: false, message: error.message });
+    }
+  }
+
+  async cancelar(req, res) {
+    try {
+      const inversion = await inversionService.cancelar(req.params.id);
+      res.json({ 
+        success: true, 
+        message: 'Inversión cancelada exitosamente',
+        data: inversion 
+      });
     } catch (error) {
       res.status(error.status || 500).json({ success: false, message: error.message });
     }

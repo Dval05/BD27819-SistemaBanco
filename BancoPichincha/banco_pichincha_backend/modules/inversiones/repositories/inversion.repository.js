@@ -5,12 +5,13 @@ const TABLE = 'inversion';
 class InversionRepository {
   async findAll(filters = {}) {
     let query = supabase.from(TABLE).select('*');
-    
+
     if (filters.estado) query = query.eq('inv_estado', filters.estado);
     if (filters.producto) query = query.eq('inv_producto', filters.producto);
     if (filters.idCuenta) query = query.eq('id_cuenta', filters.idCuenta);
-    
+
     const { data, error } = await query.order('inv_fecha_apertura', { ascending: false });
+
     if (error) throw error;
     return data;
   }
@@ -21,6 +22,7 @@ class InversionRepository {
       .select('*')
       .eq('id_inv', id)
       .single();
+
     if (error) throw error;
     return data;
   }
@@ -31,6 +33,26 @@ class InversionRepository {
       .select('*')
       .eq('id_cuenta', idCuenta)
       .order('inv_fecha_apertura', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async findByPersona(idPersona) {
+    // Join con tabla cuenta para obtener inversiones por persona
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select(`
+        *,
+        cuenta:id_cuenta (
+          id_cuenta,
+          id_persona,
+          cue_numero
+        )
+      `)
+      .eq('cuenta.id_persona', idPersona)
+      .order('inv_fecha_apertura', { ascending: false });
+
     if (error) throw error;
     return data;
   }
@@ -41,6 +63,7 @@ class InversionRepository {
       .insert(inversion)
       .select()
       .single();
+
     if (error) throw error;
     return data;
   }
@@ -52,6 +75,7 @@ class InversionRepository {
       .eq('id_inv', id)
       .select()
       .single();
+
     if (error) throw error;
     return data;
   }
@@ -63,15 +87,14 @@ class InversionRepository {
       .eq('id_inv', id)
       .select()
       .single();
+
     if (error) throw error;
     return data;
   }
 
   async delete(id) {
-    const { error } = await supabase
-      .from(TABLE)
-      .delete()
-      .eq('id_inv', id);
+    const { error } = await supabase.from(TABLE).delete().eq('id_inv', id);
+
     if (error) throw error;
     return true;
   }

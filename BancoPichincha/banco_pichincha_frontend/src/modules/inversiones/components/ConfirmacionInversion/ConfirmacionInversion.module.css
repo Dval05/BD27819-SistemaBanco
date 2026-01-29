@@ -1,0 +1,347 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: white;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btnAtras {
+  background: none;
+  border: none;
+  color: #003366;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.btnCerrar {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 8px;
+}
+
+.titulo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #003366;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.resumenCard {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.resumenHeader {
+  background: #f5f5f5;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.resumenTitulo {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.resumenDetalle {
+  padding: 20px;
+}
+
+.detalleItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detalleItem:last-child {
+  border-bottom: none;
+}
+
+.detalleItem.total {
+  padding-top: 16px;
+  margin-top: 8px;
+  border-top: 2px solid #e0e0e0;
+}
+
+.detalleLabel {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.detalleValor {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.detalleValor.interes {
+  color: #28a745;
+}
+
+.total .detalleValor {
+  font-size: 1.3rem;
+  color: #003366;
+}
+
+.cuentaInfo {
+  background: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.cuentaTitulo {
+  margin: 0 0 12px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #666;
+}
+
+.cuentaDetalle {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.cuentaTipo {
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.cuentaNumero {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.infoAdicional {
+  margin-bottom: 24px;
+}
+
+.infoItem {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.infoIcono {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.infoTexto {
+  margin: 0;
+  color: #1565c0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.btnConfirmar {
+  width: 100%;
+  padding: 16px;
+  background: #ffeb00;
+  color: #003366;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnConfirmar:hover:not(:disabled) {
+  background: #ffd700;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btnConfirmar:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modalTitulo {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #003366;
+}
+
+.modalCerrar {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.infoBox {
+  background: #e3f2fd;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.infoBoxText {
+  margin: 0 0 8px 0;
+  color: #1565c0;
+  font-size: 0.95rem;
+}
+
+.infoBoxSubtext {
+  margin: 0;
+  color: #1565c0;
+  font-size: 0.85rem;
+}
+
+.inputLabel {
+  display: block;
+  margin-bottom: 16px;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.inputDigitos {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.inputDigito {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+}
+
+.inputDigito:focus {
+  border-color: #003366;
+}
+
+.linkProblemas {
+  background: none;
+  border: none;
+  color: #003366;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: block;
+  margin: 0 auto;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btnVolver {
+  flex: 1;
+  padding: 12px;
+  background: #f5f5f5;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnContinuar {
+  flex: 1;
+  padding: 12px;
+  background: #ffeb00;
+  color: #003366;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnContinuar:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .inputDigitos {
+    gap: 6px;
+  }
+
+  .inputDigito {
+    width: 40px;
+    height: 48px;
+    font-size: 1.2rem;
+  }
+}

@@ -1,0 +1,275 @@
+.module {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* Vista Inicio */
+.inicio {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 60px 20px;
+  text-align: center;
+  border-radius: 0 0 24px 24px;
+  margin-bottom: 40px;
+}
+
+.heroContent {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.heroIcon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.heroTitulo {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.heroSubtitulo {
+  font-size: 1.2rem;
+  opacity: 0.95;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.beneficios {
+  max-width: 900px;
+  margin: 0 auto 40px;
+  padding: 0 20px;
+  display: grid;
+  gap: 20px;
+}
+
+.beneficioCard {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.beneficioIcono {
+  width: 32px;
+  height: 32px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.beneficioTexto {
+  margin: 0;
+  color: #333;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.acciones {
+  max-width: 600px;
+  margin: 0 auto 60px;
+  padding: 0 20px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btnPrimary {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px 32px;
+  background: #ffeb00;
+  color: #003366;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnPrimary:hover {
+  background: #ffd700;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btnSecondary {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px 32px;
+  background: white;
+  color: #003366;
+  border: 2px solid #003366;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnSecondary:hover {
+  background: #003366;
+  color: white;
+}
+
+.infoAdicional {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.infoTitulo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #003366;
+  margin-bottom: 20px;
+}
+
+.infoBox {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.infoParrafo {
+  color: #333;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.infoNota {
+  color: #666;
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.ejemplo {
+  background: #f9f9f9;
+  padding: 24px;
+  border-radius: 12px;
+  border-left: 4px solid #003366;
+}
+
+.ejemploTitulo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #003366;
+  margin: 0 0 16px 0;
+}
+
+.ejemploCard {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.ejemploIcono {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.ejemploContent {
+  flex: 1;
+}
+
+.ejemploTexto {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.ejemploDetalle {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Listado Header */
+.listadoHeader {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btnVolver {
+  background: none;
+  border: none;
+  color: #003366;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnVolver:hover {
+  color: #004488;
+}
+
+.btnNueva {
+  background: #ffeb00;
+  color: #003366;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btnNueva:hover {
+  background: #ffd700;
+}
+
+/* Detalle */
+.detalle {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .heroTitulo {
+    font-size: 2rem;
+  }
+
+  .heroSubtitulo {
+    font-size: 1rem;
+  }
+
+  .acciones {
+    flex-direction: column;
+  }
+
+  .listadoHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
