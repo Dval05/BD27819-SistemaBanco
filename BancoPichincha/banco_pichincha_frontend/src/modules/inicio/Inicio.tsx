@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ChevronRight, Loader2, Eye, EyeOff, Users, CreditCard } from 'lucide-react';
+import { ChevronRight, Loader2, Eye, EyeOff, Users, CreditCard, Plus } from 'lucide-react';
 import type { Cliente } from '../../types';
 import clienteService, { type Cuenta, type Tarjeta, type InversionProducto } from '../../services/clienteService';
 import './Inicio.css';
@@ -21,6 +21,7 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
   const [inversiones, setInversiones] = useState<InversionProducto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creandoCuenta, setCreandoCuenta] = useState(false);
   const [activeTab, setActiveTab] = useState<'todos' | 'cuentas' | 'tarjetas' | 'prestamos' | 'inversiones'>('todos');
 
   useEffect(() => {
@@ -76,12 +77,50 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
   const productos = getProductosToShow();
   const hasProductos = productos.cuentas.length > 0 || productos.tarjetas.length > 0 || productos.inversiones.length > 0;
 
+  const crearCuentaAhorro = async () => {
+    if (!cliente.id) return;
+    
+    try {
+      setCreandoCuenta(true);
+      const response = await clienteService.crearCuentaAhorro(cliente.id);
+      
+      if (response.ok) {
+        alert('✅ Cuenta de ahorro creada exitosamente');
+        // Recargar productos
+        const productos = await clienteService.obtenerProductos(cliente.id);
+        setCuentas(productos.cuentas);
+      }
+    } catch (error: any) {
+      console.error('Error creando cuenta:', error);
+      alert('❌ Error al crear cuenta de ahorro: ' + (error.response?.data?.msg || error.message));
+    } finally {
+      setCreandoCuenta(false);
+    }
+  };
+
   return (
     <div className="inicio-module">
       <section className="products-section">
         <div className="products-header">
           <h2>Mis productos</h2>
           <div className="products-actions">
+            <button 
+              className="crear-cuenta-btn"
+              onClick={crearCuentaAhorro}
+              disabled={creandoCuenta}
+            >
+              {creandoCuenta ? (
+                <>
+                  <Loader2 size={16} className="spinner" />
+                  Creando...
+                </>
+              ) : (
+                <>
+                  <Plus size={16} />
+                  Crear Cuenta de Ahorro
+                </>
+              )}
+            </button>
             <button 
               className="toggle-saldos"
               onClick={onToggleSaldos}

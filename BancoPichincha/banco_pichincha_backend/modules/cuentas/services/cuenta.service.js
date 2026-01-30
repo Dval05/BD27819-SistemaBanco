@@ -1,6 +1,13 @@
 const cuentaRepository = require('../repositories/cuenta.repository');
+const crypto = require('crypto');
 
 class CuentaService {
+  generateId(prefix = 'ID') {
+    const timestamp = Date.now().toString(36);
+    const random = crypto.randomBytes(4).toString('hex');
+    return `${prefix}${timestamp}${random}`.substring(0, 20);
+  }
+
   generateNumeroCuenta() {
     const prefix = '220';
     const random = Math.floor(1000000 + Math.random() * 9000000).toString();
@@ -16,6 +23,8 @@ class CuentaService {
   }
 
   async crearCuentaAhorroFlexible(idPersona) {
+    console.log('🔵 Iniciando creación de cuenta de ahorro para persona:', idPersona);
+    
     if (!idPersona) {
       throw { status: 400, message: 'ID de persona es requerido' };
     }
@@ -26,6 +35,8 @@ class CuentaService {
       numeroCuenta = this.generateNumeroCuenta();
       cuentaExistente = await cuentaRepository.findByNumero(numeroCuenta);
     } while (cuentaExistente);
+
+    console.log('🔵 Número de cuenta generado:', numeroCuenta);
 
     const idCuenta = this.generateIdCuenta();
     const fechaApertura = new Date().toISOString().split('T')[0];
@@ -40,7 +51,9 @@ class CuentaService {
       cue_fecha_apertura: fechaApertura
     };
 
+    console.log('🔵 Creando cuenta base:', cuenta);
     await cuentaRepository.createCuenta(cuenta);
+    console.log('✅ Cuenta base creada exitosamente');
 
     // Crear cuenta ahorro solo con sus columnas específicas
     const cuentaAhorro = {
@@ -51,7 +64,9 @@ class CuentaService {
       cueaho_acumulacion_interes: 0.00
     };
 
+    console.log('🔵 Creando cuenta de ahorro:', cuentaAhorro);
     await cuentaRepository.createCuentaAhorro(cuentaAhorro);
+    console.log('✅ Cuenta de ahorro creada exitosamente');
     
     // Retornar la cuenta base con info formateada
     return this._formatCuenta(cuenta);

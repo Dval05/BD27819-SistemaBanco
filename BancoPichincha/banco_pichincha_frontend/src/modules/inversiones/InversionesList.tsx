@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useInversiones } from './useInversiones';
-import { ProductoLabels, EstadoLabels } from '../../types/inversion.types';
-import type { Inversion } from '../../types/inversion.types';
+import { ProductoLabels, EstadoLabels } from './types/inversion.types';
+import type { Inversion } from './types/inversion.types';
 import InversionForm from './InversionForm';
 import InversionDetail from './InversionDetail';
 import './Inversiones.css';

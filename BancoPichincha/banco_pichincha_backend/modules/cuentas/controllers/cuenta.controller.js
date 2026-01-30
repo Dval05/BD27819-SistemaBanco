@@ -3,9 +3,10 @@ const cuentaService = require('../services/cuenta.service');
 class CuentaController {
   async crearCuentaAhorro(req, res) {
     try {
-      const { id_persona } = req.body;
+      const { id_persona, idPersona } = req.body;
+      const personaId = id_persona || idPersona;
       
-      if (!id_persona) {
+      if (!personaId) {
         return res.status(400).json({
           ok: false,
           msg: 'id_persona es requerido'
@@ -13,7 +14,7 @@ class CuentaController {
       }
 
       // Verificar si ya tiene cuenta
-      const cuentasExistentes = await cuentaService.getCuentasByPersona(id_persona);
+      const cuentasExistentes = await cuentaService.getCuentasByPersona(personaId);
       if (cuentasExistentes && cuentasExistentes.length > 0) {
         return res.json({
           ok: true,
@@ -23,9 +24,9 @@ class CuentaController {
       }
 
       // Crear nueva cuenta
-      const cuenta = await cuentaService.crearCuentaAhorroFlexible(id_persona);
+      const cuenta = await cuentaService.crearCuentaAhorroFlexible(personaId);
       
-      res.json({
+      res.status(201).json({
         ok: true,
         success: true,
         data: cuenta,

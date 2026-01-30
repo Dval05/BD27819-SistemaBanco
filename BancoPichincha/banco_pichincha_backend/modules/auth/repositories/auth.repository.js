@@ -67,6 +67,17 @@ class AuthRepository {
     return data;
   }
 
+  async findByCedula(cedula) {
+    const { data, error } = await supabase
+      .from('persona_natural')
+      .select('*')
+      .eq('id_pernat', cedula)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
+
   async updatePassword(id, passwordHash) {
     const { data, error } = await supabase
       .from('persona')

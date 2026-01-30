@@ -15,6 +15,7 @@ const cuentasRoutes = require('./modules/cuentas/cuentas.routes');
 const solicitudesRoutes = require('./modules/solicitudes/solicitudes.routes');
 const transaccionesRoutes = require('./modules/transacciones/transacciones.routes');
 const cajeroRoutes = require('./modules/cajero/cajero.routes');
+const depositosRoutes = require('./modules/depositos/depositos.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +32,7 @@ app.use('/api/cuentas', cuentasRoutes);
 app.use('/api/solicitudes', solicitudesRoutes);
 app.use('/api/transacciones', transaccionesRoutes);
 app.use('/api/cajero', cajeroRoutes);
+app.use('/api/depositos', depositosRoutes);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {

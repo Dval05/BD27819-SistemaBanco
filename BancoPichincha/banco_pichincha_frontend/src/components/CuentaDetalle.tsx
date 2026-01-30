@@ -49,7 +49,6 @@ function CuentaDetalle({ cuenta, onBack }: CuentaDetalleProps) {
       setError(null);
       
       try {
-        // Llamar a la API real para obtener movimientos
         const data = await clienteService.obtenerMovimientos(cuenta.id);
         setMovimientos(data);
       } catch (err) {

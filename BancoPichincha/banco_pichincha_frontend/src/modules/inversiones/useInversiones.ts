@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Inversion, InversionCronograma, CreateInversionDTO } from '../../types/inversion.types';
-import { inversionService } from '../../services/inversionService';
+import type { Inversion, InversionCronograma, CreateInversionDTO } from './types/inversion.types';
+import { inversionService } from './services/inversionService';
 
 export function useInversiones() {
   const [inversiones, setInversiones] = useState<Inversion[]>([]);

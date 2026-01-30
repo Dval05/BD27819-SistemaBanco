@@ -69,6 +69,7 @@ export interface InversionCronograma {
 
 export interface CreateInversionDTO {
   idCuenta: string;
+  producto: string;
   monto: number;
   plazoDias: number;
   modalidadInteres: string;
