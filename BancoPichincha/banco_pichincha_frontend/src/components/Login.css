@@ -332,3 +332,42 @@ html, body, .login-page {
     
 }
   */
+
+/* Botón de Cajero */
+.btn-cajero {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD100 0%, #FFC700 100%);
+  color: #00377B;
+  border: 2px solid #00377B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 55, 123, 0.3);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.btn-cajero:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 209, 0, 0.4);
+}
+
+.btn-cajero:active {
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .btn-cajero {
+    bottom: 20px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+  }
+}

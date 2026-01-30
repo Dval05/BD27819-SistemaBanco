@@ -221,3 +221,304 @@
 .estado-icon.rechazada {
   color: #dc2626;
 }
+
+/* Modal de Solicitud */
+.modal-overlay-solicitud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content-solicitud {
+  background: white;
+  border-radius: 16px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  background: #e5e7eb;
+}
+
+.modal-header-solicitud {
+  padding: 24px 24px 16px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header-solicitud h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-top: 12px;
+}
+
+.modal-body-solicitud {
+  padding: 24px;
+}
+
+.info-box-solicitud {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.info-box-solicitud svg {
+  color: #2563eb;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.info-box-solicitud p {
+  color: #1e40af;
+  font-size: 14px;
+  margin: 0;
+}
+
+.beneficios-list {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.beneficios-list p {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.beneficios-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.beneficios-list li {
+  color: #4b5563;
+  font-size: 14px;
+  padding: 6px 0;
+}
+
+.mensaje-solicitud {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.mensaje-solicitud.success {
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #86efac;
+}
+
+.mensaje-solicitud.error {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.modal-footer-solicitud {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-cancelar {
+  flex: 1;
+  padding: 12px 20px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+  background: #f3f4f6;
+}
+
+.btn-confirmar {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  background: #00377b;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-confirmar:hover {
+  background: #002855;
+}
+
+.btn-confirmar:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Tarjeta Generada */
+.tarjeta-generada {
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.success-icon-grande {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: white;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.tarjeta-generada h2 {
+  font-size: 24px;
+  color: #1a1a2e;
+  margin-bottom: 24px;
+}
+
+.tarjeta-visual {
+  margin: 24px 0;
+}
+
+.tarjeta-card {
+  background: linear-gradient(135deg, #00377b 0%, #004a9f 50%, #00377b 100%);
+  border-radius: 16px;
+  padding: 24px;
+  color: white;
+  text-align: left;
+  max-width: 340px;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 55, 123, 0.3);
+}
+
+.tarjeta-chip {
+  width: 45px;
+  height: 35px;
+  background: linear-gradient(135deg, #FFD100 0%, #FFC700 100%);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.tarjeta-numero {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  letter-spacing: 3px;
+  margin-bottom: 16px;
+}
+
+.tarjeta-datos {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.tarjeta-datos span {
+  font-size: 10px;
+  opacity: 0.7;
+  text-transform: uppercase;
+  display: block;
+}
+
+.tarjeta-datos p {
+  font-size: 14px;
+  margin: 4px 0 0;
+}
+
+.tarjeta-nombre {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pin-info {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.pin-info > p:first-child {
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.pin-display {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a2e;
+  letter-spacing: 8px;
+  font-family: 'Courier New', monospace;
+  margin: 12px 0;
+}
+
+.pin-warning {
+  font-size: 12px;
+  color: #b45309;
+  margin-top: 8px;
+}
+
+.btn-cerrar-exito {
+  margin-top: 24px;
+  padding: 14px 40px;
+  background: #00377b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cerrar-exito:hover {
+  background: #002855;
+}

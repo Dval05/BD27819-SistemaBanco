@@ -11,6 +11,8 @@ import {
   DollarSign,
   Building2,
   TrendingUp,
+  Smartphone,
+  Monitor,
   type LucideIcon
 } from 'lucide-react';
 
@@ -21,7 +23,9 @@ export type MenuOptionId =
   | 'transferencias' 
   | 'pagos' 
   | 'solicitudes' 
-  | 'inversiones';
+  | 'inversiones'
+  | 'retiro-sin-tarjeta'
+  | 'cajero';
 
 export type ProductTabId = 
   | 'todos' 
@@ -111,6 +115,20 @@ export const menuItems: MenuItem[] = [
     icon: TrendingUp, 
     enabled: true, 
     order: 7 
+  },
+  { 
+    id: 'retiro-sin-tarjeta', 
+    label: 'Retiro sin tarjeta', 
+    icon: Smartphone, 
+    enabled: true, 
+    order: 8 
+  },
+  { 
+    id: 'cajero', 
+    label: 'Cajero Automático', 
+    icon: Monitor, 
+    enabled: true, 
+    order: 9 
   },
 ];
 

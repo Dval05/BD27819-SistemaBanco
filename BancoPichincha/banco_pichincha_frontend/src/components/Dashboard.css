@@ -165,7 +165,7 @@
 .main-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 30px 40px 20px;
   background: #fff;
 }
@@ -183,7 +183,14 @@
   margin: 4px 0 0;
 }
 
-.help-btn {
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.help-btn,
+.solicitar-tarjeta-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -194,10 +201,23 @@
   cursor: pointer;
   font-size: 14px;
   color: #333;
+  transition: all 0.2s;
 }
 
-.help-btn:hover {
+.help-btn:hover,
+.solicitar-tarjeta-btn:hover {
   background: #f5f7fa;
+}
+
+.solicitar-tarjeta-btn {
+  border-color: #FFD100;
+  color: #00377B;
+  font-weight: 600;
+}
+
+.solicitar-tarjeta-btn:hover {
+  background: #FFFAEB;
+  border-color: #FFC700;
 }
 
 /* Products Section */

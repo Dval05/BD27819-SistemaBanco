@@ -48,7 +48,15 @@ class AuthService {
       datosAdicionales = await authRepository.findPersonaJuridica(persona.id_persona);
     }
 
-    return this._formatPersonaResponse(persona, datosAdicionales);
+    // Obtener cuenta del usuario
+    const cuenta = await cuentaService.obtenerCuentaPorPersona(persona.id_persona);
+    const response = this._formatPersonaResponse(persona, datosAdicionales);
+    if (cuenta) {
+      response.id_cuenta = cuenta.id_cuenta;
+      response.numeroCuenta = cuenta.cue_numero;
+      response.saldo = cuenta.cue_saldo_disponible;
+    }
+    return response;
   }
 
   async registro(data) {
@@ -77,10 +85,6 @@ class AuthService {
     const personaNatural = {
       id_persona: idPersona,
       id_pernat: uuidv4(),
-      per_email: data.email,
-      per_telefono: data.telefono || 0,
-      per_tipo_persona: '00',
-      per_estado: '00',
       pernat_primer_nombre: data.primerNombre || data.nombre?.split(' ')[0] || '',
       pernat_segundo_nombre: data.segundoNombre || data.nombre?.split(' ')[1] || '',
       pernat_primer_apellido: data.primerApellido || data.nombre?.split(' ')[2] || '',
@@ -142,6 +146,7 @@ class AuthService {
   _formatPersonaResponse(persona, datosAdicionales) {
     const response = {
       id: persona.id_persona,
+      id_persona: persona.id_persona,
       usuario: persona.per_usuario,
       email: persona.per_email,
       telefono: persona.per_telefono,

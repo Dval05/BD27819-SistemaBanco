@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, CreditCard } from 'lucide-react';
 import clienteService from '../services/clienteService';
 import type { Cliente } from '../types';
+import ATMSimulator from './ATMSimulator';
 import './Login.css';
 
 interface LoginProps {
@@ -10,6 +11,7 @@ interface LoginProps {
 
 const Login = ({ onLogin }: LoginProps) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showATM, setShowATM] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -98,7 +100,11 @@ const Login = ({ onLogin }: LoginProps) => {
 
   return (
     <div className="login-page">
-      <div className="login-left">
+      {showATM ? (
+        <ATMSimulator onBack={() => setShowATM(false)} />
+      ) : (
+        <>
+          <div className="login-left">
         <div className="login-left-content">
           <div className="brand">
             <div className="brand-icon">
@@ -305,6 +311,14 @@ const Login = ({ onLogin }: LoginProps) => {
           )}
         </div>
       </div>
+        </>
+      )}
+
+      {!showATM && (
+        <button className="btn-cajero" onClick={() => setShowATM(true)} title="Acceder a Cajero Automático">
+          <CreditCard size={20} />
+        </button>
+      )}
     </div>
   );
 };

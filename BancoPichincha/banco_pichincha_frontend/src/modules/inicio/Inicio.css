@@ -45,30 +45,34 @@
 
 .product-tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   margin-bottom: 20px;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 8px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  padding: 4px;
+  width: fit-content;
 }
 
 .product-tab {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
-  background: none;
+  background: transparent;
   color: #666;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  border-radius: 6px;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .product-tab.active {
-  color: #00377b;
-  border-bottom-color: #00377b;
+  background: #00377b;
+  color: white;
   font-weight: 500;
 }
 
 .product-tab:hover:not(.active) {
+  background: #e5e7eb;
   color: #00377b;
 }
 

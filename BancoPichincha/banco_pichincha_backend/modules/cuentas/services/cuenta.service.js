@@ -1,11 +1,18 @@
-const { v4: uuidv4 } = require('uuid');
 const cuentaRepository = require('../repositories/cuenta.repository');
 
 class CuentaService {
   generateNumeroCuenta() {
-    const prefix = '22';
-    const random = Math.floor(10000000 + Math.random() * 90000000).toString();
+    const prefix = '220';
+    const random = Math.floor(1000000 + Math.random() * 9000000).toString();
     return prefix + random;
+  }
+
+  generateIdCuenta() {
+    return 'CTA' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
+  }
+
+  generateIdCueAhorro() {
+    return 'CAH' + Date.now().toString().slice(-6) + Math.floor(Math.random() * 100);
   }
 
   async crearCuentaAhorroFlexible(idPersona) {
@@ -20,36 +27,34 @@ class CuentaService {
       cuentaExistente = await cuentaRepository.findByNumero(numeroCuenta);
     } while (cuentaExistente);
 
-    const idCuenta = uuidv4();
+    const idCuenta = this.generateIdCuenta();
     const fechaApertura = new Date().toISOString().split('T')[0];
 
+    // Crear cuenta base
     const cuenta = {
       id_cuenta: idCuenta,
       id_persona: idPersona,
       cue_numero: numeroCuenta,
-      cue_saldo_disponible: 0,
+      cue_saldo_disponible: 0.00,
       cue_estado: '00',
       cue_fecha_apertura: fechaApertura
     };
 
     await cuentaRepository.createCuenta(cuenta);
 
+    // Crear cuenta ahorro solo con sus columnas específicas
     const cuentaAhorro = {
       id_cuenta: idCuenta,
-      id_cue_ahorro: uuidv4(),
-      id_persona: idPersona,
-      cue_numero: numeroCuenta,
-      cue_saldo_disponible: 0,
-      cue_estado: '00',
-      cue_fecha_apertura: fechaApertura,
+      id_cue_ahorro: this.generateIdCueAhorro(),
       cueaho_tasa_interes: 2.50,
       cueaho_meta_ahorro: 0,
       cueaho_acumulacion_interes: 0.00
     };
 
-    const cuentaAhorroCreada = await cuentaRepository.createCuentaAhorro(cuentaAhorro);
+    await cuentaRepository.createCuentaAhorro(cuentaAhorro);
     
-    return this._formatCuentaAhorro(cuentaAhorroCreada);
+    // Retornar la cuenta base con info formateada
+    return this._formatCuenta(cuenta);
   }
 
   async getCuentasByPersona(idPersona) {
@@ -115,6 +120,21 @@ class CuentaService {
       cueaho_meta_ahorro: parseFloat(cuenta.cueaho_meta_ahorro) || 0,
       cueaho_acumulacion_interes: parseFloat(cuenta.cueaho_acumulacion_interes) || 0
     };
+  }
+
+  async obtenerCuentaPorPersona(idPersona) {
+    if (!idPersona) return null;
+    try {
+      const cuentas = await cuentaRepository.findByPersona(idPersona);
+      // Devolver la primera cuenta activa
+      if (cuentas && cuentas.length > 0) {
+        return cuentas.find(c => c.cue_estado === '00') || cuentas[0];
+      }
+      return null;
+    } catch (error) {
+      console.error('Error obteniendo cuenta por persona:', error);
+      return null;
+    }
   }
 }
 

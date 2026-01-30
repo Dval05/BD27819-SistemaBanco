@@ -1,0 +1,615 @@
+/* ============================================
+   ESTILOS DEL CAJERO ATM - BANCO PICHINCHA
+   Diseño con botones laterales realistas
+   ============================================ */
+
+.atm-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  overflow: auto;
+  padding: 20px;
+}
+
+.atm-machine {
+  background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
+  border-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 750px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 4px solid #333;
+  position: relative;
+}
+
+/* Header del cajero */
+.atm-top-bar {
+  background: linear-gradient(90deg, #00377B 0%, #004a9f 50%, #00377B 100%);
+  padding: 12px 20px;
+  border-radius: 10px 10px 0 0;
+  margin: -20px -20px 15px -20px;
+  border-bottom: 3px solid #FFD100;
+}
+
+.atm-brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.3em;
+  letter-spacing: 1px;
+}
+
+.brand-square {
+  color: #FFD100;
+  font-size: 1.5em;
+}
+
+/* Cuerpo principal */
+.atm-body {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 15px;
+}
+
+/* Botones laterales */
+.atm-side-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 10px 0;
+}
+
+.atm-side-buttons.left {
+  padding-right: 8px;
+}
+
+.atm-side-buttons.right {
+  padding-left: 8px;
+}
+
+.atm-side-btn {
+  width: 40px;
+  height: 45px;
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+  border: 2px solid #555;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.atm-side-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #555 0%, #444 100%);
+  transform: scale(1.05);
+}
+
+.atm-side-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.atm-side-btn.active {
+  background: linear-gradient(180deg, #00377B 0%, #002855 100%);
+  border-color: #FFD100;
+}
+
+.atm-side-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.btn-indicator {
+  width: 8px;
+  height: 8px;
+  background: #FFD100;
+  border-radius: 50%;
+  box-shadow: 0 0 5px #FFD100;
+}
+
+.atm-side-btn:not(.active) .btn-indicator {
+  background: #666;
+  box-shadow: none;
+}
+
+/* Wrapper de la pantalla */
+.atm-screen-wrapper {
+  flex: 1;
+  background: #111;
+  border-radius: 8px;
+  padding: 4px;
+  border: 3px solid #222;
+}
+
+/* Pantalla del cajero */
+.atm-screen {
+  background: linear-gradient(180deg, #003366 0%, #001a33 100%);
+  border-radius: 5px;
+  min-height: 320px;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Labels en pantalla */
+.screen-labels {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 15px 8px;
+  min-width: 100px;
+}
+
+.screen-labels.left {
+  text-align: left;
+  border-right: 1px dashed rgba(255, 209, 0, 0.3);
+}
+
+.screen-labels.right {
+  text-align: right;
+  border-left: 1px dashed rgba(255, 209, 0, 0.3);
+}
+
+.screen-label {
+  color: #555;
+  font-size: 0.7em;
+  font-weight: bold;
+  padding: 8px 5px;
+  letter-spacing: 0.5px;
+  min-height: 35px;
+  display: flex;
+  align-items: center;
+}
+
+.screen-labels.left .screen-label {
+  justify-content: flex-start;
+}
+
+.screen-labels.right .screen-label {
+  justify-content: flex-end;
+}
+
+.screen-label.active {
+  color: #FFD100;
+  text-shadow: 0 0 5px rgba(255, 209, 0, 0.5);
+}
+
+/* Contenido central de la pantalla */
+.screen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.atm-screen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  color: white;
+}
+
+.atm-header-bar {
+  background: rgba(0, 55, 123, 0.8);
+  padding: 8px 12px;
+  margin: -10px -10px 10px -10px;
+  border-bottom: 2px solid #FFD100;
+}
+
+.atm-logo-small {
+  color: #FFD100;
+  font-weight: bold;
+  font-size: 0.85em;
+  letter-spacing: 1px;
+}
+
+.atm-main-message {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+}
+
+.atm-main-message h2 {
+  color: #FFD100;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.atm-main-message p {
+  margin: 5px 0;
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+.atm-english {
+  color: #8899aa;
+  font-style: italic;
+  font-size: 0.75em !important;
+}
+
+.atm-alert {
+  background: rgba(255, 100, 100, 0.2);
+  border: 1px solid #ff6666;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 15px 0;
+}
+
+.atm-footer-msg {
+  margin-top: 15px !important;
+  color: #aabbcc;
+}
+
+/* Campos de entrada */
+.atm-input-display {
+  margin: 10px 0;
+  width: 100%;
+  max-width: 200px;
+}
+
+.atm-input-field {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 1.4em;
+  text-align: center;
+  border: 2px solid #FFD100;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  letter-spacing: 8px;
+  font-family: 'Courier New', monospace;
+  box-sizing: border-box;
+}
+
+.atm-input-field::placeholder {
+  letter-spacing: 4px;
+  color: #556;
+  font-size: 0.9em;
+}
+
+.atm-input-field:focus {
+  outline: none;
+  border-color: #ffe033;
+  box-shadow: 0 0 10px rgba(255, 209, 0, 0.3);
+}
+
+.atm-error-msg {
+  color: #ff6b6b;
+  font-size: 0.8em;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(255, 107, 107, 0.15);
+  border-radius: 4px;
+}
+
+.atm-tel-display {
+  color: #FFD100;
+  font-family: monospace;
+  font-size: 1.2em;
+  margin: 10px 0;
+}
+
+.atm-cuenta-info {
+  color: #8899aa;
+  font-size: 0.85em;
+  margin-bottom: 10px;
+}
+
+.atm-monto-display {
+  background: rgba(255, 209, 0, 0.1);
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.monto-valor {
+  color: #FFD100;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+/* Resumen de operación */
+.atm-resumen-box {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 15px;
+  border-radius: 6px;
+  margin: 15px 0;
+  width: 100%;
+  max-width: 220px;
+}
+
+.resumen-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85em;
+}
+
+.resumen-item:last-child {
+  border-bottom: none;
+}
+
+.resumen-valor {
+  color: #FFD100;
+  font-weight: bold;
+}
+
+/* Pantalla de éxito */
+.atm-main-message.success {
+  color: #4ade80;
+}
+
+.success-icon-atm {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(180deg, #00a651 0%, #008c45 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  font-size: 2em;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 166, 81, 0.4);
+}
+
+/* Área inferior del cajero */
+.atm-bottom-area {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 15px 10px;
+  background: linear-gradient(180deg, #222 0%, #1a1a1a 100%);
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.atm-card-slot,
+.atm-cash-slot,
+.atm-receipt-slot {
+  text-align: center;
+}
+
+.card-slot-label,
+.cash-slot-label,
+.receipt-slot-label {
+  color: #888;
+  font-size: 0.65em;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.card-slot-opening {
+  width: 80px;
+  height: 8px;
+  background: linear-gradient(180deg, #111 0%, #000 100%);
+  border-radius: 2px;
+  border: 1px solid #333;
+}
+
+.cash-slot-opening {
+  width: 140px;
+  height: 25px;
+  background: linear-gradient(180deg, #0a0a0a 0%, #000 100%);
+  border-radius: 3px;
+  border: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cash-arrows {
+  color: #444;
+  font-size: 0.8em;
+}
+
+.receipt-slot-opening {
+  width: 60px;
+  height: 6px;
+  background: linear-gradient(180deg, #111 0%, #000 100%);
+  border-radius: 2px;
+  border: 1px solid #333;
+}
+
+/* Teclado numérico */
+.atm-keypad-area {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.atm-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  flex: 1;
+}
+
+.keypad-btn {
+  background: linear-gradient(180deg, #444 0%, #333 100%);
+  color: white;
+  border: 2px solid #555;
+  padding: 12px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.keypad-btn:hover {
+  background: linear-gradient(180deg, #555 0%, #444 100%);
+}
+
+.keypad-btn:active {
+  transform: scale(0.95);
+}
+
+.atm-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 12px 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.action-btn.cancel {
+  background: linear-gradient(180deg, #dc3545 0%, #c82333 100%);
+  color: white;
+}
+
+.action-btn.clear {
+  background: linear-gradient(180deg, #ffc107 0%, #e0a800 100%);
+  color: #333;
+}
+
+.action-btn.enter {
+  background: linear-gradient(180deg, #28a745 0%, #218838 100%);
+  color: white;
+}
+
+.action-btn:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+}
+
+/* Botón de salir */
+.atm-exit-btn {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  border: 1px solid #444;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8em;
+  transition: all 0.2s ease;
+}
+
+.atm-exit-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .atm-machine {
+    max-width: 100%;
+    border-radius: 15px;
+  }
+
+  .atm-side-btn {
+    width: 32px;
+    height: 38px;
+  }
+
+  .screen-labels {
+    min-width: 70px;
+    font-size: 0.6em;
+  }
+
+  .screen-label {
+    font-size: 0.65em;
+  }
+
+  .atm-main-message h2 {
+    font-size: 0.95em;
+  }
+
+  .atm-bottom-area {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .atm-keypad-area {
+    flex-direction: column;
+  }
+
+  .atm-action-buttons {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .action-btn {
+    flex: 1;
+    min-width: 80px;
+  }
+}
+
+/* Spinner de carga */
+.atm-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 209, 0, 0.3);
+  border-top: 4px solid #FFD100;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Icono de error */
+.error-icon-atm {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #e53935;
+  color: white;
+  font-size: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 15px;
+  font-weight: bold;
+}
+
+.atm-main-message.error h2 {
+  color: #e53935;
+}
+
+.atm-main-message.error p {
+  color: #ffcdd2;
+}

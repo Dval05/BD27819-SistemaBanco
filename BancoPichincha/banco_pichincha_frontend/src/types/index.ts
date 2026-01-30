@@ -1,5 +1,7 @@
 export interface Cliente {
   id: string;
+  id_persona: string;
+  id_cuenta?: string;
   usuario: string;
   email: string;
   telefono: number;
@@ -14,6 +16,8 @@ export interface Cliente {
   razonSocial?: string;
   nombreComercial?: string;
   ruc?: string;
+  numeroCuenta?: string;
+  saldo?: number;
 }
 
 export interface Transaccion {

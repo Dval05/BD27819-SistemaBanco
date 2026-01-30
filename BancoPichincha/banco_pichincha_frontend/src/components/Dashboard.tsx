@@ -5,11 +5,14 @@ import {
   Phone,
   MapPin,
   ChevronDown,
-  Loader2
+  Loader2,
+  CreditCard
 } from 'lucide-react';
 import type { Cliente } from '../types';
 import type { Cuenta, Tarjeta } from '../services/clienteService';
 import CuentaDetalle from './CuentaDetalle';
+import SolicitudTarjeta from './SolicitudTarjeta';
+import ATMSimulator from './ATMSimulator';
 import { 
   getEnabledMenuItems, 
   type MenuOptionId
@@ -24,6 +27,7 @@ const TransferenciasModule = lazy(() => import('../modules/transferencias/Transf
 const PagosModule = lazy(() => import('../modules/pagos/Pagos'));
 const SolicitudesModule = lazy(() => import('../modules/solicitudes/Solicitudes'));
 const InversionesModule = lazy(() => import('../modules/inversiones/InversionesModule'));
+const RetiroSinTarjetaModule = lazy(() => import('../modules/retiro-sin-tarjeta/RetiroSinTarjeta'));
 
 interface DashboardProps {
   cliente: Cliente;
@@ -44,6 +48,7 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
   const [showSaldos, setShowSaldos] = useState(true);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [navigationData, setNavigationData] = useState<NavigationData | null>(null);
+  const [showSolicitudTarjeta, setShowSolicitudTarjeta] = useState(false);
   
   // Estado especial para vistas de detalle
   const [selectedCuenta, setSelectedCuenta] = useState<Cuenta | null>(null);
@@ -146,6 +151,21 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
         return <SolicitudesModule {...moduleProps} />;
       case 'inversiones':
         return <InversionesModule {...moduleProps} />;
+      case 'retiro-sin-tarjeta':
+        return <RetiroSinTarjetaModule {...moduleProps} />;
+      case 'cajero':
+        return (
+          <ATMSimulator 
+            onBack={() => handleNavigate('inicio')} 
+            cliente={{
+              id_persona: cliente.id_persona,
+              id_cuenta: cliente.id_cuenta || '',
+              nombre: cliente.nombre || `${cliente.primerNombre || ''} ${cliente.primerApellido || ''}`.trim(),
+              saldo: cliente.saldo || 0,
+              numero_cuenta: cliente.numeroCuenta || ''
+            }}
+          />
+        );
       default:
         return <InicioModule {...moduleProps} />;
     }
@@ -241,10 +261,20 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
                 <h1>Hola {getNombreCorto()}</h1>
                 <p>¡Descubre lo nuevo de tu Banca Web!</p>
               </div>
-              <button className="help-btn">
-                <HelpCircle size={20} />
-                Ayuda
-              </button>
+              <div className="header-actions">
+                <button className="help-btn">
+                  <HelpCircle size={20} />
+                  Ayuda
+                </button>
+                <button 
+                  className="solicitar-tarjeta-btn"
+                  onClick={() => setShowSolicitudTarjeta(true)}
+                  title="Solicitar nueva tarjeta débito"
+                >
+                  <CreditCard size={20} />
+                  Solicitar Tarjeta
+                </button>
+              </div>
             </header>
 
             <div className="module-container">
@@ -264,6 +294,17 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
               </button>
             </footer>
           </>
+        )}
+
+        {showSolicitudTarjeta && (
+          <SolicitudTarjeta 
+            cliente={cliente}
+            onClose={() => setShowSolicitudTarjeta(false)}
+            onSuccess={(tarjeta) => {
+              setShowSolicitudTarjeta(false);
+              // Aquí puedes actualizar el estado del cliente si es necesario
+            }}
+          />
         )}
       </main>
     </div>
