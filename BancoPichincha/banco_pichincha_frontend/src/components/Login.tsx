@@ -16,6 +16,7 @@ const Login = ({ onLogin }: LoginProps) => {
   const [usuario, setUsuario] = useState('');
   const [password, setPassword] = useState('');
 
+  const [cedula, setCedula] = useState('');
   const [primerNombre, setPrimerNombre] = useState('');
   const [segundoNombre, setSegundoNombre] = useState('');
   const [primerApellido, setPrimerApellido] = useState('');
@@ -43,8 +44,43 @@ const Login = ({ onLogin }: LoginProps) => {
     }
   };
 
+  // Validar cédula ecuatoriana
+  const validarCedulaEcuatoriana = (cedula: string): boolean => {
+    if (cedula.length !== 10) return false;
+    if (!/^\d+$/.test(cedula)) return false;
+    
+    const provincia = parseInt(cedula.substring(0, 2));
+    if (provincia < 1 || provincia > 24) return false;
+    
+    const tercerDigito = parseInt(cedula[2]);
+    if (tercerDigito > 5) return false;
+    
+    // Algoritmo de validación módulo 10
+    const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+    let suma = 0;
+    
+    for (let i = 0; i < 9; i++) {
+      let valor = parseInt(cedula[i]) * coeficientes[i];
+      if (valor > 9) valor -= 9;
+      suma += valor;
+    }
+    
+    const digitoVerificador = (10 - (suma % 10)) % 10;
+    return digitoVerificador === parseInt(cedula[9]);
+  };
+
   const handleRegistro = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (!cedula || cedula.length !== 10) {
+      alert('La cédula debe tener 10 dígitos');
+      return;
+    }
+
+    if (!validarCedulaEcuatoriana(cedula)) {
+      alert('La cédula ingresada no es válida');
+      return;
+    }
 
     if (nuevoUsuario.length < 4) {
       alert('El usuario debe tener al menos 4 caracteres');
@@ -65,6 +101,7 @@ const Login = ({ onLogin }: LoginProps) => {
 
     try {
       const response = await clienteService.registro({
+        cedula,
         primerNombre,
         segundoNombre,
         primerApellido,
@@ -78,6 +115,7 @@ const Login = ({ onLogin }: LoginProps) => {
         alert('Registro exitoso. Ahora puedes iniciar sesión.');
         setIsLogin(true);
         setUsuario(nuevoUsuario);
+        setCedula('');
         setPrimerNombre('');
         setSegundoNombre('');
         setPrimerApellido('');
@@ -201,6 +239,19 @@ const Login = ({ onLogin }: LoginProps) => {
             </form>
           ) : (
             <form onSubmit={handleRegistro} className="login-form registro-form">
+              <div className="form-group">
+                <label>Cédula de Identidad *</label>
+                <input
+                  type="text"
+                  value={cedula}
+                  onChange={(e) => setCedula(e.target.value.replace(/\D/g, ''))}
+                  maxLength={10}
+                  placeholder="Ej: 1712345678"
+                  required
+                />
+                <small className="form-hint">Documento de identidad único (10 dígitos)</small>
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
                   <label>Primer Nombre *</label>
@@ -266,7 +317,7 @@ const Login = ({ onLogin }: LoginProps) => {
                 <input
                   type="text"
                   value={nuevoUsuario}
-                  onChange={(e) => setNuevoUsuario(e.target.value.toLowerCase().replace(/\s/g, ''))}
+                  onChange={(e) => setNuevoUsuario(e.target.value.replace(/\s/g, ''))}
                   minLength={4}
                   required
                 />

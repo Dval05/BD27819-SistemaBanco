@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { inversionService } from '../../services/inversionService';
-import { InversionProducto, ModalidadInteres } from '../../types/inversion.types';
-import type { CreateInversionDTO } from '../../types/inversion.types';
+import { inversionService } from './services/inversionService';
+import { InversionProducto, ModalidadInteres } from './types/inversion.types';
+import type { CreateInversionDTO } from './types/inversion.types';
 import './Inversiones.css';
 
 interface Props {
@@ -23,7 +23,7 @@ const InversionForm: React.FC<Props> = ({ onClose, onSuccess }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev: CreateInversionDTO) => ({
       ...prev,
       [name]: name === 'monto' || name === 'plazoDias' ? Number(value) : value
     }));

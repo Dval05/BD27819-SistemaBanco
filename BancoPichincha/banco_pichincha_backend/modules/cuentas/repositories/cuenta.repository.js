@@ -76,13 +76,32 @@ class CuentaRepository {
   }
 
   async findCuentasAhorroByPersona(idPersona) {
+    // JOIN con tabla cuenta para obtener cuentas de ahorro de una persona
     const { data, error } = await supabase
       .from('cuenta_ahorro')
-      .select('*')
-      .eq('id_persona', idPersona);
+      .select(`
+        *,
+        cuenta!inner (
+          id_persona,
+          cue_numero,
+          cue_saldo_disponible,
+          cue_estado,
+          cue_fecha_apertura
+        )
+      `)
+      .eq('cuenta.id_persona', idPersona);
     
     if (error) throw error;
-    return data || [];
+    
+    // Aplanar la estructura para mantener compatibilidad
+    return (data || []).map(ca => ({
+      ...ca,
+      id_persona: ca.cuenta?.id_persona,
+      cue_numero: ca.cuenta?.cue_numero,
+      cue_saldo_disponible: ca.cuenta?.cue_saldo_disponible,
+      cue_estado: ca.cuenta?.cue_estado,
+      cue_fecha_apertura: ca.cuenta?.cue_fecha_apertura
+    }));
   }
 
   async findByNumero(numeroCuenta) {

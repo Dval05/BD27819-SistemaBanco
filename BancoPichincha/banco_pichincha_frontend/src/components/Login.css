@@ -100,7 +100,7 @@
 html, body, .login-page {
   height: 100%;
   margin: 0;
-  /*overflow: hidden;  Prohíbe el scroll vertical */
+  overflow: hidden; /* Prohíbe el scroll vertical */
 }
 
 .login-page {

@@ -26,6 +26,40 @@
   gap: 16px;
 }
 
+.crear-cuenta-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #00377b;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.crear-cuenta-btn:hover:not(:disabled) {
+  background: #002a5c;
+  transform: translateY(-1px);
+}
+
+.crear-cuenta-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.crear-cuenta-btn .spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .toggle-saldos {
   display: flex;
   align-items: center;

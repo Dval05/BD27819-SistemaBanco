@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const authRepository = require('../repositories/auth.repository');
 const cuentaService = require('../../cuentas/services/cuenta.service');
+const tarjetaService = require('../../tarjetas/services/tarjeta.service');
 
 class AuthService {
   hashPassword(password) {
@@ -59,6 +60,14 @@ class AuthService {
       throw { status: 400, message: 'El usuario ya existe' };
     }
 
+    // Validar que la cédula no esté registrada
+    if (data.cedula) {
+      const cedulaExistente = await authRepository.findByCedula(data.cedula);
+      if (cedulaExistente) {
+        throw { status: 400, message: 'La cédula ya está registrada en el sistema' };
+      }
+    }
+
     const idPersona = uuidv4();
     const passwordHash = this.hashPassword(data.password);
 
@@ -76,11 +85,7 @@ class AuthService {
 
     const personaNatural = {
       id_persona: idPersona,
-      id_pernat: uuidv4(),
-      per_email: data.email,
-      per_telefono: data.telefono || 0,
-      per_tipo_persona: '00',
-      per_estado: '00',
+      id_pernat: data.cedula || uuidv4(), // Usar cédula como identificador único
       pernat_primer_nombre: data.primerNombre || data.nombre?.split(' ')[0] || '',
       pernat_segundo_nombre: data.segundoNombre || data.nombre?.split(' ')[1] || '',
       pernat_primer_apellido: data.primerApellido || data.nombre?.split(' ')[2] || '',
@@ -90,22 +95,42 @@ class AuthService {
 
     await authRepository.createPersonaNatural(personaNatural);
 
-    // Crear cuenta de ahorro flexible automáticamente
+    // Crear cuenta de ahorro y tarjeta de débito automáticamente
+    console.log('🔵 Iniciando creación de productos para nuevo usuario:', idPersona);
     let cuentaAhorro = null;
+    let tarjetaDebito = null;
+    
     try {
+      // 1. Crear cuenta de ahorro
       cuentaAhorro = await cuentaService.crearCuentaAhorroFlexible(idPersona);
-      console.log('Cuenta de ahorro flexible creada automáticamente para nuevo usuario:', idPersona);
-    } catch (cuentaError) {
-      console.error('Error al crear cuenta de ahorro automática:', cuentaError);
-      // No lanzamos error para no afectar el registro
+      console.log('✅ Cuenta de ahorro creada:', cuentaAhorro.id_cuenta);
+      
+      // 2. Crear tarjeta de débito asociada a la cuenta
+      tarjetaDebito = await tarjetaService.crearTarjetaDebito(cuentaAhorro.id_cuenta);
+      console.log('✅ Tarjeta de débito creada:', tarjetaDebito.numero);
+      
+    } catch (productoError) {
+      console.error('❌ Error al crear productos automáticos:', productoError);
+      console.error('Stack trace:', productoError.stack);
+      // Lanzar el error para que el usuario sepa que falló
+      throw { 
+        status: 500, 
+        message: 'Usuario creado pero falló la creación de productos: ' + (productoError.message || JSON.stringify(productoError))
+      };
     }
 
     const createdPersona = await authRepository.findById(idPersona);
     const response = this._formatPersonaResponse(createdPersona, personaNatural);
     
-    // Agregar información de la cuenta creada
+    // Agregar información de los productos creados
     if (cuentaAhorro) {
       response.cuentaAhorro = cuentaAhorro;
+    }
+    if (tarjetaDebito) {
+      response.tarjetaDebito = {
+        numero: tarjetaDebito.numeroOculto,
+        pinPorDefecto: tarjetaDebito.pinPorDefecto
+      };
     }
     
     return response;
@@ -128,6 +153,12 @@ class AuthService {
   }
 
   _validateRegistro(data) {
+    if (!data.cedula || data.cedula.length !== 10) {
+      throw { status: 400, message: 'Cédula es requerida y debe tener 10 dígitos' };
+    }
+    if (!/^\d+$/.test(data.cedula)) {
+      throw { status: 400, message: 'La cédula solo debe contener números' };
+    }
     if (!data.usuario || data.usuario.length < 4) {
       throw { status: 400, message: 'Usuario debe tener al menos 4 caracteres' };
     }
@@ -136,6 +167,12 @@ class AuthService {
     }
     if (!data.email) {
       throw { status: 400, message: 'Email es requerido' };
+    }
+    if (!data.primerNombre) {
+      throw { status: 400, message: 'Primer nombre es requerido' };
+    }
+    if (!data.primerApellido) {
+      throw { status: 400, message: 'Primer apellido es requerido' };
     }
   }
 
@@ -151,6 +188,7 @@ class AuthService {
 
     if (datosAdicionales) {
       if (persona.per_tipo_persona === '00') {
+        response.cedula = datosAdicionales.id_pernat;
         response.nombre = `${datosAdicionales.pernat_primer_nombre} ${datosAdicionales.pernat_segundo_nombre || ''} ${datosAdicionales.pernat_primer_apellido} ${datosAdicionales.pernat_segundo_apellido || ''}`.trim();
         response.primerNombre = datosAdicionales.pernat_primer_nombre;
         response.segundoNombre = datosAdicionales.pernat_segundo_nombre;

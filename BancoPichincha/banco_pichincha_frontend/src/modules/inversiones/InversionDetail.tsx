@@ -1,6 +1,6 @@
 import React from 'react';
 import { useInversionDetail } from './useInversiones';
-import { ProductoLabels, EstadoLabels } from '../../types/inversion.types';
+import { ProductoLabels, EstadoLabels } from './types/inversion.types';
 import './Inversiones.css';
 
 interface Props {

@@ -4,6 +4,7 @@ import type { Cliente, LoginResponse, RegistroResponse, Transaccion } from '../t
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 interface RegistroData {
+  cedula: string;
   nombre?: string;
   primerNombre: string;
   segundoNombre?: string;
@@ -120,6 +121,11 @@ const clienteService = {
     
     const response = await axios.get<MovimientosResponse>(url);
     return response.data.data || [];
+  },
+
+  crearCuentaAhorro: async (idPersona: string): Promise<{ ok: boolean; msg: string; data: Cuenta }> => {
+    const response = await axios.post<{ ok: boolean; msg: string; data: any }>(`${API_URL}/cuentas/ahorro`, { idPersona });
+    return response.data;
   }
 };
 

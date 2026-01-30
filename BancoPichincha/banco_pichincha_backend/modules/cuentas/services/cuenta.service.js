@@ -1,7 +1,14 @@
 const { v4: uuidv4 } = require('uuid');
 const cuentaRepository = require('../repositories/cuenta.repository');
+const crypto = require('crypto');
 
 class CuentaService {
+  generateId(prefix = 'ID') {
+    const timestamp = Date.now().toString(36);
+    const random = crypto.randomBytes(4).toString('hex');
+    return `${prefix}${timestamp}${random}`.substring(0, 20);
+  }
+
   generateNumeroCuenta() {
     const prefix = '22';
     const random = Math.floor(10000000 + Math.random() * 90000000).toString();
@@ -9,6 +16,8 @@ class CuentaService {
   }
 
   async crearCuentaAhorroFlexible(idPersona) {
+    console.log('🔵 Iniciando creación de cuenta de ahorro para persona:', idPersona);
+    
     if (!idPersona) {
       throw { status: 400, message: 'ID de persona es requerido' };
     }
@@ -20,7 +29,9 @@ class CuentaService {
       cuentaExistente = await cuentaRepository.findByNumero(numeroCuenta);
     } while (cuentaExistente);
 
-    const idCuenta = uuidv4();
+    console.log('🔵 Número de cuenta generado:', numeroCuenta);
+
+    const idCuenta = this.generateId('CTA');
     const fechaApertura = new Date().toISOString().split('T')[0];
 
     const cuenta = {
@@ -32,22 +43,21 @@ class CuentaService {
       cue_fecha_apertura: fechaApertura
     };
 
+    console.log('🔵 Creando cuenta base:', cuenta);
     await cuentaRepository.createCuenta(cuenta);
+    console.log('✅ Cuenta base creada exitosamente');
 
     const cuentaAhorro = {
       id_cuenta: idCuenta,
-      id_cue_ahorro: uuidv4(),
-      id_persona: idPersona,
-      cue_numero: numeroCuenta,
-      cue_saldo_disponible: 0,
-      cue_estado: '00',
-      cue_fecha_apertura: fechaApertura,
-      cueaho_tasa_interes: 2.50,
+      id_cue_ahorro: this.generateId('AHO'),
+      cueaho_tasa_interes: 0.0250,  // 2.50%
       cueaho_meta_ahorro: 0,
       cueaho_acumulacion_interes: 0.00
     };
 
+    console.log('🔵 Creando cuenta de ahorro:', cuentaAhorro);
     const cuentaAhorroCreada = await cuentaRepository.createCuentaAhorro(cuentaAhorro);
+    console.log('✅ Cuenta de ahorro creada exitosamente');
     
     return this._formatCuentaAhorro(cuentaAhorroCreada);
   }
