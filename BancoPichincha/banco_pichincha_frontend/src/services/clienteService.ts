@@ -36,7 +36,9 @@ export interface Tarjeta {
   numeroCompleto: string;
   fechaExpiracion: string;
   estado: string;
+  estadoCodigo?: string;
   saldo: number;
+  cvv?: string;
 }
 
 export interface InversionProducto {
@@ -125,6 +127,27 @@ const clienteService = {
 
   crearCuentaAhorro: async (idPersona: string): Promise<{ ok: boolean; msg: string; data: Cuenta }> => {
     const response = await axios.post<{ ok: boolean; msg: string; data: any }>(`${API_URL}/cuentas/ahorro`, { idPersona });
+    return response.data;
+  },
+
+  // Métodos para gestión de tarjetas
+  obtenerEstadoTarjeta: async (idTarjeta: string): Promise<{ success: boolean; data: any }> => {
+    const response = await axios.get<{ success: boolean; data: any }>(`${API_URL}/cajero/tarjeta/estado/${idTarjeta}`);
+    return response.data;
+  },
+
+  bloquearTarjeta: async (idTarjeta: string, tipoBloqueo: 'temporal' | 'permanente'): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.put<{ success: boolean; message: string }>(`${API_URL}/cajero/tarjeta/bloquear/${idTarjeta}`, { tipo_bloqueo: tipoBloqueo });
+    return response.data;
+  },
+
+  desbloquearTarjeta: async (idTarjeta: string): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.put<{ success: boolean; message: string }>(`${API_URL}/cajero/tarjeta/desbloquear/${idTarjeta}`);
+    return response.data;
+  },
+
+  cancelarTarjeta: async (idTarjeta: string): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.delete<{ success: boolean; message: string }>(`${API_URL}/cajero/tarjeta/cancelar/${idTarjeta}`);
     return response.data;
   }
 };

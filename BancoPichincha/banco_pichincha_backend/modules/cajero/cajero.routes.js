@@ -7,6 +7,10 @@ router.post('/tarjeta/generar', cajeroController.generarTarjetaDebito);
 router.get('/tarjeta/verificar/:id_cuenta', cajeroController.verificarTarjeta);
 router.put('/tarjeta/cambiar-pin/:id_tarjeta', cajeroController.cambiarPin);
 router.post('/tarjeta/validar-pin', cajeroController.validarPin);
+router.get('/tarjeta/estado/:id_tarjeta', cajeroController.obtenerEstadoTarjeta);
+router.put('/tarjeta/bloquear/:id_tarjeta', cajeroController.bloquearTarjeta);
+router.put('/tarjeta/desbloquear/:id_tarjeta', cajeroController.desbloquearTarjeta);
+router.delete('/tarjeta/cancelar/:id_tarjeta', cajeroController.cancelarTarjeta);
 
 // Rutas para retiro sin tarjeta
 router.post('/retiro-sin-tarjeta/solicitar', cajeroController.solicitarRetiroSinTarjeta);

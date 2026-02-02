@@ -500,6 +500,7 @@ exports.validarCodigoEnCajero = async (req, res) => {
 /**
  * Validar tarjeta en cajero (últimos 4 dígitos)
  * Puede buscar por id_cuenta O solo por los últimos 4 dígitos
+ * Verifica que la tarjeta no esté bloqueada
  */
 exports.validarTarjetaEnCajero = async (req, res) => {
   try {
@@ -525,6 +526,23 @@ exports.validarTarjetaEnCajero = async (req, res) => {
       return res.json({
         success: false,
         message: 'Tarjeta no encontrada'
+      });
+    }
+
+    // Verificar estado de la tarjeta
+    const estadoDescripcion = {
+      '00': 'Activa',
+      '01': 'Bloqueada temporalmente',
+      '02': 'Bloqueada permanentemente',
+      '03': 'Cancelada'
+    };
+
+    if (data.tar_estado !== '00') {
+      return res.json({
+        success: false,
+        message: `Esta tarjeta está ${estadoDescripcion[data.tar_estado] || 'inactiva'}. No se pueden realizar operaciones.`,
+        bloqueada: true,
+        estadoTarjeta: data.tar_estado
       });
     }
 
@@ -694,6 +712,250 @@ exports.obtenerHistorialRetiros = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener historial',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Bloquear tarjeta (temporal o permanente)
+ * tar_estado: '00' = Activa, '01' = Bloqueada temporal, '02' = Bloqueada permanente, '03' = Cancelada
+ */
+exports.bloquearTarjeta = async (req, res) => {
+  try {
+    const { id_tarjeta } = req.params;
+    const { tipo_bloqueo } = req.body; // 'temporal' o 'permanente'
+
+    if (!id_tarjeta) {
+      return res.status(400).json({
+        success: false,
+        message: 'id_tarjeta es requerido'
+      });
+    }
+
+    // Verificar que la tarjeta existe y está activa
+    const { data: tarjeta, error: errorBuscar } = await supabase
+      .from('tarjeta')
+      .select('tar_estado')
+      .eq('id_tarjeta', id_tarjeta)
+      .single();
+
+    if (errorBuscar || !tarjeta) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tarjeta no encontrada'
+      });
+    }
+
+    if (tarjeta.tar_estado === '03') {
+      return res.status(400).json({
+        success: false,
+        message: 'La tarjeta ya fue cancelada'
+      });
+    }
+
+    const nuevoEstado = tipo_bloqueo === 'permanente' ? '02' : '01';
+
+    const { error } = await supabase
+      .from('tarjeta')
+      .update({ tar_estado: nuevoEstado })
+      .eq('id_tarjeta', id_tarjeta);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: tipo_bloqueo === 'permanente' 
+        ? 'Tarjeta bloqueada permanentemente' 
+        : 'Tarjeta bloqueada temporalmente. Puede desbloquearla cuando lo desee.'
+    });
+  } catch (error) {
+    console.error('Error bloqueando tarjeta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al bloquear tarjeta',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Desbloquear tarjeta (solo si está bloqueada temporalmente)
+ */
+exports.desbloquearTarjeta = async (req, res) => {
+  try {
+    const { id_tarjeta } = req.params;
+
+    if (!id_tarjeta) {
+      return res.status(400).json({
+        success: false,
+        message: 'id_tarjeta es requerido'
+      });
+    }
+
+    // Verificar que la tarjeta existe y está bloqueada temporalmente
+    const { data: tarjeta, error: errorBuscar } = await supabase
+      .from('tarjeta')
+      .select('tar_estado')
+      .eq('id_tarjeta', id_tarjeta)
+      .single();
+
+    if (errorBuscar || !tarjeta) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tarjeta no encontrada'
+      });
+    }
+
+    if (tarjeta.tar_estado === '00') {
+      return res.status(400).json({
+        success: false,
+        message: 'La tarjeta ya está activa'
+      });
+    }
+
+    if (tarjeta.tar_estado === '02') {
+      return res.status(400).json({
+        success: false,
+        message: 'La tarjeta está bloqueada permanentemente y no puede ser desbloqueada'
+      });
+    }
+
+    if (tarjeta.tar_estado === '03') {
+      return res.status(400).json({
+        success: false,
+        message: 'La tarjeta fue cancelada'
+      });
+    }
+
+    const { error } = await supabase
+      .from('tarjeta')
+      .update({ tar_estado: '00' })
+      .eq('id_tarjeta', id_tarjeta);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Tarjeta desbloqueada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error desbloqueando tarjeta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al desbloquear tarjeta',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Cancelar tarjeta (eliminar definitivamente)
+ */
+exports.cancelarTarjeta = async (req, res) => {
+  try {
+    const { id_tarjeta } = req.params;
+
+    if (!id_tarjeta) {
+      return res.status(400).json({
+        success: false,
+        message: 'id_tarjeta es requerido'
+      });
+    }
+
+    // Verificar que la tarjeta existe
+    const { data: tarjeta, error: errorBuscar } = await supabase
+      .from('tarjeta')
+      .select('tar_estado')
+      .eq('id_tarjeta', id_tarjeta)
+      .single();
+
+    if (errorBuscar || !tarjeta) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tarjeta no encontrada'
+      });
+    }
+
+    if (tarjeta.tar_estado === '03') {
+      return res.status(400).json({
+        success: false,
+        message: 'La tarjeta ya fue cancelada'
+      });
+    }
+
+    // Primero eliminar de tarjeta_debito (si existe)
+    await supabase
+      .from('tarjeta_debito')
+      .delete()
+      .eq('id_tarjeta', id_tarjeta);
+
+    // Marcar como cancelada (en lugar de eliminar, por historial)
+    const { error } = await supabase
+      .from('tarjeta')
+      .update({ tar_estado: '03' })
+      .eq('id_tarjeta', id_tarjeta);
+
+    if (error) throw error;
+
+    res.json({
+      success: true,
+      message: 'Tarjeta cancelada exitosamente. Esta acción es irreversible.'
+    });
+  } catch (error) {
+    console.error('Error cancelando tarjeta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al cancelar tarjeta',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * Obtener estado de la tarjeta
+ */
+exports.obtenerEstadoTarjeta = async (req, res) => {
+  try {
+    const { id_tarjeta } = req.params;
+
+    const { data, error } = await supabase
+      .from('tarjeta')
+      .select('id_tarjeta, tar_numero, tar_estado, tar_fecha_expiracion, tar_cvv')
+      .eq('id_tarjeta', id_tarjeta)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tarjeta no encontrada'
+      });
+    }
+
+    const estadoDescripcion = {
+      '00': 'Activa',
+      '01': 'Bloqueada temporalmente',
+      '02': 'Bloqueada permanentemente',
+      '03': 'Cancelada'
+    };
+
+    res.json({
+      success: true,
+      data: {
+        id_tarjeta: data.id_tarjeta,
+        numero: `****${data.tar_numero.slice(-4)}`,
+        estado: data.tar_estado,
+        estadoDescripcion: estadoDescripcion[data.tar_estado] || 'Desconocido',
+        puedeDesbloquear: data.tar_estado === '01',
+        puedeBloquear: data.tar_estado === '00',
+        puedeCancelar: data.tar_estado !== '03'
+      }
+    });
+  } catch (error) {
+    console.error('Error obteniendo estado tarjeta:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener estado',
       error: error.message
     });
   }

@@ -13,11 +13,12 @@ class ProductosRepository {
   }
 
   async findTarjetasByCuenta(idCuenta) {
+    // Obtener todas las tarjetas excepto las canceladas (03)
     const { data, error } = await supabase
       .from('tarjeta')
       .select('*')
       .eq('id_cuenta', idCuenta)
-      .eq('tar_estado', '00');
+      .neq('tar_estado', '03'); // Excluir canceladas
     
     if (error) throw error;
     return data || [];

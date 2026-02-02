@@ -43,6 +43,14 @@ class ProductosService {
     const numero = tarjeta.tar_numero || '';
     const numeroOculto = numero.slice(0, 6) + '******' + numero.slice(-4);
     
+    // Descripción del estado
+    const estadoDescripcion = {
+      '00': 'Activa',
+      '01': 'Bloqueada temporalmente',
+      '02': 'Bloqueada permanentemente',
+      '03': 'Cancelada'
+    };
+    
     return {
       id: tarjeta.id_tarjeta,
       tipo: 'tarjeta',
@@ -50,7 +58,9 @@ class ProductosService {
       numero: numeroOculto,
       numeroCompleto: numero,
       fechaExpiracion: tarjeta.tar_fecha_expiracion,
-      estado: tarjeta.tar_estado,
+      estado: estadoDescripcion[tarjeta.tar_estado] || 'Desconocido',
+      estadoCodigo: tarjeta.tar_estado,
+      cvv: tarjeta.tar_cvv,
       saldo: 0
     };
   }

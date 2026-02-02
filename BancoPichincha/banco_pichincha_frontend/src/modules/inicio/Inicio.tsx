@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { ChevronRight, Loader2, Eye, EyeOff, Users, CreditCard, Plus } from 'lucide-react';
+import { ChevronRight, Loader2, Eye, EyeOff, Users, CreditCard, Plus, X, Lock, Unlock, Trash2, Ban, AlertTriangle } from 'lucide-react';
 import type { Cliente } from '../../types';
 import clienteService, { type Cuenta, type Tarjeta, type InversionProducto } from '../../services/clienteService';
 import './Inicio.css';
@@ -16,6 +16,16 @@ interface InicioProps {
   onToggleSaldos: () => void;
 }
 
+interface TarjetaEstado {
+  id_tarjeta: string;
+  numero: string;
+  estado: string;
+  estadoDescripcion: string;
+  puedeDesbloquear: boolean;
+  puedeBloquear: boolean;
+  puedeCancelar: boolean;
+}
+
 function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps) {
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
@@ -23,6 +33,13 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
   const [loading, setLoading] = useState(true);
   const [creandoCuenta, setCreandoCuenta] = useState(false);
   const [activeTab, setActiveTab] = useState<'todos' | 'cuentas' | 'tarjetas' | 'prestamos' | 'inversiones'>('todos');
+  
+  // Estados para modal de opciones de tarjeta
+  const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState<Tarjeta | null>(null);
+  const [tarjetaEstado, setTarjetaEstado] = useState<TarjetaEstado | null>(null);
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState<'cancelar' | 'bloquear-permanente' | null>(null);
+  const [procesando, setProcesando] = useState(false);
 
   useEffect(() => {
     const cargarProductos = async () => {
@@ -95,6 +112,114 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       alert('❌ Error al crear cuenta de ahorro: ' + (error.response?.data?.msg || error.message));
     } finally {
       setCreandoCuenta(false);
+    }
+  };
+
+  // Función para abrir modal de opciones de tarjeta
+  const abrirOpcionesTarjeta = async (tarjeta: Tarjeta, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTarjetaSeleccionada(tarjeta);
+    setMostrarModal(true);
+    
+    try {
+      const response = await clienteService.obtenerEstadoTarjeta(tarjeta.id);
+      if (response.success) {
+        setTarjetaEstado(response.data);
+      }
+    } catch (error) {
+      console.error('Error obteniendo estado de tarjeta:', error);
+    }
+  };
+
+  // Función para cerrar modal
+  const cerrarModal = () => {
+    setMostrarModal(false);
+    setTarjetaSeleccionada(null);
+    setTarjetaEstado(null);
+    setMostrarConfirmacion(null);
+  };
+
+  // Función para bloquear tarjeta
+  const bloquearTarjeta = async (tipo: 'temporal' | 'permanente') => {
+    if (!tarjetaSeleccionada) return;
+    
+    if (tipo === 'permanente' && mostrarConfirmacion !== 'bloquear-permanente') {
+      setMostrarConfirmacion('bloquear-permanente');
+      return;
+    }
+    
+    try {
+      setProcesando(true);
+      const response = await clienteService.bloquearTarjeta(tarjetaSeleccionada.id, tipo);
+      if (response.success) {
+        alert(`✅ ${response.message}`);
+        // Recargar productos
+        const productos = await clienteService.obtenerProductos(cliente.id);
+        setTarjetas(productos.tarjetas);
+        cerrarModal();
+      }
+    } catch (error: any) {
+      alert('❌ Error: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  // Función para desbloquear tarjeta
+  const desbloquearTarjeta = async () => {
+    if (!tarjetaSeleccionada) return;
+    
+    try {
+      setProcesando(true);
+      const response = await clienteService.desbloquearTarjeta(tarjetaSeleccionada.id);
+      if (response.success) {
+        alert(`✅ ${response.message}`);
+        // Recargar productos
+        const productos = await clienteService.obtenerProductos(cliente.id);
+        setTarjetas(productos.tarjetas);
+        cerrarModal();
+      }
+    } catch (error: any) {
+      alert('❌ Error: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  // Función para cancelar tarjeta
+  const cancelarTarjeta = async () => {
+    if (!tarjetaSeleccionada) return;
+    
+    if (mostrarConfirmacion !== 'cancelar') {
+      setMostrarConfirmacion('cancelar');
+      return;
+    }
+    
+    try {
+      setProcesando(true);
+      const response = await clienteService.cancelarTarjeta(tarjetaSeleccionada.id);
+      if (response.success) {
+        alert(`✅ ${response.message}`);
+        // Recargar productos
+        const productos = await clienteService.obtenerProductos(cliente.id);
+        setTarjetas(productos.tarjetas);
+        cerrarModal();
+      }
+    } catch (error: any) {
+      alert('❌ Error: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  // Obtener el color de estado de la tarjeta
+  const getEstadoColor = (estado?: string) => {
+    switch (estado) {
+      case '00': return '#4caf50'; // Activa - Verde
+      case '01': return '#ff9800'; // Bloqueada temporal - Naranja
+      case '02': return '#f44336'; // Bloqueada permanente - Rojo
+      case '03': return '#9e9e9e'; // Cancelada - Gris
+      default: return '#4caf50';
     }
   };
 
@@ -207,9 +332,15 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
                 {productos.tarjetas.map((tarjeta) => (
                   <div 
                     key={tarjeta.id} 
-                    className="product-card credit-card clickable"
-                    onClick={() => onNavigate('tarjeta-detalle', tarjeta)}
+                    className={`product-card credit-card clickable ${tarjeta.estadoCodigo !== '00' ? 'tarjeta-bloqueada' : ''}`}
+                    onClick={(e) => abrirOpcionesTarjeta(tarjeta, e)}
                   >
+                    {tarjeta.estadoCodigo && tarjeta.estadoCodigo !== '00' && (
+                      <div className="tarjeta-estado-badge" style={{ backgroundColor: getEstadoColor(tarjeta.estadoCodigo) }}>
+                        <Lock size={12} />
+                        <span>{tarjeta.estado}</span>
+                      </div>
+                    )}
                     <div className="tarjeta-chip"></div>
                     <div className="tarjeta-numero">
                       {showSaldos ? tarjeta.numero.replace(/(\d{4})/g, '$1 ').trim() : '**** **** **** ' + tarjeta.numero.slice(-4)}
@@ -227,6 +358,9 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
                     <div className="tarjeta-footer">
                       <span className="tarjeta-titular">{cliente.primerNombre?.toUpperCase() || ''} {cliente.segundoNombre?.toUpperCase() || ''} {cliente.primerApellido?.toUpperCase() || ''} {cliente.segundoApellido?.toUpperCase() || ''}</span>
                       <span className="visa-logo">VISA</span>
+                    </div>
+                    <div className="tarjeta-click-hint">
+                      <span>Click para opciones</span>
                     </div>
                   </div>
                 ))}
@@ -267,6 +401,122 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
           </div>
         </div>
       </section>
+
+      {/* Modal de opciones de tarjeta */}
+      {mostrarModal && tarjetaSeleccionada && (
+        <div className="modal-overlay" onClick={cerrarModal}>
+          <div className="modal-tarjeta" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Opciones de Tarjeta</h3>
+              <button className="modal-close" onClick={cerrarModal}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-tarjeta-info">
+              <div className="modal-tarjeta-preview">
+                <CreditCard size={32} />
+                <div>
+                  <span className="modal-tarjeta-numero">**** {tarjetaSeleccionada.numero.slice(-4)}</span>
+                  <span className="modal-tarjeta-estado" style={{ color: getEstadoColor(tarjetaEstado?.estado) }}>
+                    {tarjetaEstado?.estadoDescripcion || 'Cargando...'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {mostrarConfirmacion ? (
+              <div className="modal-confirmacion">
+                <AlertTriangle size={48} color="#f44336" />
+                <h4>¿Estás seguro?</h4>
+                <p>
+                  {mostrarConfirmacion === 'cancelar' 
+                    ? 'Esta acción cancelará permanentemente tu tarjeta. No podrás usarla nuevamente.'
+                    : 'Esta acción bloqueará permanentemente tu tarjeta. No podrás desbloquearla.'
+                  }
+                </p>
+                <div className="modal-confirmacion-btns">
+                  <button className="btn-cancelar-accion" onClick={() => setMostrarConfirmacion(null)}>
+                    Volver
+                  </button>
+                  <button 
+                    className="btn-confirmar-peligro" 
+                    onClick={mostrarConfirmacion === 'cancelar' ? cancelarTarjeta : () => bloquearTarjeta('permanente')}
+                    disabled={procesando}
+                  >
+                    {procesando ? <Loader2 size={16} className="spinner" /> : 'Confirmar'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="modal-opciones">
+                {tarjetaEstado?.puedeBloquear && (
+                  <>
+                    <button 
+                      className="opcion-tarjeta opcion-bloquear-temp"
+                      onClick={() => bloquearTarjeta('temporal')}
+                      disabled={procesando}
+                    >
+                      <Lock size={20} />
+                      <div>
+                        <span className="opcion-titulo">Bloquear temporalmente</span>
+                        <span className="opcion-desc">Podrás desbloquearla cuando quieras</span>
+                      </div>
+                    </button>
+                    
+                    <button 
+                      className="opcion-tarjeta opcion-bloquear-perm"
+                      onClick={() => bloquearTarjeta('permanente')}
+                      disabled={procesando}
+                    >
+                      <Ban size={20} />
+                      <div>
+                        <span className="opcion-titulo">Bloquear permanentemente</span>
+                        <span className="opcion-desc">No podrás desbloquearla</span>
+                      </div>
+                    </button>
+                  </>
+                )}
+
+                {tarjetaEstado?.puedeDesbloquear && (
+                  <button 
+                    className="opcion-tarjeta opcion-desbloquear"
+                    onClick={desbloquearTarjeta}
+                    disabled={procesando}
+                  >
+                    <Unlock size={20} />
+                    <div>
+                      <span className="opcion-titulo">Desbloquear tarjeta</span>
+                      <span className="opcion-desc">Activa tu tarjeta nuevamente</span>
+                    </div>
+                  </button>
+                )}
+
+                {tarjetaEstado?.puedeCancelar && (
+                  <button 
+                    className="opcion-tarjeta opcion-cancelar"
+                    onClick={cancelarTarjeta}
+                    disabled={procesando}
+                  >
+                    <Trash2 size={20} />
+                    <div>
+                      <span className="opcion-titulo">Cancelar tarjeta</span>
+                      <span className="opcion-desc">Eliminar definitivamente (irreversible)</span>
+                    </div>
+                  </button>
+                )}
+
+                {!tarjetaEstado && (
+                  <div className="modal-loading">
+                    <Loader2 size={24} className="spinner" />
+                    <span>Cargando opciones...</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
