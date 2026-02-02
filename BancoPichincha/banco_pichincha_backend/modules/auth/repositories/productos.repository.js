@@ -13,12 +13,24 @@ class ProductosRepository {
   }
 
   async findTarjetasByCuenta(idCuenta) {
-    // Obtener todas las tarjetas excepto las canceladas (03)
+    // Obtener solo tarjetas de crédito (no débito) excepto las canceladas (03)
     const { data, error } = await supabase
       .from('tarjeta')
-      .select('*')
+      .select(`
+        *,
+        tarjeta_credito(
+          id_tarcre,
+          tarcre_cupo_disponible,
+          tarcre_saldo_actual,
+          tarcre_fecha_corte,
+          tarcre_fecha_maxima_pago,
+          tarcre_pago_minimo,
+          tarcre_tasa_interes
+        )
+      `)
       .eq('id_cuenta', idCuenta)
-      .neq('tar_estado', '03'); // Excluir canceladas
+      .neq('tar_estado', '03') // Excluir canceladas
+      .not('tarjeta_credito', 'is', null); // Solo tarjetas con registro en tarjeta_credito
     
     if (error) throw error;
     return data || [];

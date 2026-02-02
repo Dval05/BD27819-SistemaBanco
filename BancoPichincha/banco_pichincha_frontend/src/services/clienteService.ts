@@ -31,14 +31,21 @@ export interface Cuenta {
 export interface Tarjeta {
   id: string;
   tipo: 'tarjeta';
+  subtipo: 'credito' | 'debito';
   nombre: string;
+  marca: string;
   numero: string;
   numeroCompleto: string;
   fechaExpiracion: string;
   estado: string;
   estadoCodigo?: string;
-  saldo: number;
   cvv?: string;
+  cupoDisponible: number;
+  saldoActual: number;
+  fechaCorte?: number;
+  fechaMaximaPago?: number;
+  pagoMinimo: number;
+  tasaInteres: number;
 }
 
 export interface InversionProducto {

@@ -82,12 +82,13 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
         return { cuentas, tarjetas: [], inversiones: [] };
       case 'tarjetas':
         return { cuentas: [], tarjetas, inversiones: [] };
-      case 'inversiones':
-        return { cuentas: [], tarjetas: [], inversiones };
       case 'prestamos':
         return { cuentas: [], tarjetas: [], inversiones: [] };
+      case 'inversiones':
+        return { cuentas: [], tarjetas: [], inversiones };
       default:
-        return { cuentas, tarjetas, inversiones };
+        // En 'todos' solo mostrar cuentas y tarjetas de crédito (no inversiones)
+        return { cuentas, tarjetas, inversiones: [] };
     }
   };
 
@@ -109,7 +110,7 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       }
     } catch (error: any) {
       console.error('Error creando cuenta:', error);
-      alert('❌ Error al crear cuenta de ahorro: ' + (error.response?.data?.msg || error.message));
+      alert('Error al crear cuenta de ahorro: ' + (error.response?.data?.msg || error.message));
     } finally {
       setCreandoCuenta(false);
     }
@@ -370,14 +371,14 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
                         <span className="tarjeta-label">VENCE</span>
                         <span className="tarjeta-value">{new Date(tarjeta.fechaExpiracion).toLocaleDateString('es-EC', { month: '2-digit', year: '2-digit' })}</span>
                       </div>
-                      <div className="tarjeta-cvv">
-                        <span className="tarjeta-label">CVV</span>
-                        <span className="tarjeta-value">{showSaldos ? tarjeta.cvv || '***' : '***'}</span>
+                      <div className="tarjeta-cupo">
+                        <span className="tarjeta-label">CUPO</span>
+                        <span className="tarjeta-value">{showSaldos ? formatMoney(tarjeta.cupoDisponible) : '$ ***'}</span>
                       </div>
                     </div>
                     <div className="tarjeta-footer">
                       <span className="tarjeta-titular">{cliente.primerNombre?.toUpperCase() || ''} {cliente.segundoNombre?.toUpperCase() || ''} {cliente.primerApellido?.toUpperCase() || ''} {cliente.segundoApellido?.toUpperCase() || ''}</span>
-                      <span className="visa-logo">VISA</span>
+                      <span className="tarjeta-marca-logo">{tarjeta.marca}</span>
                     </div>
                     <div className="tarjeta-click-hint">
                       <span>Click para opciones</span>
