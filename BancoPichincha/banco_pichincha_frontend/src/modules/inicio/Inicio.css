@@ -172,7 +172,68 @@
 }
 
 .product-card.credit-card {
-  background: linear-gradient(135deg, #00377b 0%, #001f47 100%);
+  background: linear-gradient(135deg, #0066cc 0%, #003d7a 100%);
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Chip de la tarjeta */
+.tarjeta-chip {
+  width: 45px;
+  height: 35px;
+  background: linear-gradient(135deg, #f0c14b 0%, #d4a017 100%);
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+/* Número de tarjeta */
+.tarjeta-numero {
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 16px;
+}
+
+/* Fila de info (vence y cvv) */
+.tarjeta-info-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.tarjeta-vence,
+.tarjeta-cvv {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tarjeta-label {
+  font-size: 10px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.tarjeta-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Footer de la tarjeta */
+.tarjeta-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.tarjeta-titular {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
 .card-header {

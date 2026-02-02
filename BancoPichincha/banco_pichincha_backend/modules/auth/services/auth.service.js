@@ -105,42 +105,31 @@ class AuthService {
 
     await authRepository.createPersonaNatural(personaNatural);
 
-    // Crear cuenta de ahorro y tarjeta de débito automáticamente
-    console.log('🔵 Iniciando creación de productos para nuevo usuario:', idPersona);
+    // Crear cuenta de ahorro automáticamente (sin tarjeta de débito)
+    console.log('🔵 Iniciando creación de cuenta para nuevo usuario:', idPersona);
     let cuentaAhorro = null;
-    let tarjetaDebito = null;
     
     try {
-      // 1. Crear cuenta de ahorro
+      // Crear cuenta de ahorro
       cuentaAhorro = await cuentaService.crearCuentaAhorroFlexible(idPersona);
       console.log('✅ Cuenta de ahorro creada:', cuentaAhorro.id_cuenta);
       
-      // 2. Crear tarjeta de débito asociada a la cuenta
-      tarjetaDebito = await tarjetaService.crearTarjetaDebito(cuentaAhorro.id_cuenta);
-      console.log('✅ Tarjeta de débito creada:', tarjetaDebito.numero);
-      
     } catch (productoError) {
-      console.error('❌ Error al crear productos automáticos:', productoError);
+      console.error('❌ Error al crear cuenta de ahorro:', productoError);
       console.error('Stack trace:', productoError.stack);
       // Lanzar el error para que el usuario sepa que falló
       throw { 
         status: 500, 
-        message: 'Usuario creado pero falló la creación de productos: ' + (productoError.message || JSON.stringify(productoError))
+        message: 'Usuario creado pero falló la creación de cuenta: ' + (productoError.message || JSON.stringify(productoError))
       };
     }
 
     const createdPersona = await authRepository.findById(idPersona);
     const response = this._formatPersonaResponse(createdPersona, personaNatural);
     
-    // Agregar información de los productos creados
+    // Agregar información de la cuenta creada
     if (cuentaAhorro) {
       response.cuentaAhorro = cuentaAhorro;
-    }
-    if (tarjetaDebito) {
-      response.tarjetaDebito = {
-        numero: tarjetaDebito.numeroOculto,
-        pinPorDefecto: tarjetaDebito.pinPorDefecto
-      };
     }
     
     return response;

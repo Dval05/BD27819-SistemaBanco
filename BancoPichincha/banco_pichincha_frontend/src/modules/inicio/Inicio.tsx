@@ -210,18 +210,23 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
                     className="product-card credit-card clickable"
                     onClick={() => onNavigate('tarjeta-detalle', tarjeta)}
                   >
-                    <div className="card-header">
-                      <span className="card-owner">{tarjeta.nombre}</span>
-                      <span className="card-number">Nro. {tarjeta.numero}</span>
+                    <div className="tarjeta-chip"></div>
+                    <div className="tarjeta-numero">
+                      {showSaldos ? tarjeta.numero.replace(/(\d{4})/g, '$1 ').trim() : '**** **** **** ' + tarjeta.numero.slice(-4)}
                     </div>
-                    <div className="card-balance">
-                      <span className="balance-label">Vence: {new Date(tarjeta.fechaExpiracion).toLocaleDateString('es-EC')}</span>
-                      <div className="balance-row">
-                        <span className="balance-amount">
-                          {showSaldos ? formatMoney(tarjeta.saldo) : '$ ***'}
-                        </span>
-                        <span className="visa-logo">VISA</span>
+                    <div className="tarjeta-info-row">
+                      <div className="tarjeta-vence">
+                        <span className="tarjeta-label">VENCE</span>
+                        <span className="tarjeta-value">{new Date(tarjeta.fechaExpiracion).toLocaleDateString('es-EC', { month: '2-digit', year: '2-digit' })}</span>
                       </div>
+                      <div className="tarjeta-cvv">
+                        <span className="tarjeta-label">CVV</span>
+                        <span className="tarjeta-value">{showSaldos ? tarjeta.cvv || '***' : '***'}</span>
+                      </div>
+                    </div>
+                    <div className="tarjeta-footer">
+                      <span className="tarjeta-titular">{cliente.primerNombre?.toUpperCase() || ''} {cliente.segundoNombre?.toUpperCase() || ''} {cliente.primerApellido?.toUpperCase() || ''} {cliente.segundoApellido?.toUpperCase() || ''}</span>
+                      <span className="visa-logo">VISA</span>
                     </div>
                   </div>
                 ))}
