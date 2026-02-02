@@ -1,0 +1,85 @@
+.card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.card:hover {
+  border-color: #ffc907;
+  box-shadow: 0 4px 12px rgba(255, 201, 7, 0.15);
+  transform: translateY(-2px);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e5e5e5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  margin-left: 16px;
+  min-width: 0;
+}
+
+.alias {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nombre {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detalles {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.cuenta {
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.separador {
+  margin: 0 6px;
+}
+
+.banco {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.arrow {
+  color: #9ca3af;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.card:hover .arrow {
+  color: #ffc907;
+}

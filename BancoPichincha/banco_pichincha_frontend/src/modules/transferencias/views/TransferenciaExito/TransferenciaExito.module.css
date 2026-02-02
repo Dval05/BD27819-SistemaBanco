@@ -1,0 +1,261 @@
+.container {
+  padding: 24px;
+  max-width: 550px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* Success icon */
+.successIcon {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.iconCircle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #10b981;
+  opacity: 0.3;
+  animation: pulse 1.5s ease-out infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Header */
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Monto destacado */
+.montoDestacado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #fef9e7 0%, #fef3c7 100%);
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+.montoLabel {
+  font-size: 13px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.montoValor {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* Detalles card */
+.detallesCard {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  text-align: left;
+}
+
+.detalleFlujo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cuentaBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+}
+
+.cuentaLabel {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.cuentaValor {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  text-align: center;
+}
+
+.cuentaNumero {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: 'Monaco', 'Menlo', monospace;
+  margin-top: 2px;
+}
+
+.flujoArrow {
+  color: #ffc907;
+  flex-shrink: 0;
+}
+
+.separador {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 20px 0;
+}
+
+.detallesLista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detalleLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.detalleLine span:first-child {
+  color: #6b7280;
+}
+
+.detalleLine span:last-child {
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.operacion {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 13px;
+}
+
+.totalDebitado {
+  font-weight: 600 !important;
+  color: #059669 !important;
+}
+
+/* Acciones secundarias */
+.accionesSecundarias {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.accionSecundaria {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: transparent;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.accionSecundaria:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+/* Acciones principales */
+.accionesPrincipales {
+  display: flex;
+  gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .container {
+    padding: 16px;
+  }
+
+  .montoValor {
+    font-size: 30px;
+  }
+
+  .detalleFlujo {
+    flex-direction: column;
+  }
+
+  .flujoArrow {
+    transform: rotate(90deg);
+  }
+
+  .cuentaBox {
+    width: 100%;
+  }
+
+  .accionesSecundarias {
+    flex-direction: column;
+  }
+
+  .accionesPrincipales {
+    flex-direction: column;
+  }
+}

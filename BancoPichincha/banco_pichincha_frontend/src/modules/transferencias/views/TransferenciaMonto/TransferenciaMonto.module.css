@@ -1,0 +1,270 @@
+.container {
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.backButton:hover {
+  background: #e5e7eb;
+}
+
+.headerText {
+  flex: 1;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Beneficiario card */
+.beneficiarioCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.beneficiarioInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.beneficiarioNombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.beneficiarioCuenta {
+  font-size: 13px;
+  color: #6b7280;
+  font-family: 'Monaco', 'Menlo', monospace;
+  margin-top: 2px;
+}
+
+.beneficiarioBanco {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.badgeInterbancaria {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+/* Labels */
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+/* Cuenta destino section */
+.cuentaDestinoSection {
+  margin-bottom: 24px;
+}
+
+/* Monto section */
+.montoSection {
+  margin-bottom: 24px;
+}
+
+.montoInputWrapper {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: all 0.2s ease;
+}
+
+.montoInputWrapper:focus-within {
+  border-color: #ffc907;
+  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
+}
+
+.montoPrefix {
+  font-size: 28px;
+  font-weight: 600;
+  color: #9ca3af;
+  margin-right: 8px;
+}
+
+.montoInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+  background: transparent;
+}
+
+.montoInput::placeholder {
+  color: #d1d5db;
+}
+
+/* Límites info */
+.limitesInfo {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.limiteItem {
+  display: flex;
+  flex-direction: column;
+}
+
+.limiteLabel {
+  font-size: 11px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.limiteValor {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 2px;
+}
+
+/* Descripción */
+.descripcionSection {
+  margin-bottom: 24px;
+}
+
+.descripcionInput {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.descripcionInput:focus {
+  border-color: #ffc907;
+  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
+}
+
+/* Comisión info */
+.comisionInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #fef3c7;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  color: #b45309;
+}
+
+.comisionDetalles {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.comisionTotal {
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Error */
+.error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .container {
+    padding: 16px;
+  }
+
+  .montoInput {
+    font-size: 28px;
+  }
+
+  .montoPrefix {
+    font-size: 24px;
+  }
+
+  .limitesInfo {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
