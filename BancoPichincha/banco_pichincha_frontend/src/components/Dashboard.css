@@ -2,6 +2,7 @@
   display: flex;
   min-height: 100vh;
   background: #f5f7fa;
+  overflow-x: hidden;
 }
 
 /* Sidebar */
@@ -14,6 +15,7 @@
   height: 100vh;
   position: sticky;
   top: 0;
+  flex-shrink: 0;
 }
 
 .sidebar-header {
@@ -159,7 +161,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  min-height: 100vh;
 }
 
 .main-header {

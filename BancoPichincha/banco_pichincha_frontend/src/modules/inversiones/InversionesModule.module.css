@@ -3,162 +3,205 @@
   background: #f5f7fa;
 }
 
-/* Vista Inicio */
+/* Vista Inicio - Nueva versión limpia */
 .inicio {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 60px 20px;
-  text-align: center;
-  border-radius: 0 0 24px 24px;
-  margin-bottom: 40px;
-}
-
-.heroContent {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.heroIcon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-
-.heroTitulo {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 16px 0;
-}
-
-.heroSubtitulo {
-  font-size: 1.2rem;
-  opacity: 0.95;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.beneficios {
-  max-width: 900px;
-  margin: 0 auto 40px;
-  padding: 0 20px;
-  display: grid;
-  gap: 20px;
-}
-
-.beneficioCard {
   background: white;
-  padding: 24px;
-  border-radius: 12px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-height: 100vh;
 }
 
-.beneficioIcono {
-  width: 32px;
-  height: 32px;
-  background: #28a745;
-  color: white;
+.header {
+  padding: 24px 40px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.titulo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.contenido {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.iconoGrande {
+  width: 80px;
+  height: 80px;
+  background: #f0f4f8;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 2.5rem;
+  margin-bottom: 32px;
+}
+
+.subtitulo {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0 0 48px 0;
+  line-height: 1.4;
+  max-width: 700px;
+}
+
+.beneficios {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 32px;
+  text-align: left;
+}
+
+.beneficio {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.check {
+  color: #28a745;
+  font-size: 1.25rem;
   font-weight: 700;
   flex-shrink: 0;
 }
 
-.beneficioTexto {
+.beneficio p {
   margin: 0;
   color: #333;
   line-height: 1.6;
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
-.acciones {
-  max-width: 600px;
-  margin: 0 auto 60px;
-  padding: 0 20px;
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+.linkInfo {
+  margin-bottom: 40px;
 }
 
-.btnPrimary {
-  flex: 1;
-  min-width: 200px;
-  padding: 16px 32px;
-  background: #ffeb00;
-  color: #003366;
+.infoLink {
+  background: none;
   border: none;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 700;
+  color: #0066cc;
+  font-size: 1rem;
+  text-decoration: underline;
   cursor: pointer;
-  transition: all 0.2s;
+  padding: 0;
+  transition: color 0.2s;
 }
 
-.btnPrimary:hover {
-  background: #ffd700;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.infoLink:hover {
+  color: #004488;
 }
 
-.btnSecondary {
-  flex: 1;
-  min-width: 200px;
-  padding: 16px 32px;
-  background: white;
-  color: #003366;
-  border: 2px solid #003366;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
+.botonera {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 700px;
 }
 
-.btnSecondary:hover {
-  background: #003366;
-  color: white;
-}
-
-.infoAdicional {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 20px;
-}
-
-.infoTitulo {
-  font-size: 1.5rem;
+.btnContinuar {
+  background: #FFD100;
+  color: #1a1a2e;
+  border: none;
+  padding: 14px 48px;
+  border-radius: 6px;
+  font-size: 1rem;
   font-weight: 600;
-  color: #003366;
-  margin-bottom: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.infoBox {
+.btnContinuar:hover {
+  background: #e6bc00;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
   background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modalTitulo {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.modalBody {
   padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.infoParrafo {
+.modalParrafo {
+  margin: 0 0 16px 0;
   color: #333;
-  line-height: 1.7;
-  margin-bottom: 16px;
+  line-height: 1.6;
 }
 
-.infoNota {
+.modalNota {
+  margin: 16px 0 0 0;
   color: #666;
   font-size: 0.9rem;
   font-style: italic;
-  margin: 0;
+}
+
+.modalFooter {
+  padding: 16px 24px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.btnEntendido {
+  background: #FFD100;
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 48px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnEntendido:hover {
+  background: #e6bc00;
+  transform: translateY(-1px);
 }
 
 .ejemplo {
@@ -166,6 +209,7 @@
   padding: 24px;
   border-radius: 12px;
   border-left: 4px solid #003366;
+  margin-top: 24px;
 }
 
 .ejemploTitulo {
@@ -256,16 +300,20 @@
 }
 
 @media (max-width: 768px) {
-  .heroTitulo {
-    font-size: 2rem;
+  .titulo {
+    font-size: 1.25rem;
   }
 
-  .heroSubtitulo {
-    font-size: 1rem;
+  .subtitulo {
+    font-size: 1.25rem;
   }
 
-  .acciones {
-    flex-direction: column;
+  .contenido {
+    padding: 40px 20px;
+  }
+
+  .botonera {
+    justify-content: center;
   }
 
   .listadoHeader {

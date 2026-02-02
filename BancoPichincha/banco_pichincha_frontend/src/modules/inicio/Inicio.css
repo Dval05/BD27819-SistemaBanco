@@ -318,6 +318,56 @@
   margin-bottom: 12px;
 }
 
+/* Tarjeta promocional de inversiones */
+.inversion-promo-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 280px;
+  max-width: 400px;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.inversion-promo-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.inversion-promo-text {
+  font-size: 15px;
+  font-weight: 400;
+  color: #333;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.inversion-promo-btn {
+  background: none;
+  color: #0066cc;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.inversion-promo-btn:hover {
+  color: #004499;
+  text-decoration: underline;
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

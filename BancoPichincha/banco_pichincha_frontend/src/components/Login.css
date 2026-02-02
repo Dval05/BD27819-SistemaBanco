@@ -96,18 +96,30 @@
   padding: 40px;
 }
 
-/* 1. Evita que la página entera tenga scroll */
-html, body, .login-page {
-  height: 100%;
-  margin: 0;
-  overflow: hidden; /* Prohíbe el scroll vertical */
-}
-
+/* 1. Permite scroll en login pero oculta la barra */
 .login-page {
+  height: 100vh;
+  margin: 0;
+  overflow-y: auto; /* Permite scroll vertical */
+  overflow-x: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #f4f7f9;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  /* Oculta la barra de scroll pero mantiene funcionalidad */
+  -ms-overflow-style: none;  /* IE y Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Oculta scrollbar en Chrome, Safari y Opera */
+.login-page::-webkit-scrollbar {
+  display: none;
 }
 
 .login-card {

@@ -229,23 +229,33 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
         <div className="products-header">
           <h2>Mis productos</h2>
           <div className="products-actions">
-            <button 
-              className="crear-cuenta-btn"
-              onClick={crearCuentaAhorro}
-              disabled={creandoCuenta}
-            >
-              {creandoCuenta ? (
-                <>
-                  <Loader2 size={16} className="spinner" />
-                  Creando...
-                </>
-              ) : (
-                <>
-                  <Plus size={16} />
-                  Crear Cuenta de Ahorro
-                </>
-              )}
-            </button>
+            {activeTab === 'inversiones' ? (
+              <button 
+                className="crear-cuenta-btn"
+                onClick={() => onNavigate('inversiones')}
+              >
+                <Plus size={16} />
+                Nueva Inversión
+              </button>
+            ) : (
+              <button 
+                className="crear-cuenta-btn"
+                onClick={crearCuentaAhorro}
+                disabled={creandoCuenta}
+              >
+                {creandoCuenta ? (
+                  <>
+                    <Loader2 size={16} className="spinner" />
+                    Creando...
+                  </>
+                ) : (
+                  <>
+                    <Plus size={16} />
+                    Crear Cuenta de Ahorro
+                  </>
+                )}
+              </button>
+            )}
             <button 
               className="toggle-saldos"
               onClick={onToggleSaldos}
@@ -276,6 +286,16 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
             <div className="loading-productos">
               <Loader2 className="spinner" size={32} />
               <p>Cargando productos...</p>
+            </div>
+          ) : !hasProductos && activeTab === 'inversiones' ? (
+            <div className="inversion-promo-card">
+              <div className="inversion-promo-icon">📊</div>
+              <p className="inversion-promo-text">
+                ¡Utiliza tus cuentas de ahorros para invertir desde $ 500.00!
+              </p>
+              <button className="inversion-promo-btn" onClick={() => onNavigate('inversiones')}>
+                Invertir ahora →
+              </button>
             </div>
           ) : !hasProductos ? (
             <div className="no-productos">

@@ -30,6 +30,7 @@ const InversionesModule: React.FC<Props> = ({ idPersona, cliente }) => {
   const [plazoDias, setPlazoDias] = useState(0);
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState<Cuenta | null>(null);
   const [inversionSeleccionada, setInversionSeleccionada] = useState<Inversion | null>(null);
+  const [mostrarModalInfo, setMostrarModalInfo] = useState(false);
 
   const simulador = useSimulador();
 
@@ -77,86 +78,106 @@ const InversionesModule: React.FC<Props> = ({ idPersona, cliente }) => {
     <div className={styles.module}>
       {vista === Vista.INICIO && (
         <div className={styles.inicio}>
-          <div className={styles.hero}>
-            <div className={styles.heroContent}>
-              <div className={styles.heroIcon}>📊</div>
-              <h1 className={styles.heroTitulo}>Depósito a plazo</h1>
-              <p className={styles.heroSubtitulo}>
-                Rentabiliza tus ahorros con un depósito a plazo y una tasa exclusiva
-              </p>
+          <div className={styles.header}>
+            <h1 className={styles.titulo}>Depósito a plazo</h1>
+          </div>
+
+          <div className={styles.contenido}>
+            <div className={styles.iconoGrande}>📊</div>
+            
+            <h2 className={styles.subtitulo}>
+              Rentabiliza tus ahorros con un depósito a plazo y una tasa exclusiva
+            </h2>
+
+            <div className={styles.beneficios}>
+              <div className={styles.beneficio}>
+                <span className={styles.check}>✓</span>
+                <p>
+                  Tu depósito a plazo en línea te da una mejor tasa que en agencia,{' '}
+                  <strong>obtén hasta 5.70%</strong>
+                </p>
+              </div>
+
+              <div className={styles.beneficio}>
+                <span className={styles.check}>✓</span>
+                <p>
+                  Personaliza tu depósito a plazo. Elige el plazo y monto que más te convenga{' '}
+                  <strong>desde $ 500</strong>.
+                </p>
+              </div>
+
+              <div className={styles.beneficio}>
+                <span className={styles.check}>✓</span>
+                <p>
+                  Obtén una <strong>ganancia fija con el respaldo y solidez</strong> de Banco Pichincha.
+                </p>
+              </div>
+            </div>
+
+            <div className={styles.linkInfo}>
+              <button 
+                className={styles.infoLink}
+                onClick={() => setMostrarModalInfo(true)}
+              >
+                ¿Cómo funciona el depósito a plazo fijo?
+              </button>
+            </div>
+
+            <div className={styles.botonera}>
+              <button className={styles.btnContinuar} onClick={handleIniciarSimulacion}>
+                Continuar
+              </button>
             </div>
           </div>
 
-          <div className={styles.beneficios}>
-            <div className={styles.beneficioCard}>
-              <div className={styles.beneficioIcono}>✓</div>
-              <p className={styles.beneficioTexto}>
-                Tu depósito a plazo en línea te da una mejor tasa que en agencia,{' '}
-                <strong>obtén hasta 5.70%</strong>
-              </p>
-            </div>
-
-            <div className={styles.beneficioCard}>
-              <div className={styles.beneficioIcono}>✓</div>
-              <p className={styles.beneficioTexto}>
-                Personaliza tu depósito a plazo. Elige el plazo y monto que más te convenga{' '}
-                <strong>desde $ 500</strong>
-              </p>
-            </div>
-
-            <div className={styles.beneficioCard}>
-              <div className={styles.beneficioIcono}>✓</div>
-              <p className={styles.beneficioTexto}>
-                Obtén una <strong>ganancia fija con el respaldo y solidez</strong> de Banco Pichincha
-              </p>
-            </div>
-          </div>
-
-          <div className={styles.acciones}>
-            <button className={styles.btnPrimary} onClick={handleIniciarSimulacion}>
-              Invertir ahora
-            </button>
-            <button className={styles.btnSecondary} onClick={handleVerListado}>
-              Ver mis inversiones
-            </button>
-          </div>
-
-          <TablaIntereses />
-
-          <div className={styles.infoAdicional}>
-            <h3 className={styles.infoTitulo}>¿Cómo funciona el depósito a plazo fijo?</h3>
-            <div className={styles.infoBox}>
-              <p className={styles.infoParrafo}>
-                Es un producto financiero que te permite <strong>hacer crecer tu dinero con una tasa
-                atractiva*</strong>. Solo deberás realizar un único depósito de dinero y guardarlo durante
-                el tiempo que tú determines. Al final del plazo recibirás el dinero que depositaste y tus
-                ganancias.
-              </p>
-              <p className={styles.infoParrafo}>
-                <strong>¡A más tiempo guardes el dinero, más ganarás!</strong>
-              </p>
-              <p className={styles.infoNota}>
-                *La tasa de interés varía según el monto y plazo elegido.
-              </p>
-            </div>
-
-            <div className={styles.ejemplo}>
-              <h4 className={styles.ejemploTitulo}>Ejemplo</h4>
-              <div className={styles.ejemploCard}>
-                <div className={styles.ejemploIcono}>👤</div>
-                <div className={styles.ejemploContent}>
-                  <p className={styles.ejemploTexto}>
-                    <strong>Juan quiere hacer crecer su dinero</strong>
+          {mostrarModalInfo && (
+            <div className={styles.modalOverlay} onClick={() => setMostrarModalInfo(false)}>
+              <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.modalHeader}>
+                  <h3 className={styles.modalTitulo}>¿Cómo funciona el depósito a plazo fijo?</h3>
+                </div>
+                <div className={styles.modalBody}>
+                  <p className={styles.modalParrafo}>
+                    Es un producto financiero que te permite <strong>hacer crecer tu dinero con una tasa
+                    atractiva*</strong>. Solo deberás realizar un único depósito de dinero y guardarlo durante
+                    el tiempo que tú determines. Al final del plazo recibirás el dinero que depositaste y tus
+                    ganancias.
                   </p>
-                  <p className={styles.ejemploDetalle}>
-                    y abre un depósito a plazo de <strong>$10,000</strong> por <strong>1 año</strong>. Si no
-                    retira su dinero en ese plazo, considerando deducciones, habrá ganado{' '}
-                    <strong>$864,79</strong> con una tasa (referencial) de <strong>8,80%</strong>.
+                  <p className={styles.modalParrafo}>
+                    <strong>¡A más tiempo guardes el dinero, más ganarás!</strong>
                   </p>
+                  <p className={styles.modalNota}>
+                    *La tasa de interés varía según el monto y plazo elegido.
+                  </p>
+
+                  <div className={styles.ejemplo}>
+                    <h4 className={styles.ejemploTitulo}>Ejemplo</h4>
+                    <div className={styles.ejemploCard}>
+                      <div className={styles.ejemploIcono}>👤</div>
+                      <div className={styles.ejemploContent}>
+                        <p className={styles.ejemploTexto}>
+                          <strong>Juan quiere hacer crecer su dinero</strong>
+                        </p>
+                        <p className={styles.ejemploDetalle}>
+                          y abre un depósito a plazo de <strong>$10,000</strong> por <strong>1 año</strong>. Si no
+                          retira su dinero en ese plazo, considerando deducciones, habrá ganado{' '}
+                          <strong>$864,79</strong> con una tasa (referencial) de <strong>8,80%</strong>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.modalFooter}>
+                  <button 
+                    className={styles.btnEntendido}
+                    onClick={() => setMostrarModalInfo(false)}
+                  >
+                    Entendido
+                  </button>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
