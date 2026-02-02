@@ -87,18 +87,24 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
   }, []);
 
   const getNombreCorto = () => {
-    //if (cliente.primerNombre) {
-    //  return cliente.primerNombre;
-    //}
-
+    // Prioridad: primer nombre + primer apellido
     if (cliente.primerNombre && cliente.primerApellido) {
       return `${cliente.primerNombre.split(' ')[0]} ${cliente.primerApellido.split(' ')[0]}`;
     }
 
+    // Solo primer nombre
+    if (cliente.primerNombre) {
+      return cliente.primerNombre.split(' ')[0];
+    }
+
+    // Nombre completo (tomar primer palabra)
     if (cliente.nombre) {
       return cliente.nombre.split(' ')[0];
     }
-    return cliente.usuario;
+    
+    // Capitalizar usuario como último recurso
+    const usuario = cliente.usuario;
+    return usuario.charAt(0).toUpperCase() + usuario.slice(1);
   };
 
   const getIniciales = () => {

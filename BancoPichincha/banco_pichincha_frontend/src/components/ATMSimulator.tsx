@@ -72,6 +72,92 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     setDatosRetiroSinTarjeta(null);
   };
 
+  // Manejar tecla del teclado numérico
+  const handleKeypadPress = (key: string | number) => {
+    switch (screen) {
+      case 'tarjeta-digitos':
+        if (typeof key === 'number' && ultimos4Digitos.length < 4) {
+          setUltimos4Digitos(prev => prev + key.toString());
+        }
+        break;
+      case 'tarjeta-pin':
+        if (typeof key === 'number' && pinIngresado.length < 4) {
+          setPinIngresado(prev => prev + key.toString());
+        }
+        break;
+      case 'tarjeta-cambio-pin':
+        if (typeof key === 'number') {
+          if (nuevoPin.length < 4) {
+            setNuevoPin(prev => prev + key.toString());
+          } else if (confirmPin.length < 4) {
+            setConfirmPin(prev => prev + key.toString());
+          }
+        }
+        break;
+      case 'tarjeta-seleccionar-monto':
+        if (typeof key === 'number') {
+          setMontoSeleccionado(prev => {
+            const newVal = (prev || 0) * 10 + key;
+            return newVal > 9999 ? prev : newVal;
+          });
+        }
+        break;
+      case 'retiro-sin-tarjeta-telefono':
+        if (typeof key === 'number' && numeroTelefono.length < 10) {
+          setNumeroTelefono(prev => prev + key.toString());
+        }
+        break;
+      case 'retiro-sin-tarjeta-codigo':
+        if (typeof key === 'number' && codigoIngresado.length < 4) {
+          setCodigoIngresado(prev => prev + key.toString());
+        }
+        break;
+    }
+  };
+
+  // Manejar botón de corregir del teclado
+  const handleClear = () => {
+    switch (screen) {
+      case 'tarjeta-digitos':
+        setUltimos4Digitos(prev => prev.slice(0, -1));
+        break;
+      case 'tarjeta-pin':
+        setPinIngresado(prev => prev.slice(0, -1));
+        break;
+      case 'tarjeta-cambio-pin':
+        if (confirmPin.length > 0) {
+          setConfirmPin(prev => prev.slice(0, -1));
+        } else {
+          setNuevoPin(prev => prev.slice(0, -1));
+        }
+        break;
+      case 'tarjeta-seleccionar-monto':
+        setMontoSeleccionado(prev => {
+          if (!prev) return null;
+          const newVal = Math.floor(prev / 10);
+          return newVal === 0 ? null : newVal;
+        });
+        break;
+      case 'retiro-sin-tarjeta-telefono':
+        setNumeroTelefono(prev => prev.slice(0, -1));
+        break;
+      case 'retiro-sin-tarjeta-codigo':
+        setCodigoIngresado(prev => prev.slice(0, -1));
+        break;
+    }
+  };
+
+  // Manejar botón ENTER del teclado
+  const handleEnter = () => {
+    const rightOpts = getRightOptions();
+    const continueOpt = rightOpts.find(opt => 
+      opt.label === 'CONTINUAR' || opt.label === 'CONFIRMAR' || opt.label === 'FINALIZAR' || opt.label === 'VOLVER'
+    );
+    if (continueOpt && continueOpt.action) {
+      continueOpt.action();
+    }
+  };
+
   // Procesar retiro en el backend
   const procesarRetiro = async () => {
     // Para retiro sin tarjeta, usar los datos del código validado
@@ -713,15 +799,19 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
         <div className="atm-keypad-area">
           <div className="atm-keypad">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, '*', 0, '#'].map((key) => (
-              <button key={key} className="keypad-btn">
+              <button 
+                key={key} 
+                className="keypad-btn"
+                onClick={() => handleKeypadPress(key)}
+              >
                 {key}
               </button>
             ))}
           </div>
           <div className="atm-action-buttons">
             <button className="action-btn cancel" onClick={resetearEstado}>CANCELAR</button>
-            <button className="action-btn clear">CORREGIR</button>
-            <button className="action-btn enter">ENTER</button>
+            <button className="action-btn clear" onClick={handleClear}>CORREGIR</button>
+            <button className="action-btn enter" onClick={handleEnter}>ENTER</button>
           </div>
         </div>
 

@@ -49,6 +49,7 @@
   display: flex;
   flex-direction: column;
   padding: 24px 20px;
+  padding-bottom: 100px;
   background: white;
 }
 
@@ -137,6 +138,7 @@
   display: flex;
   flex-direction: column;
   padding: 24px 20px;
+  padding-bottom: 100px;
   background: white;
 }
 
@@ -479,6 +481,14 @@
   font-weight: 600;
   color: #1a1a2e;
   cursor: pointer;
+  width: calc(100% - 40px);
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 600px;
+  z-index: 100;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .btn-continuar:hover:not(:disabled) {
