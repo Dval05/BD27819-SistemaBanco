@@ -300,6 +300,24 @@
   border-radius: 4px;
 }
 
+.atm-warning {
+  color: #FFD100;
+  font-size: 0.75em;
+  margin: 8px 0;
+  padding: 6px 10px;
+  background: rgba(255, 209, 0, 0.15);
+  border-radius: 4px;
+  border-left: 3px solid #FFD100;
+}
+
+.atm-input-display label {
+  display: block;
+  color: #8899aa;
+  font-size: 0.75em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
 .atm-tel-display {
   color: #FFD100;
   font-family: monospace;

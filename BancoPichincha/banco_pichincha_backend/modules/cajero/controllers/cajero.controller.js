@@ -2,7 +2,7 @@ const { supabase } = require('../../../shared/config/database.config');
 const { v4: uuidv4 } = require('uuid');
 
 /**
- * Generar una tarjeta débito con PIN de 4 dígitos
+ * Generar una tarjeta débito con PIN temporal de 4 dígitos
  */
 exports.generarTarjetaDebito = async (req, res) => {
   try {
@@ -19,10 +19,10 @@ exports.generarTarjetaDebito = async (req, res) => {
     const id_tarjeta = 'TAR' + Date.now().toString().slice(-8);
     const id_tardeb = 'TDB' + Date.now().toString().slice(-8);
     const numeroTarjeta = generarNumeroTarjeta();
-    const pin = generarPin4Digitos();
+    const pinTemporal = generarPinTemporal(); // PIN temporal aleatorio (no 1234)
     const pinHash = require('crypto')
       .createHash('sha256')
-      .update(pin)
+      .update(pinTemporal)
       .digest('hex');
     const cvv = generarCVV();
     const fechaEmision = new Date();
@@ -30,6 +30,7 @@ exports.generarTarjetaDebito = async (req, res) => {
     fechaExpiracion.setFullYear(fechaExpiracion.getFullYear() + 5);
 
     // Insertar en tabla tarjeta (minúsculas)
+    // tar_contactless = '01' indica que es primer uso (requiere cambio de PIN)
     const { error: errorTarjeta } = await supabase
       .from('tarjeta')
       .insert({
@@ -41,7 +42,7 @@ exports.generarTarjetaDebito = async (req, res) => {
         tar_cvv: cvv,
         tar_estado: '00',
         tar_fecha_emision: fechaEmision.toISOString().split('T')[0],
-        tar_contactless: '00'
+        tar_contactless: '01' // 01 = Primer uso (requiere cambio de PIN)
       });
 
     if (errorTarjeta) {
@@ -72,10 +73,11 @@ exports.generarTarjetaDebito = async (req, res) => {
         id_tarjeta,
         id_tardeb,
         numeroTarjeta: formatearNumeroTarjeta(numeroTarjeta),
-        pinTemporal: pin,
+        pinTemporal: pinTemporal,
         cvv,
         fechaExpiracion: formatearFechaExpiracion(fechaExpiracion),
-        estado: 'Activa'
+        estado: 'Activa',
+        mensaje: 'IMPORTANTE: Su clave temporal es ' + pinTemporal + '. Al usar su tarjeta por primera vez deberá cambiarla obligatoriamente.'
       }
     });
   } catch (error) {
@@ -143,7 +145,7 @@ exports.verificarTarjeta = async (req, res) => {
 exports.cambiarPin = async (req, res) => {
   try {
     const { id_tarjeta } = req.params;
-    const { nuevoPin } = req.body;
+    const { pinActual, nuevoPin } = req.body;
 
     if (!nuevoPin || nuevoPin.length !== 4 || !/^\d+$/.test(nuevoPin)) {
       return res.status(400).json({
@@ -152,21 +154,69 @@ exports.cambiarPin = async (req, res) => {
       });
     }
 
-    const pinHash = require('crypto')
+    // Validar que el nuevo PIN no sea 1234 (por seguridad)
+    if (nuevoPin === '1234') {
+      return res.status(400).json({
+        success: false,
+        message: 'Por seguridad, no puede usar 1234 como clave. Elija otra combinación.'
+      });
+    }
+
+    // Validar que el nuevo PIN no sea secuencial (0000, 1111, etc.)
+    if (/^(\d)\1{3}$/.test(nuevoPin)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Por seguridad, no puede usar números repetidos (0000, 1111, etc.)'
+      });
+    }
+
+    // Si se proporciona PIN actual, verificarlo
+    if (pinActual) {
+      const pinActualHash = require('crypto')
+        .createHash('sha256')
+        .update(pinActual)
+        .digest('hex');
+
+      const { data: tarjeta, error: errorBuscar } = await supabase
+        .from('tarjeta')
+        .select('tar_pin_hash')
+        .eq('id_tarjeta', id_tarjeta)
+        .single();
+
+      if (errorBuscar || !tarjeta) {
+        return res.status(404).json({
+          success: false,
+          message: 'Tarjeta no encontrada'
+        });
+      }
+
+      if (tarjeta.tar_pin_hash !== pinActualHash) {
+        return res.status(401).json({
+          success: false,
+          message: 'La clave temporal ingresada es incorrecta'
+        });
+      }
+    }
+
+    const nuevoHash = require('crypto')
       .createHash('sha256')
       .update(nuevoPin)
       .digest('hex');
 
+    // Actualizar PIN y marcar como ya no es primer uso (tar_contactless = '00')
     const { error } = await supabase
       .from('tarjeta')
-      .update({ tar_pin_hash: pinHash })
+      .update({ 
+        tar_pin_hash: nuevoHash,
+        tar_contactless: '00' // Ya no es primer uso
+      })
       .eq('id_tarjeta', id_tarjeta);
 
     if (error) throw error;
 
     res.json({
       success: true,
-      message: 'PIN actualizado exitosamente'
+      message: 'Clave actualizada exitosamente. Ahora puede usar su tarjeta.'
     });
   } catch (error) {
     console.error('Error cambiando PIN:', error);
@@ -449,17 +499,23 @@ exports.validarCodigoEnCajero = async (req, res) => {
 
 /**
  * Validar tarjeta en cajero (últimos 4 dígitos)
+ * Puede buscar por id_cuenta O solo por los últimos 4 dígitos
  */
 exports.validarTarjetaEnCajero = async (req, res) => {
   try {
     const { id_cuenta, ultimos4digitos } = req.body;
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('tarjeta')
-      .select('id_tarjeta, tar_numero, tar_estado')
-      .eq('id_cuenta', id_cuenta)
-      .like('tar_numero', `%${ultimos4digitos}`)
-      .single();
+      .select('id_tarjeta, id_cuenta, tar_numero, tar_estado, tar_contactless')
+      .like('tar_numero', `%${ultimos4digitos}`);
+
+    // Si se proporciona id_cuenta, filtrar por esa cuenta
+    if (id_cuenta) {
+      query = query.eq('id_cuenta', id_cuenta);
+    }
+
+    const { data, error } = await query.single();
 
     if (error && error.code !== 'PGRST116') {
       throw error;
@@ -472,12 +528,29 @@ exports.validarTarjetaEnCajero = async (req, res) => {
       });
     }
 
+    // Obtener información de la cuenta asociada
+    const { data: cuentaData, error: errorCuenta } = await supabase
+      .from('cuenta')
+      .select('id_cuenta, cue_numero, cue_saldo_disponible')
+      .eq('id_cuenta', data.id_cuenta)
+      .single();
+
+    if (errorCuenta) {
+      console.error('Error obteniendo cuenta:', errorCuenta);
+    }
+
     res.json({
       success: true,
       data: {
         id_tarjeta: data.id_tarjeta,
+        id_cuenta: data.id_cuenta,
         numero: `****${data.tar_numero.slice(-4)}`,
-        estado: data.tar_estado === '00' ? 'Activa' : 'Inactiva'
+        estado: data.tar_estado === '00' ? 'Activa' : 'Inactiva',
+        primerUso: data.tar_contactless === '01', // 01 = primer uso
+        cuenta: cuentaData ? {
+          numero: cuentaData.cue_numero,
+          saldoDisponible: cuentaData.cue_saldo_disponible
+        } : null
       }
     });
   } catch (error) {
@@ -492,16 +565,58 @@ exports.validarTarjetaEnCajero = async (req, res) => {
 
 /**
  * Procesar retiro en cajero
+ * El retiro siempre debita de la cuenta de ahorros asociada a la tarjeta
  */
 exports.procesarRetiro = async (req, res) => {
   try {
-    const { id_cuenta, monto, tipo_cuenta, metodo } = req.body;
+    const { id_cuenta, id_tarjeta, monto, tipo_cuenta, metodo } = req.body;
     // metodo: 'tarjeta' o 'codigo'
 
-    if (!id_cuenta || !monto || !tipo_cuenta || !metodo) {
+    // Si se proporciona id_tarjeta, obtener el id_cuenta de la tarjeta
+    let cuentaId = id_cuenta;
+    
+    if (id_tarjeta && metodo === 'tarjeta') {
+      const { data: tarjetaData, error: errorTarjeta } = await supabase
+        .from('tarjeta')
+        .select('id_cuenta')
+        .eq('id_tarjeta', id_tarjeta)
+        .single();
+      
+      if (errorTarjeta) {
+        return res.status(404).json({
+          success: false,
+          message: 'Tarjeta no encontrada'
+        });
+      }
+      
+      cuentaId = tarjetaData.id_cuenta;
+    }
+
+    if (!cuentaId || !monto || !metodo) {
       return res.status(400).json({
         success: false,
         message: 'Campos requeridos incompletos'
+      });
+    }
+
+    // Verificar saldo antes de procesar
+    const { data: cuenta, error: errorCuenta } = await supabase
+      .from('cuenta')
+      .select('cue_saldo_disponible, cue_numero')
+      .eq('id_cuenta', cuentaId)
+      .single();
+
+    if (errorCuenta) {
+      return res.status(404).json({
+        success: false,
+        message: 'Cuenta no encontrada'
+      });
+    }
+
+    if (cuenta.cue_saldo_disponible < monto) {
+      return res.status(400).json({
+        success: false,
+        message: `Saldo insuficiente. Disponible: $${cuenta.cue_saldo_disponible.toFixed(2)}`
       });
     }
 
@@ -513,37 +628,29 @@ exports.procesarRetiro = async (req, res) => {
       .from('transaccion')
       .insert({
         id_tra,
-        id_cuenta,
+        id_cuenta: cuentaId,
         tra_fecha_hora: fecha.toISOString(),
         tra_monto: monto,
         tra_tipo: '03', // Retiro
-        tra_descripcion: `Retiro en cajero - ${metodo === 'tarjeta' ? 'Con tarjeta' : 'Sin tarjeta'}`,
+        tra_descripcion: `Retiro en cajero - ${metodo === 'tarjeta' ? 'Con tarjeta débito' : 'Sin tarjeta'}`,
         tra_estado: '01' // Completada
       });
 
     if (error) throw error;
 
-    // Obtener saldo actual de la cuenta
-    const { data: cuenta, error: errorCuenta } = await supabase
-      .from('cuenta')
-      .select('cue_saldo_disponible')
-      .eq('id_cuenta', id_cuenta)
-      .single();
-
-    if (errorCuenta) throw errorCuenta;
-
-    // Actualizar saldo
+    // Actualizar saldo de la cuenta de ahorros
     const nuevoSaldo = cuenta.cue_saldo_disponible - monto;
     await supabase
       .from('cuenta')
       .update({ cue_saldo_disponible: nuevoSaldo })
-      .eq('id_cuenta', id_cuenta);
+      .eq('id_cuenta', cuentaId);
 
     res.json({
       success: true,
       message: 'Retiro procesado exitosamente',
       data: {
         id_transaccion: id_tra,
+        numeroCuenta: cuenta.cue_numero,
         montoRetirado: monto,
         saldoAnterior: cuenta.cue_saldo_disponible,
         saldoNuevo: nuevoSaldo,
@@ -592,6 +699,60 @@ exports.obtenerHistorialRetiros = async (req, res) => {
   }
 };
 
+/**
+ * Validar PIN de tarjeta
+ */
+exports.validarPin = async (req, res) => {
+  try {
+    const { id_tarjeta, pin } = req.body;
+
+    if (!id_tarjeta || !pin) {
+      return res.status(400).json({
+        success: false,
+        message: 'id_tarjeta y pin son requeridos'
+      });
+    }
+
+    const pinHash = require('crypto')
+      .createHash('sha256')
+      .update(pin)
+      .digest('hex');
+
+    const { data, error } = await supabase
+      .from('tarjeta')
+      .select('tar_pin_hash, tar_contactless')
+      .eq('id_tarjeta', id_tarjeta)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tarjeta no encontrada'
+      });
+    }
+
+    if (data.tar_pin_hash !== pinHash) {
+      return res.json({
+        success: false,
+        message: 'Clave incorrecta'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Clave válida',
+      primerUso: data.tar_contactless === '01'
+    });
+  } catch (error) {
+    console.error('Error validando PIN:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al validar clave',
+      error: error.message
+    });
+  }
+};
+
 // ============== FUNCIONES AUXILIARES ==============
 
 /**
@@ -613,6 +774,21 @@ function generarPin4Digitos() {
   for (let i = 0; i < 4; i++) {
     pin += Math.floor(Math.random() * 10);
   }
+  return pin;
+}
+
+/**
+ * Generar PIN temporal (evitando 1234 y números repetidos)
+ */
+function generarPinTemporal() {
+  let pin = '';
+  do {
+    pin = '';
+    for (let i = 0; i < 4; i++) {
+      pin += Math.floor(Math.random() * 10);
+    }
+    // Evitar 1234 y números repetidos (0000, 1111, etc.)
+  } while (pin === '1234' || /^(\d)\1{3}$/.test(pin));
   return pin;
 }
 

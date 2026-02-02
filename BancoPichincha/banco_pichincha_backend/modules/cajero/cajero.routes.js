@@ -6,6 +6,7 @@ const cajeroController = require('./controllers/cajero.controller');
 router.post('/tarjeta/generar', cajeroController.generarTarjetaDebito);
 router.get('/tarjeta/verificar/:id_cuenta', cajeroController.verificarTarjeta);
 router.put('/tarjeta/cambiar-pin/:id_tarjeta', cajeroController.cambiarPin);
+router.post('/tarjeta/validar-pin', cajeroController.validarPin);
 
 // Rutas para retiro sin tarjeta
 router.post('/retiro-sin-tarjeta/solicitar', cajeroController.solicitarRetiroSinTarjeta);

@@ -42,7 +42,8 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
   const [montoSeleccionado, setMontoSeleccionado] = useState<number | null>(null);
   const [codigoIngresado, setCodigoIngresado] = useState('');
   const [mensaje, setMensaje] = useState('');
-  const [primerUso, setPrimerUso] = useState(true);
+  const [primerUso, setPrimerUso] = useState(false);
+  const [tarjetaId, setTarjetaId] = useState('');
   const [saldoActual, setSaldoActual] = useState(cliente?.saldo || 0);
   const [metodoRetiro, setMetodoRetiro] = useState<'tarjeta' | 'codigo'>('tarjeta');
   const [datosRetiroSinTarjeta, setDatosRetiroSinTarjeta] = useState<{
@@ -70,6 +71,8 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     setMensaje('');
     setMetodoRetiro('tarjeta');
     setDatosRetiroSinTarjeta(null);
+    setPrimerUso(false);
+    setTarjetaId('');
   };
 
   // Manejar tecla del teclado numérico
@@ -165,8 +168,8 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
       ? datosRetiroSinTarjeta.id_cuenta 
       : cliente?.id_cuenta;
 
-    if (!idCuenta || !montoSeleccionado) {
-      setMensaje('Error: datos incompletos');
+    if (!montoSeleccionado) {
+      setMensaje('Error: monto no seleccionado');
       irAPantalla('error');
       return;
     }
@@ -181,15 +184,24 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     irAPantalla('procesando');
 
     try {
+      const bodyRequest: Record<string, unknown> = {
+        monto: montoSeleccionado,
+        tipo_cuenta: tipoCuenta || 'ahorro',
+        metodo: metodoRetiro
+      };
+
+      // Para retiro con tarjeta, enviar id_tarjeta para que el backend obtenga la cuenta asociada
+      if (metodoRetiro === 'tarjeta' && tarjetaId) {
+        bodyRequest.id_tarjeta = tarjetaId;
+        bodyRequest.id_cuenta = idCuenta; // También enviamos como respaldo
+      } else {
+        bodyRequest.id_cuenta = idCuenta;
+      }
+
       const response = await fetch('http://localhost:3000/api/cajero/retiro/procesar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_cuenta: idCuenta,
-          monto: montoSeleccionado,
-          tipo_cuenta: tipoCuenta || 'ahorro',
-          metodo: metodoRetiro
-        })
+        body: JSON.stringify(bodyRequest)
       });
 
       const data = await response.json();
@@ -295,26 +307,29 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
               <div className="atm-logo-small">■ BANCO PICHINCHA</div>
             </div>
             <div className="atm-main-message">
-              <h2>Primer uso - Cambie su clave</h2>
-              <p>Ingrese una nueva clave de 4 dígitos</p>
+              <h2>🔐 Primer uso - Cambie su clave</h2>
+              <p>Por seguridad, debe cambiar su clave temporal.</p>
+              <p className="atm-warning">No puede usar 1234 ni números repetidos.</p>
               <div className="atm-input-display">
+                <label>Nueva clave:</label>
                 <input 
                   type="password" 
                   maxLength={4}
                   value={nuevoPin}
                   onChange={(e) => setNuevoPin(e.target.value.replace(/\D/g, ''))}
                   className="atm-input-field"
-                  placeholder="Nueva clave"
+                  placeholder="• • • •"
                 />
               </div>
               <div className="atm-input-display">
+                <label>Confirmar clave:</label>
                 <input 
                   type="password" 
                   maxLength={4}
                   value={confirmPin}
                   onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
                   className="atm-input-field"
-                  placeholder="Confirmar clave"
+                  placeholder="• • • •"
                 />
               </div>
               {mensaje && <p className="atm-error-msg">{mensaje}</p>}
@@ -555,12 +570,38 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
           { label: '', action: () => {} },
           { label: '', action: () => {} },
           { label: 'CORREGIR', action: () => setUltimos4Digitos('') },
-          { label: 'CONTINUAR', action: () => {
+          { label: 'CONTINUAR', action: async () => {
             if (ultimos4Digitos.length === 4) {
-              if (primerUso) {
-                irAPantalla('tarjeta-cambio-pin');
-              } else {
-                irAPantalla('tarjeta-pin');
+              setMensaje('');
+              irAPantalla('procesando');
+              try {
+                // Validar tarjeta con el backend
+                const response = await fetch('http://localhost:3000/api/cajero/retiro/validar-tarjeta', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    id_cuenta: cliente?.id_cuenta,
+                    ultimos4digitos: ultimos4Digitos
+                  })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                  setTarjetaId(data.data.id_tarjeta);
+                  setPrimerUso(data.data.primerUso || false);
+                  // Actualizar saldo desde la cuenta asociada a la tarjeta
+                  if (data.data.cuenta && data.data.cuenta.saldoDisponible !== undefined) {
+                    setSaldoActual(data.data.cuenta.saldoDisponible);
+                  }
+                  irAPantalla('tarjeta-pin');
+                } else {
+                  setMensaje(data.message || 'Tarjeta no encontrada');
+                  irAPantalla('tarjeta-digitos');
+                }
+              } catch (error) {
+                console.error('Error:', error);
+                setMensaje('Error de conexión');
+                irAPantalla('error');
               }
             } else {
               setMensaje('Ingrese 4 dígitos');
@@ -572,9 +613,41 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
           { label: '', action: () => {} },
           { label: '', action: () => {} },
           { label: 'CORREGIR', action: () => setPinIngresado('') },
-          { label: 'CONTINUAR', action: () => {
+          { label: 'CONTINUAR', action: async () => {
             if (pinIngresado.length === 4) {
-              irAPantalla('tarjeta-seleccionar-cuenta');
+              setMensaje('');
+              irAPantalla('procesando');
+              try {
+                // Validar PIN con el backend
+                const response = await fetch('http://localhost:3000/api/cajero/tarjeta/validar-pin', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    id_tarjeta: tarjetaId,
+                    pin: pinIngresado
+                  })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                  // Si es primer uso, obligar a cambiar PIN
+                  if (data.primerUso) {
+                    setPrimerUso(true);
+                    setMensaje('');
+                    irAPantalla('tarjeta-cambio-pin');
+                  } else {
+                    irAPantalla('tarjeta-seleccionar-cuenta');
+                  }
+                } else {
+                  setMensaje(data.message || 'Clave incorrecta');
+                  setPinIngresado('');
+                  irAPantalla('tarjeta-pin');
+                }
+              } catch (error) {
+                console.error('Error:', error);
+                setMensaje('Error de conexión');
+                irAPantalla('error');
+              }
             } else {
               setMensaje('Ingrese 4 dígitos');
             }
@@ -585,14 +658,50 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
           { label: '', action: () => {} },
           { label: '', action: () => {} },
           { label: 'CORREGIR', action: () => { setNuevoPin(''); setConfirmPin(''); } },
-          { label: 'CONTINUAR', action: () => {
+          { label: 'CONTINUAR', action: async () => {
             if (nuevoPin.length !== 4) {
               setMensaje('La clave debe tener 4 dígitos');
+            } else if (nuevoPin === '1234') {
+              setMensaje('Por seguridad no puede usar 1234');
+              setNuevoPin('');
+              setConfirmPin('');
+            } else if (/^(\d)\1{3}$/.test(nuevoPin)) {
+              setMensaje('No use números repetidos (0000, 1111...)');
+              setNuevoPin('');
+              setConfirmPin('');
             } else if (nuevoPin !== confirmPin) {
               setMensaje('Las claves no coinciden');
+              setConfirmPin('');
             } else {
-              setPrimerUso(false);
-              irAPantalla('tarjeta-seleccionar-cuenta');
+              setMensaje('');
+              irAPantalla('procesando');
+              try {
+                // Cambiar PIN en el backend
+                const response = await fetch(`http://localhost:3000/api/cajero/tarjeta/cambiar-pin/${tarjetaId}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    pinActual: pinIngresado,
+                    nuevoPin: nuevoPin
+                  })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                  setPrimerUso(false);
+                  setMensaje('¡Clave actualizada exitosamente!');
+                  irAPantalla('tarjeta-seleccionar-cuenta');
+                } else {
+                  setMensaje(data.message || 'Error al cambiar clave');
+                  setNuevoPin('');
+                  setConfirmPin('');
+                  irAPantalla('tarjeta-cambio-pin');
+                }
+              } catch (error) {
+                console.error('Error:', error);
+                setMensaje('Error de conexión');
+                irAPantalla('error');
+              }
             }
           }},
         ];
