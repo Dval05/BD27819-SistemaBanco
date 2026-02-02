@@ -1,0 +1,225 @@
+.container {
+  padding: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.backButton:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.headerText {
+  flex: 1;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Form */
+.form {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.fieldGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+.inputWithButton {
+  display: flex;
+  gap: 12px;
+}
+
+.inputWrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 16px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.input {
+  flex: 1;
+  padding: 14px 16px 14px 48px;
+  font-size: 16px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  letter-spacing: 1px;
+}
+
+.input:focus {
+  border-color: #ffc907;
+  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
+}
+
+.input:disabled {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.inputFull {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.inputFull:focus {
+  border-color: #ffc907;
+  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
+}
+
+.inputFull:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+}
+
+.validIcon {
+  position: absolute;
+  right: 16px;
+  color: #10b981;
+}
+
+.hint {
+  display: block;
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+/* Validación result */
+.validacionResult {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  color: #15803d;
+}
+
+.validacionInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.validacionNombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.validacionTipo {
+  font-size: 13px;
+  color: #22c55e;
+  margin-top: 2px;
+}
+
+/* Error */
+.error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .container {
+    padding: 16px;
+  }
+
+  .form {
+    padding: 20px;
+  }
+
+  .inputWithButton {
+    flex-direction: column;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

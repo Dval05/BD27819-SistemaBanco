@@ -1,0 +1,274 @@
+.container {
+  padding: 24px;
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.backButton:hover {
+  background: #e5e7eb;
+}
+
+.headerText {
+  flex: 1;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Form */
+.form {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.fieldGroup {
+  margin-bottom: 20px;
+  flex: 1;
+}
+
+.fieldGroupLarge {
+  margin-bottom: 20px;
+  flex: 2;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  border-color: #ffc907;
+  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.inputWithIcon {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  font-size: 15px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.inputWithIcon:focus {
+  border-color: #ffc907;
+  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
+}
+
+/* Dropdown */
+.dropdown {
+  position: relative;
+}
+
+.dropdownTrigger {
+  display: flex;
+  align-items: center;
+  padding: 12px 14px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 10px;
+}
+
+.dropdownTrigger:hover {
+  border-color: #d1d5db;
+}
+
+.dropdownTrigger.open {
+  border-color: #ffc907;
+  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
+}
+
+.dropdownIcon {
+  color: #9ca3af;
+  display: flex;
+}
+
+.dropdownValue {
+  flex: 1;
+  font-size: 15px;
+  color: #1f2937;
+}
+
+.dropdownPlaceholder {
+  flex: 1;
+  font-size: 15px;
+  color: #9ca3af;
+}
+
+.dropdownArrow {
+  color: #9ca3af;
+  transition: transform 0.2s ease;
+}
+
+.dropdownTrigger.open .dropdownArrow {
+  transform: rotate(180deg);
+}
+
+.dropdownList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.dropdownItem {
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.dropdownItem:hover {
+  background: #fef9e7;
+}
+
+.dropdownItem.selected {
+  background: #fef3c7;
+  font-weight: 500;
+}
+
+/* Comisión info */
+.comisionInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fef3c7;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  color: #b45309;
+  font-size: 13px;
+}
+
+/* Error */
+.error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  color: #dc2626;
+  font-size: 14px;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 550px) {
+  .container {
+    padding: 16px;
+  }
+
+  .form {
+    padding: 20px;
+  }
+
+  .row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .fieldGroupLarge {
+    flex: 1;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}
