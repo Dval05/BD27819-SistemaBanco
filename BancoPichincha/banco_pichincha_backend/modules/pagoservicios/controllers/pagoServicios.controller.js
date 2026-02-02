@@ -147,6 +147,26 @@ class PagoServiciosController {
       });
     }
   }
+   /**
+   * GET /api/pago-servicios/cuentas-ahorro/:idPersona
+   * Obtener cuentas de ahorro disponibles del usuario autenticado
+   */
+  async getCuentasAhorroDisponibles(req, res) {
+    try {
+      const { idPersona } = req.params;
+      const cuentas = await pagoServiciosService.getCuentasAhorroDisponibles(idPersona);
+      
+      res.json({
+        ok: true,
+        data: cuentas
+      });
+    } catch (error) {
+      res.status(error.status || 500).json({
+        ok: false,
+        msg: error.message || 'Error al obtener cuentas de ahorro'
+      });
+    }
+  }
 
   /**
    * POST /api/pago-servicios/validar-datos
