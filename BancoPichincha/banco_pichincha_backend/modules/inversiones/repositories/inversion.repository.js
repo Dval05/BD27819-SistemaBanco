@@ -39,12 +39,15 @@ class InversionRepository {
   }
 
   async findByPersona(idPersona) {
+    console.log('Repository - findByPersona - idPersona:', idPersona);
+    
     // Join con tabla cuenta para obtener inversiones por persona
+    // Usando la sintaxis correcta de Supabase con !inner para forzar el filtrado
     const { data, error } = await supabase
       .from(TABLE)
       .select(`
         *,
-        cuenta:id_cuenta (
+        cuenta!inner (
           id_cuenta,
           id_persona,
           cue_numero
@@ -53,7 +56,18 @@ class InversionRepository {
       .eq('cuenta.id_persona', idPersona)
       .order('inv_fecha_apertura', { ascending: false });
 
+    console.log('Repository - findByPersona - data:', data);
+    console.log('Repository - findByPersona - error:', error);
+    
     if (error) throw error;
+    
+    // Debug: verificar que todas las inversiones pertenecen a la persona correcta
+    if (data) {
+      data.forEach(inv => {
+        console.log(`Inversión ${inv.id_inv}: cuenta.id_persona = ${inv.cuenta?.id_persona}`);
+      });
+    }
+    
     return data;
   }
 

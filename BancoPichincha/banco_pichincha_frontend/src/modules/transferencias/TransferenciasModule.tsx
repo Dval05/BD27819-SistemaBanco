@@ -25,7 +25,8 @@ interface NavigationState {
 
 // Props del módulo
 interface TransferenciasModuleProps {
-  clienteId: number | string;
+  clienteId?: number | string;
+  cliente?: any;
   onVolverInicio?: () => void;
 }
 
@@ -46,9 +47,13 @@ const CUENTAS_MOCK: Cuenta[] = [
 ];
 
 const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({ 
-  clienteId,
+  clienteId: clienteIdProp,
+  cliente,
   onVolverInicio 
 }) => {
+  // Obtener clienteId desde props o desde el objeto cliente
+  const clienteId = clienteIdProp || cliente?.id_persona || '';
+  
   // Estado de navegación con historial
   const [navigationStack, setNavigationStack] = useState<NavigationState[]>([
     { vista: 'INICIO' }

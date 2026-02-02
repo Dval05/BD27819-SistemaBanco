@@ -2,6 +2,7 @@ import React from 'react';
 import { CONFIGURACION, MENSAJES, UNIDADES_PLAZO, convertirPlazo } from '../../constants/inversiones.constants';
 import type { UnidadPlazo } from '../../constants/inversiones.constants';
 import type { RecomendacionPlazo } from '../../types/simulador.types';
+import TablaIntereses from '../TablaIntereses/TablaIntereses';
 import styles from './SimuladorInversion.module.css';
 
 interface Props {
@@ -59,41 +60,21 @@ const PasoPlazo: React.FC<Props> = ({ plazoDias, monto, recomendaciones, onChang
     return new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(amount);
   };
 
+  const [mostrarTablaTasas, setMostrarTablaTasas] = React.useState(false);
+
   return (
-    <div className={styles.pasoContainer}>
-      <button className={styles.btnVolver} onClick={onVolver}>
-        ← Volver
-      </button>
+    <>
+      <div className={styles.pasoContainer}>
+        <button className={styles.btnVolver} onClick={onVolver}>
+          ← Volver
+        </button>
 
-      <h2 className={styles.titulo}>Simula tu depósito a plazo</h2>
+        <h2 className={styles.tituloPlazo}>Simula tu depósito a plazo</h2>
 
-      <div className={styles.montoResumen}>
-        <p className={styles.label}>Monto de depósito</p>
-        <p className={styles.valorGrande}>{formatCurrency(monto)}</p>
-      </div>
-
-      {recomendaciones.length > 0 && (
-        <div className={styles.recomendaciones}>
-          <p className={styles.subtitulo}>Incrementa el plazo y gana más con estas recomendaciones</p>
-
-          {recomendaciones.map((rec, index) => (
-            <button
-              key={index}
-              className={styles.cardRecomendacion}
-              onClick={() => handleRecomendacionClick(rec)}
-            >
-              <div className={styles.recomendacionInfo}>
-                <p className={styles.plazoDias}>En {rec.plazoDias} días | Tasa {rec.tasa}%</p>
-                <p className={styles.ganancias}>Ganas: {formatCurrency(rec.interes)}</p>
-                <p className={styles.recibiras}>Recibes al final: {formatCurrency(rec.montoFinal)}</p>
-              </div>
-            </button>
-          ))}
+        <div className={styles.montoResumenCard}>
+          <p className={styles.labelResumen}>Monto de depósito</p>
+          <p className={styles.valorResumen}>{formatCurrency(monto)}</p>
         </div>
-      )}
-
-      <div className={styles.plazoSection}>
-        <h3 className={styles.subtitulo}>Plazo del depósito</h3>
 
         <div className={styles.toggleUnidad}>
           <button
@@ -110,29 +91,73 @@ const PasoPlazo: React.FC<Props> = ({ plazoDias, monto, recomendaciones, onChang
           </button>
         </div>
 
-        <div className={styles.inputGroup}>
-          <label className={styles.label}>
-            {unidad === UNIDADES_PLAZO.MESES ? 'Elige el plazo en meses' : 'Elige el plazo en días'}
+        <div className={styles.inputPlazoGroup}>
+          <label className={styles.labelPlazo}>
+            Elige el plazo en {unidad === UNIDADES_PLAZO.MESES ? 'meses' : 'días'}
           </label>
           <input
             type="text"
-            className={styles.inputPlazo}
+            className={`${styles.inputPlazoGrande} ${error ? styles.inputError : ''}`}
             value={valor}
             onChange={handleValorChange}
             placeholder={unidad === UNIDADES_PLAZO.MESES ? '12' : '360'}
           />
-          {error && <p className={styles.errorInline}>{error}</p>}
+          {error && <p className={styles.errorPlazo}>{error}</p>}
+        </div>
+
+        <div className={styles.linkTasasPlazo}>
+          <button className={styles.btnLinkTasas} onClick={() => setMostrarTablaTasas(true)}>
+            📊 Revisa nuestras tasas de interés
+          </button>
+        </div>
+
+        {recomendaciones.length > 0 && (
+          <div className={styles.recomendacionesSection}>
+            <h3 className={styles.recomendacionesTitulo}>Incrementa el plazo y gana más con estas recomendaciones</h3>
+            <div className={styles.recomendacionesList}>
+              {recomendaciones.map((rec, index) => (
+                <div
+                  key={index}
+                  className={styles.cardRecomendacion}
+                  onClick={() => handleRecomendacionClick(rec)}
+                >
+                  <input type="radio" className={styles.radioRecomendacion} checked={plazoDias === rec.plazoDias} readOnly />
+                  <div className={styles.recomendacionInfo}>
+                    <p className={styles.diasTasa}>En {rec.plazoDias} días | Tasa {rec.tasa}%</p>
+                    <p className={styles.ganancias}>Ganas: {formatCurrency(rec.interes)}</p>
+                    <p className={styles.recibiras}>Recibes al final: {formatCurrency(rec.montoFinal)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className={styles.botoneraInferior}>
+          <button
+            className={styles.btnContinuarMonto}
+            onClick={onSimular}
+            disabled={plazoDias < CONFIGURACION.PLAZO_MINIMO_DIAS || plazoDias > CONFIGURACION.PLAZO_MAXIMO_DIAS || !!error}
+          >
+            Continuar
+          </button>
         </div>
       </div>
 
-      <button
-        className={styles.btnContinuar}
-        onClick={onSimular}
-        disabled={plazoDias < CONFIGURACION.PLAZO_MINIMO_DIAS || plazoDias > CONFIGURACION.PLAZO_MAXIMO_DIAS}
-      >
-        Simular
-      </button>
-    </div>
+      {mostrarTablaTasas && (
+        <div className={styles.modalTasas} onClick={() => setMostrarTablaTasas(false)}>
+          <div className={styles.modalTasasContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.btnCerrarModal} onClick={() => setMostrarTablaTasas(false)}>✕</button>
+            <TablaIntereses />
+            <div className={styles.modalTasasFooter}>
+              <button className={styles.btnEntendidoTasas} onClick={() => setMostrarTablaTasas(false)}>
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

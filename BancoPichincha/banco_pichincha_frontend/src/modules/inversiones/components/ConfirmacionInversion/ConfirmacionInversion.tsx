@@ -40,6 +40,7 @@ const ConfirmacionInversion: React.FC<Props> = ({
     try {
       await createInversion({
         idCuenta: cuenta.id_cuenta,
+        producto: 'DEPOSITO_PLAZO',
         monto,
         plazoDias,
         modalidadInteres: 'AL_VENCIMIENTO',

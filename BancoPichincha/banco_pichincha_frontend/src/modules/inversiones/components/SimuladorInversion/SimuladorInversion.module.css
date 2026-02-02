@@ -1,21 +1,30 @@
 .simuladorContainer {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
   background: white;
   min-height: 100vh;
 }
 
 .header {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 40px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.headerTitulo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
 }
 
 .btnCerrar {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
   color: #666;
   padding: 8px;
@@ -26,70 +35,217 @@
 }
 
 .pasoContainer {
-  max-width: 600px;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 60px 40px;
 }
 
-.titulo {
-  font-size: 1.5rem;
+/* Paso Monto - Nuevo diseño limpio */
+.tituloMonto {
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #003366;
-  margin-bottom: 24px;
-  text-align: center;
+  color: #1a1a2e;
+  margin-bottom: 48px;
 }
 
-.subtitulo {
+.montoDisplayGrande {
+  text-align: center;
+  font-size: 4rem;
+  font-weight: 300;
+  color: #1a1a2e;
+  margin: 60px 0 20px;
+  letter-spacing: -2px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.montoDisplayGrande:hover {
+  color: #0066cc;
+}
+
+.montoInputVisible {
+  width: 100%;
+  max-width: 300px;
+  padding: 16px 20px;
+  font-size: 2rem;
+  text-align: center;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-weight: 300;
+}
+
+.montoInputVisible:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+.montoInputHidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.separador {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 60px 0 40px;
+}
+
+.subtituloPlazo {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 24px;
+}
+
+.ayudaMonto {
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+  margin: 40px 0;
+}
+
+.errorMonto {
+  text-align: center;
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin: 16px 0;
+}
+
+.linkTasas {
+  text-align: center;
+  margin: 32px 0 60px;
+}
+
+.btnLinkTasas {
+  background: none;
+  border: none;
+  color: #0066cc;
+  font-size: 0.95rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.btnLinkTasas:hover {
+  color: #004488;
+}
+
+.botoneraInferior {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 40px;
+}
+
+.btnContinuarMonto {
+  background: #FFD100;
+  color: #1a1a2e;
+  border: none;
+  padding: 14px 48px;
+  border-radius: 6px;
   font-size: 1rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Paso Monto */
-.montoDisplay {
-  text-align: center;
-  margin: 40px 0 20px;
+.btnContinuarMonto:hover:not(:disabled) {
+  background: #e6bc00;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.simbolo {
-  font-size: 3rem;
-  color: #666;
-  margin-right: 8px;
+.btnContinuarMonto:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-.valor {
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: #003366;
+/* Modal Tasas */
+.modalTasas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
 }
 
-.montoInput {
+.modalTasasContent {
+  background: white;
+  border-radius: 16px;
+  max-width: 900px;
   width: 100%;
-  padding: 16px;
-  font-size: 1.2rem;
-  text-align: center;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  position: relative;
+  padding: 24px;
 }
 
-.montoInput:focus {
-  outline: none;
-  border-color: #003366;
-}
-
-.ayuda {
-  text-align: center;
+.btnCerrarModal {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
   color: #666;
-  font-size: 0.9rem;
-  margin-bottom: 20px;
+  cursor: pointer;
+  padding: 8px;
 }
 
-/* Paso Plazo */
+.btnCerrarModal:hover {
+  color: #333;
+}
+
+.modalTasasFooter {
+  padding: 24px 0 0;
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 24px;
+}
+
+.btnEntendidoTasas {
+  background: #FFD100;
+  color: #1a1a2e;
+  border: none;
+  padding: 12px 48px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnEntendidoTasas:hover {
+  background: #e6bc00;
+  transform: translateY(-1px);
+}
+
+/* Paso Plazo - Nuevo diseño */
+.tituloPlazo {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 32px;
+}
+
 .btnVolver {
   background: none;
   border: none;
-  color: #003366;
+  color: #666;
   font-size: 1rem;
   cursor: pointer;
   padding: 8px 0;
@@ -100,48 +256,185 @@
 }
 
 .btnVolver:hover {
-  color: #004488;
+  color: #333;
 }
 
-.montoResumen {
-  background: #f5f5f5;
-  padding: 16px;
+.montoResumenCard {
+  background: #f5f7fa;
+  padding: 20px;
   border-radius: 8px;
-  margin-bottom: 24px;
-}
-
-.label {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 4px;
-}
-
-.valorGrande {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #003366;
-  margin: 0;
-}
-
-.recomendaciones {
   margin-bottom: 32px;
 }
 
-.cardRecomendacion {
-  width: 100%;
+.labelResumen {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 4px 0;
+}
+
+.valorResumen {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.toggleUnidad {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.btnToggle {
+  flex: 1;
+  padding: 12px 24px;
   background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.btnToggle:hover {
+  border-color: #0066cc;
+  color: #0066cc;
+}
+
+.btnToggle.active {
+  background: #0066cc;
+  border-color: #0066cc;
+  color: white;
+}
+
+.inputPlazoGroup {
+  margin-bottom: 32px;
+}
+
+.labelPlazo {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+}
+
+.inputPlazoGrande {
+  width: 100%;
+  padding: 16px 20px;
+  font-size: 1.25rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.inputPlazoGrande:focus {
+  outline: none;
+  border-color: #0066cc;
+}
+
+.inputPlazoGrande.inputError {
+  border-color: #dc2626;
+}
+
+.errorPlazo {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+.linkTasasPlazo {
   text-align: left;
+  margin: 24px 0;
+}
+
+.resultadoSimulacion {
+  margin: 32px 0;
+}
+
+.resultadoTitulo {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 16px;
+}
+
+.infoSimulacion {
+  background: #f0f4f8;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.infoTexto {
+  margin: 0;
+  color: #333;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.recomendacionesSection {
+  margin: 32px 0;
+}
+
+.recomendacionesTitulo {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+}
+
+.recomendacionesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cardRecomendacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .cardRecomendacion:hover {
-  border-color: #003366;
-  box-shadow: 0 4px 12px rgba(0, 51, 102, 0.1);
+  border-color: #0066cc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.radioRecomendacion {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.recomendacionInfo {
+  flex: 1;
+}
+
+.diasTasa {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.ganancias {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #10b981;
+  margin: 0 0 4px 0;
+}
+
+.recibiras {
+  font-size: 0.9rem;
+  color: #333;
+  margin: 0;
 }
 
 .recomendacionInfo {
@@ -242,12 +535,31 @@
 }
 
 .resultadoCard {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #f5f7fa;
+  color: #1a1a2e;
   padding: 24px;
-  border-radius: 12px;
+  border-radius: 8px;
   margin-bottom: 24px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.resultadoCard .diasTasa {
+  color: #666;
+}
+
+.resultadoCard .ganancias {
+  color: #10b981;
+}
+
+.resultadoCard .recibiras {
+  color: #1a1a2e;
+}
+
+.resultadoCard .fechaVencimiento {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 8px;
 }
 
 .resultadoHeader {
