@@ -269,6 +269,21 @@ class PagoServiciosController {
       });
     }
   }
+
+  /**
+   * GET /api/pago-servicios/frecuentes/:idPersona
+   * Top pagos frecuentes por persona
+   */
+  async getPagosFrecuentes(req, res) {
+    try {
+      const { idPersona } = req.params;
+      const { limit } = req.query;
+      const lista = await pagoServiciosService.getPagosFrecuentesByPersona(idPersona, parseInt(limit) || 6);
+      res.json({ ok: true, data: lista });
+    } catch (error) {
+      res.status(error.status || 500).json({ ok: false, msg: error.message || 'Error al obtener pagos frecuentes' });
+    }
+  }
 }
 
 module.exports = new PagoServiciosController();

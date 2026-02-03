@@ -507,6 +507,49 @@ class PagoServiciosService {
     }
   }
 
+  /**
+   * Obtener top N pagos frecuentes por persona
+   */
+  async getPagosFrecuentesByPersona(idPersona, limit = 6) {
+    try {
+      if (!idPersona) {
+        throw { status: 400, message: 'ID de persona requerido' };
+      }
+
+      const pagos = await pagoServiciosRepository.getPagosServiciosByPersona(idPersona);
+
+      const map = new Map();
+      pagos.forEach(p => {
+        const key = `${p.id_srv}|${p.id_subtipo || ''}`;
+        const count = map.get(key)?.count || 0;
+        const last = map.get(key)?.ultimo_pago || null;
+        const fecha = p.transaccion?.tra_fecha_hora || p.tra_fecha_hora;
+        map.set(key, {
+          id_srv: p.id_srv,
+          id_subtipo: p.id_subtipo || null,
+          srv_nombre: p.servicio?.srv_nombre,
+          srv_tiene_subtipos: p.servicio?.srv_tiene_subtipos === '01' || p.servicio?.srv_tiene_subtipos === true,
+          categoria: p.servicio?.categoria_servicio?.cat_nombre || null,
+          subcategoria: p.servicio?.subcategoria_servicio?.subcat_nombre || null,
+          count: count + 1,
+          ultimo_pago: (!last || (fecha && new Date(fecha) > new Date(last))) ? fecha : last
+        });
+      });
+
+      const lista = Array.from(map.values()).sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return new Date(b.ultimo_pago) - new Date(a.ultimo_pago);
+      }).slice(0, limit);
+
+      return lista;
+    } catch (error) {
+      throw { 
+        status: error.status || 500, 
+        message: error.message || 'Error al obtener pagos frecuentes'
+      };
+    }
+  }
+
   // =====================================
   // MÉTODOS PRIVADOS DE FORMATO
   // =====================================
@@ -520,6 +563,8 @@ class PagoServiciosService {
     };
     
     return {
+      id_srv: pago.id_srv,
+      id_subtipo: pago.id_subtipo || null,
       id_pagser: pago.id_pagser,
       id_tra: pago.id_tra,
       fecha: pago.tra_fecha_hora,

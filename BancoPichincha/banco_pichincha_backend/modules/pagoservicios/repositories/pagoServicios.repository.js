@@ -408,10 +408,11 @@ class PagoServiciosRepository {
           cuenta!inner (cue_numero, id_persona),
           pago_servicios!inner (
             id_pagser,
+            id_subtipo,
             pagser_comprobante,
             pagser_estado,
-            servicio (srv_nombre),
-            subtipo_pago_servicio (subtipo_nombre)
+            servicio (id_srv, srv_nombre),
+            subtipo_pago_servicio (id_subtipo, subtipo_nombre)
           )
         `)
         .eq('cuenta.id_persona', idPersona)
@@ -429,7 +430,9 @@ class PagoServiciosRepository {
         tra_descripcion: d.tra_descripcion,
         pagser_comprobante: d.pago_servicios?.pagser_comprobante,
         pagser_estado: d.pago_servicios?.pagser_estado,
+        id_srv: d.pago_servicios?.servicio?.id_srv,
         srv_nombre: d.pago_servicios?.servicio?.srv_nombre,
+        id_subtipo: d.pago_servicios?.id_subtipo || d.pago_servicios?.subtipo_pago_servicio?.id_subtipo || null,
         subtipo_nombre: d.pago_servicios?.subtipo_pago_servicio?.subtipo_nombre,
         cue_numero: d.cuenta?.cue_numero
       }));
@@ -496,6 +499,41 @@ class PagoServiciosRepository {
       };
     } catch (error) {
       console.error('Error en getComprobante:', error);
+      throw error;
+    }
+  }
+
+  // =====================================
+  // PAGOS FRECUENTES
+  // =====================================
+
+  async getPagosServiciosByPersona(idPersona) {
+    try {
+      const { data, error } = await supabase
+        .from('pago_servicios')
+        .select(`
+          id_srv,
+          id_subtipo,
+          servicio (
+            srv_nombre,
+            srv_tiene_subtipos,
+            id_cat,
+            id_subcat,
+            categoria_servicio:id_cat (cat_nombre),
+            subcategoria_servicio:id_subcat (subcat_nombre)
+          ),
+          transaccion!inner (
+            tra_fecha_hora,
+            cuenta!inner (id_persona)
+          )
+        `)
+        .eq('transaccion.cuenta.id_persona', idPersona)
+        .order('transaccion.tra_fecha_hora', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error en getPagosServiciosByPersona:', error);
       throw error;
     }
   }
