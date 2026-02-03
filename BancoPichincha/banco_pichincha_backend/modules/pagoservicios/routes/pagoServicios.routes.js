@@ -49,6 +49,16 @@ router.get('/servicios/:idSrv/datos-requeridos', PagoServiciosController.getDato
 router.get('/subtipos/:idSubtipo/datos-requeridos', PagoServiciosController.getDatosRequeridosBySubtipo);
 
 // =====================================
+// RUTAS DE CUENTAS (Requieren autenticación)
+// =====================================
+
+/**
+ * GET /api/pago-servicios/cuentas-ahorro/:idPersona
+ * Obtener cuentas de ahorro disponibles del usuario autenticado
+ */
+router.get('/cuentas-ahorro/:idPersona', PagoServiciosController.getCuentasAhorroDisponibles);
+
+// =====================================
 // RUTAS DE PROCESAMIENTO (Requieren autenticación)
 // =====================================
 

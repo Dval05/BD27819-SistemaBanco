@@ -56,6 +56,11 @@ export interface Inversion {
   inv_renovacion_auto: string;
   inv_estado: string;
   inv_tasa_interes?: number;
+  cuenta?: {
+    id_cuenta: string;
+    id_persona: string;
+    cue_numero: string;
+  };
 }
 
 export interface InversionCronograma {

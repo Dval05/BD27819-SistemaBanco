@@ -257,11 +257,11 @@ class PagoServiciosRepository {
     }
   }
 
-  async isCuentaCorriente(idCuenta) {
+  async isCuentaAhorro(idCuenta) {
     try {
       const { data, error } = await supabase
-        .from('cuenta_corriente')
-        .select('id_cue_corriente')
+        .from('cuenta_ahorro')
+        .select('id_cue_ahorro')
         .eq('id_cuenta', idCuenta)
         .single();
       
@@ -269,7 +269,33 @@ class PagoServiciosRepository {
       if (error) throw error;
       return !!data;
     } catch (error) {
-      console.error('Error en isCuentaCorriente:', error);
+      console.error('Error en isCuentaAhorro:', error);
+      throw error;
+    }
+  }
+
+  async getCuentasAhorroByPersona(idPersona) {
+    try {
+      const { data, error } = await supabase
+        .from('cuenta_ahorro')
+        .select(`
+          id_cue_ahorro,
+          id_cuenta,
+          cue_numero,
+          cue_saldo_disponible,
+          cue_estado,
+          cueaho_tasa_interes,
+          cueaho_meta_ahorro,
+          id_persona
+        `)
+        .eq('id_persona', idPersona)
+        .eq('cue_estado', '00')
+        .order('cue_numero', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error en getCuentasAhorroByPersona:', error);
       throw error;
     }
   }

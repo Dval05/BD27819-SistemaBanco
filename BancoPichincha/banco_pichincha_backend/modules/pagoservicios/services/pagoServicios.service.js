@@ -125,6 +125,37 @@ class PagoServiciosService {
   }
 
   // =====================================
+  // CUENTAS DE AHORRO DEL USUARIO
+  // =====================================
+
+  /**
+   * Obtener cuentas de ahorro disponibles del usuario autenticado
+   */
+  async getCuentasAhorroDisponibles(idPersona) {
+    try {
+      if (!idPersona) {
+        throw { status: 400, message: 'ID de persona requerido' };
+      }
+
+      const cuentas = await pagoServiciosRepository.getCuentasAhorroByPersona(idPersona);
+      
+      return cuentas.map(cuenta => ({
+        id_cuenta: cuenta.id_cuenta,
+        id_cue_ahorro: cuenta.id_cue_ahorro,
+        cue_numero: cuenta.cue_numero,
+        cue_saldo_disponible: parseFloat(cuenta.cue_saldo_disponible) || 0,
+        cueaho_tasa_interes: parseFloat(cuenta.cueaho_tasa_interes) || 0,
+        cueaho_meta_ahorro: parseFloat(cuenta.cueaho_meta_ahorro) || 0
+      }));
+    } catch (error) {
+      throw { 
+        status: error.status || 500, 
+        message: error.message || 'Error al obtener cuentas de ahorro'
+      };
+    }
+  }
+
+  // =====================================
   // VALIDACIÓN DE DATOS
   // =====================================
 
@@ -274,12 +305,12 @@ class PagoServiciosService {
         };
       }
 
-      // Validar que es una cuenta corriente (las cuentas corrientes tienen id_cue_corriente)
-      const esCuentaCorriente = await pagoServiciosRepository.isCuentaCorriente(id_cuenta);
-      if (!esCuentaCorriente) {
+      // Validar que es una cuenta de ahorro
+      const esCuentaAhorro = await pagoServiciosRepository.isCuentaAhorro(id_cuenta);
+      if (!esCuentaAhorro) {
         throw { 
           status: 400, 
-          message: 'Solo se pueden realizar pagos de servicios desde cuentas corrientes' 
+          message: 'Solo se pueden realizar pagos de servicios desde cuentas de ahorro' 
         };
       }
 

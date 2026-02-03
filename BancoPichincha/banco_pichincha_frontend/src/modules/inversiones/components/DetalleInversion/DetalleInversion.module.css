@@ -1,0 +1,190 @@
+.container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.btnVolver {
+  background: none;
+  border: none;
+  color: #0066cc;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.btnVolver:hover {
+  opacity: 0.8;
+}
+
+.contenido {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tituloSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.titulo {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.estadoActiva {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.estadoVencida {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.estadoCancelada {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.estadoRenovada {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.cardPrincipal {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.seccionTitulo {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.valor {
+  font-size: 16px;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.valor.monto {
+  font-size: 20px;
+  color: #0066cc;
+}
+
+.separador {
+  height: 1px;
+  background: #e0e0e0;
+  margin: 8px 0;
+}
+
+.resultadoCard {
+  background: #f5f7fa;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resultadoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resultadoLabel {
+  font-size: 15px;
+  color: #555;
+  font-weight: 500;
+}
+
+.resultadoValor {
+  font-size: 18px;
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.resultadoValor.destacado {
+  font-size: 24px;
+  color: #0066cc;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .contenido {
+    padding: 20px;
+  }
+
+  .tituloSection {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .titulo {
+    font-size: 24px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .resultadoValor.destacado {
+    font-size: 20px;
+  }
+}

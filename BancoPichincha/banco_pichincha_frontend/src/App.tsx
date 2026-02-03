@@ -33,6 +33,8 @@ function App() {
     sessionStorage.setItem('cliente', JSON.stringify(clienteActualizado));
   };
 
+  
+
   return (
     <div className="App">
       {cliente ? (

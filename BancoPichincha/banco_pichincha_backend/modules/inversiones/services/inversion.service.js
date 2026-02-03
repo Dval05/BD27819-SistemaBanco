@@ -91,6 +91,7 @@ class InversionService {
       inv_monto: data.monto,
       inv_plazo_dias: data.plazoDias,
       inv_modalidad_interes: data.modalidadInteres || ModalidadInteres.AL_VENCIMIENTO,
+      inv_tasa_interes: tasa,
       inv_fecha_apertura: fechaApertura,
       inv_fecha_vencimiento: fechaVencimiento,
       inv_renovacion_auto: data.renovacionAuto || CONFIGURACION_INVERSION.RENOVACION_AUTOMATICA_DEFAULT,
@@ -99,14 +100,9 @@ class InversionService {
 
     // Crear inversión en BD
     const created = await inversionRepository.create(inversion);
-    // Adjuntar la tasa calculada al objeto retornado para que el cliente la muestre
-    const createdWithTasa = {
-      ...created,
-      inv_tasa_interes: tasa,
-    };
 
     // Debitar el monto de la cuenta
-    const nuevoSaldo = Math.round(saldoDisponible - data.monto);
+    const nuevoSaldo = Math.round((saldoDisponible - data.monto) * 100) / 100;
     await cuentaRepository.updateSaldo(data.idCuenta, nuevoSaldo);
 
     // Generar cronograma de pagos
@@ -115,7 +111,7 @@ class InversionService {
     // Registrar movimiento de apertura
     await this._registrarMovimientoApertura(created);
 
-    return createdWithTasa;
+    return created;
   }
 
   async update(id, data) {
@@ -296,12 +292,13 @@ class InversionService {
     const id_tra = uuidv4();
 
     // Crear transacción asociada (registro en tabla transaccion)
+    const monto = parseFloat(inversion.inv_monto);
     const transaccion = {
       id_tra,
       id_cuenta: inversion.id_cuenta,
       tra_fecha_hora: new Date().toISOString(),
       // monto negativo porque se debita de la cuenta
-      tra_monto: -Math.abs(parseFloat(inversion.inv_monto) || 0),
+      tra_monto: Math.round(-Math.abs(monto) * 100) / 100,
       tra_tipo: '01', // Retiro
       tra_descripcion: `Apertura inversión ${inversion.id_inv}`,
       tra_estado: '01', // Completada

@@ -4,6 +4,7 @@ import SeleccionCuenta from './components/SeleccionCuenta/SeleccionCuenta';
 import ConfirmacionInversion from './components/ConfirmacionInversion/ConfirmacionInversion';
 import TablaIntereses from './components/TablaIntereses/TablaIntereses';
 import ListadoInversiones from './components/ListadoInversiones/ListadoInversiones';
+import DetalleInversion from './components/DetalleInversion/DetalleInversion';
 import { useSimulador } from './hooks/useSimulador';
 import type { Cuenta, Inversion } from './types/inversion.types';
 import styles from './InversionesModule.module.css';
@@ -24,7 +25,12 @@ interface Props {
 
 const InversionesModule: React.FC<Props> = ({ idPersona, cliente }) => {
   // Obtener idPersona desde props o desde el objeto cliente pasado por Dashboard
-  const personaId = idPersona || cliente?.id || '';
+  const personaId = idPersona || cliente?.id_persona || '';
+  
+  // Debug
+  console.log('InversionesModule - Props:', { idPersona, cliente });
+  console.log('InversionesModule - personaId calculado:', personaId);
+  
   const [vista, setVista] = useState<Vista>(Vista.INICIO);
   const [monto, setMonto] = useState(0);
   const [plazoDias, setPlazoDias] = useState(0);
@@ -126,6 +132,9 @@ const InversionesModule: React.FC<Props> = ({ idPersona, cliente }) => {
             <div className={styles.botonera}>
               <button className={styles.btnContinuar} onClick={handleIniciarSimulacion}>
                 Continuar
+              </button>
+              <button className={styles.btnVerInversiones} onClick={handleVerListado}>
+                Ver mis inversiones
               </button>
             </div>
           </div>
@@ -233,13 +242,10 @@ const InversionesModule: React.FC<Props> = ({ idPersona, cliente }) => {
       )}
 
       {vista === Vista.DETALLE && inversionSeleccionada && (
-        <div className={styles.detalle}>
-          <button className={styles.btnVolver} onClick={() => setVista(Vista.LISTADO)}>
-            ← Volver al listado
-          </button>
-          {/* Aquí iría el componente DetalleInversion que ya tienes */}
-          <p>Detalle de inversión: {inversionSeleccionada.id_inv}</p>
-        </div>
+        <DetalleInversion 
+          inversion={inversionSeleccionada} 
+          onVolver={() => setVista(Vista.LISTADO)} 
+        />
       )}
     </div>
   );
