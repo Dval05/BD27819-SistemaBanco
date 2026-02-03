@@ -214,7 +214,10 @@ class PagoServiciosController {
     } catch (error) {
       res.status(error.status || 500).json({
         ok: false,
-        msg: error.message || 'Error al procesar pago'
+        msg: error.message || 'Error al procesar pago',
+        details: error.details,
+        hint: error.hint,
+        code: error.code
       });
     }
   }

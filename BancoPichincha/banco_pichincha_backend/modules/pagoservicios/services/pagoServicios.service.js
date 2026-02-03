@@ -344,36 +344,45 @@ class PagoServiciosService {
         }
       }
 
-      // 7. Generar IDs usando UUID
-      const id_tra = uuidv4();
-      const id_pagser = uuidv4();
+      // 7. Generar IDs cortos (≤20) compatibles con columnas varchar(20)
+      const genId20 = () => (Date.now().toString(36) + uuidv4().replace(/-/g, '')).slice(0, 20).toUpperCase();
+      const id_tra = genId20();
+      const id_pagser = genId20();
 
-      // 8. Crear transacción
+      // 8. Crear transacción (descripción truncada a 20 caracteres)
+      const descBase = tra_descripcion || `Pago de ${servicio.srv_nombre}`;
+      const descCorta = descBase.length > 20 ? descBase.slice(0, 20) : descBase;
       const transaccion = await pagoServiciosRepository.createTransaccion({
         id_tra,
         id_cuenta,
         tra_monto,
         tra_tipo: '03', // Tipo 03 = Pago de servicio
-        tra_descripcion: tra_descripcion || `Pago de ${servicio.srv_nombre}`,
+        tra_descripcion: descCorta,
         tra_estado: '01' // Estado 01 = Completada
       });
 
-      // 9. Generar comprobante y referencia
-      const comprobante = `COMP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-      const referencia = JSON.stringify(datos_servicio);
+      // 9. Generar comprobante y referencia (respetando posibles límites de longitud)
+      // Comprobante máximo 20 caracteres
+      const compBase = `${Date.now().toString(36).toUpperCase()}${uuidv4().replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+      const comprobante = `CP-${compBase}`.slice(0, 20);
+      // Referencia compacta: base64 del JSON, truncada si el esquema impone límite corto (p.ej. 20)
+      let referencia;
+      try {
+        const json = JSON.stringify(datos_servicio || {});
+        const b64 = Buffer.from(json).toString('base64');
+        referencia = b64.length > 20 ? b64.slice(0, 20) : b64;
+      } catch (_) {
+        referencia = 'REF';
+      }
 
-      // 10. Crear pago de servicio
+      // 10. Crear pago de servicio (límite de 20 para strings en columnas varchas cortas)
       const pagoServicio = await pagoServiciosRepository.createPagoServicio({
         id_tra,
         id_pagser,
-        id_cuenta,
-        tra_monto,
-        tra_descripcion: tra_descripcion || `Pago de ${servicio.srv_nombre}`,
-        tra_estado: '01',
         id_srv,
-        pagser_estado: '01', // Estado 01 = Completado
-        pagser_comprobante: comprobante,
-        pagser_referencia: referencia,
+        pagser_estado: '01', // Completado
+        pagser_comprobante: (comprobante || '').slice(0, 20),
+        pagser_referencia: (referencia || '').slice(0, 20),
         id_subtipo: id_subtipo || null
       });
 
@@ -393,10 +402,19 @@ class PagoServiciosService {
       };
 
     } catch (error) {
+      console.error('❌ Error al procesar pago:', {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
+      });
       throw { 
         status: error.status || 500, 
         message: error.message || 'Error al procesar pago',
-        errores: error.errores
+        errores: error.errores,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
       };
     }
   }
