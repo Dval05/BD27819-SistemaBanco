@@ -60,7 +60,8 @@ export interface Contacto {
 
 // Interfaz para crear contacto
 export interface CrearContactoRequest {
-  cliId: number | string;
+  cliId?: number | string;
+  idPersona?: number | string;
   banId?: number;
   conTipoIdentificacion: string;
   conIdentificacion: string;

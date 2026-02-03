@@ -98,19 +98,44 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
 
       // Determinar tipo de transferencia para el backend
       const tipoTransferencia = datos.tipoTransferencia === 'INTERBANCARIA' ? '01' : '00';
+      // Construir cuentaDestino según si es contacto o cuenta directa
+      const cuentaDestino = datos.contacto
+        ? {
+            numeroCuenta: datos.contacto.numeroCuenta,
+            email: datos.contacto.email || '',
+            tipoIdentificacion: datos.contacto.tipoIdentificacion || '',
+            identificacion: datos.contacto.identificacion || '',
+            tipoCuenta: datos.contacto.tipoCuenta || '',
+            idBanco: tipoTransferencia === '01' ? datos.contacto.banco : undefined,
+            nombreBeneficiario: datos.contacto.nombreBeneficiario || '',
+            idContacto: datos.contacto.id || undefined
+          }
+        : datos.cuentaDestino
+        ? {
+            numeroCuenta: datos.cuentaDestino.numeroCuenta,
+            email: '',
+            tipoIdentificacion: '',
+            identificacion: '',
+            tipoCuenta: datos.cuentaDestino.tipoCuenta,
+            idBanco: undefined,
+            nombreBeneficiario: '',
+            idContacto: undefined
+          }
+        : undefined;
 
       const request = {
-        cliId: clienteId,
-        traCuentaOrigen: datos.cuentaOrigen.numeroCuenta,
-        traCuentaDestino: datos.contacto?.numeroCuenta || datos.cuentaDestino?.numeroCuenta || '',
-        traMonto: datos.monto,
-        traTipoTransferencia: tipoTransferencia,
-        traDescripcion: datos.descripcion || undefined,
-        conId: datos.contacto?.id
+        idPersona: clienteId,
+        idCuenta: datos.cuentaOrigen.id || datos.cuentaOrigen.numeroCuenta,
+        monto: datos.monto,
+        descripcion: datos.descripcion || '',
+        tipoTransferencia,
+        cuentaDestino,
+        saldoDisponible: datos.cuentaOrigen.saldoDisponible || 0,
+        saldoDisponibleAnterior: datos.cuentaOrigen.saldoDisponible || 0,
+        guardarContacto: datos.contacto ? { guardar: false } : undefined,
+        conId: datos.contacto?.id || undefined
       };
-
       const resultado: TransferenciaResponse = await transferenciasService.crearTransferencia(request);
-
       // Navegar a pantalla de éxito
       onNavigate('EXITO', {
         transferencia: resultado,
