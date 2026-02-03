@@ -31,7 +31,8 @@ export const transferenciasService = {
   obtenerBancos: async (): Promise<Banco[]> => {
     try {
       const response = await axios.get(`${BASE_URL}/bancos`);
-      return response.data.data || response.data || [];
+      // Compatibilidad con la respuesta del backend: { exito, mensaje, datos }
+      return response.data.datos || response.data.data || response.data || [];
     } catch (error) {
       console.error('Error al obtener bancos:', error);
       return [];
@@ -59,6 +60,7 @@ export const transferenciasService = {
    * Obtiene todos los contactos guardados del cliente
    */
   obtenerContactos: async (clienteId: number | string): Promise<Contacto[]> => {
+    if (!clienteId) return [];
     try {
       const response = await axios.get(`${BASE_URL}/contactos/cliente/${clienteId}`);
       return response.data.datos || response.data.data || response.data || [];
@@ -72,7 +74,15 @@ export const transferenciasService = {
    * Crea un nuevo contacto
    */
   crearContacto: async (contacto: CrearContactoRequest): Promise<Contacto> => {
-    const response = await axios.post(`${BASE_URL}/contactos`, contacto);
+    // El backend espera idPersona, no cliId
+    const contactoRequest = { ...contacto };
+    if (contactoRequest.cliId !== undefined) {
+      contactoRequest.idPersona = contactoRequest.cliId;
+      delete contactoRequest.cliId;
+    }
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await axios.post(`${BASE_URL}/contactos`, contactoRequest, { headers });
     return response.data.data || response.data;
   },
 
@@ -99,13 +109,27 @@ export const transferenciasService = {
   /**
    * Obtiene los límites disponibles del cliente
    */
-  obtenerLimitesDisponibles: async (clienteId: number | string): Promise<LimiteTransaccional> => {
+  obtenerLimitesDisponibles: async (idCuenta: number | string): Promise<LimiteTransaccional> => {
+    if (!idCuenta) return {
+      montoMaximoDiario: 15000,
+      montoMaximoTransaccion: 15000,
+      cantidadMaximaDiaria: 20,
+      disponibleDiario: 15000,
+      cantidadDisponible: 20,
+      transferenciasHoy: 0
+    };
     try {
-      const response = await axios.get(`${BASE_URL}/limites/${clienteId}/disponible`);
-      return response.data.data || response.data;
+      const response = await axios.get(`${BASE_URL}/limites/${idCuenta}/disponibles`);
+      return response.data.datos || response.data.data || response.data || {
+        montoMaximoDiario: 15000,
+        montoMaximoTransaccion: 15000,
+        cantidadMaximaDiaria: 20,
+        disponibleDiario: 15000,
+        cantidadDisponible: 20,
+        transferenciasHoy: 0
+      };
     } catch (error) {
       console.error('Error al obtener límites:', error);
-      // Retornar límites por defecto si falla
       return {
         montoMaximoDiario: 15000,
         montoMaximoTransaccion: 15000,
@@ -148,8 +172,12 @@ export const transferenciasService = {
    * Crea y ejecuta una transferencia
    */
   crearTransferencia: async (datos: CrearTransferenciaRequest): Promise<TransferenciaResponse> => {
+    // Validar datos obligatorios
+    if (!datos.traCuentaOrigen || !datos.traCuentaDestino || !datos.traMonto || !datos.traTipoTransferencia) {
+      throw new Error('Faltan datos requeridos para la transferencia');
+    }
     const response = await axios.post(`${BASE_URL}/crear`, datos);
-    return response.data.data || response.data;
+    return response.data.datos || response.data.data || response.data;
   },
 
   /**
@@ -189,8 +217,10 @@ export const transferenciasService = {
    */
   validarCuentaPichincha: async (numeroCuenta: string): Promise<ValidacionCuentaResponse> => {
     try {
+      // Limpiar el número de cuenta: solo dígitos
+      const cuentaLimpia = (numeroCuenta || '').replace(/\D/g, '').slice(0, 10);
       const response = await axios.post(`${BASE_URL}/validar-cuenta-pichincha`, {
-        numeroCuenta
+        numeroCuenta: cuentaLimpia
       });
       return response.data.data || response.data;
     } catch (error: any) {

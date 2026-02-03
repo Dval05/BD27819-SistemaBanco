@@ -371,20 +371,13 @@ class TransferenciaRepository {
     try {
       const { supabase } = require('../../../shared/config/database.config');
       
+
+      // Seleccionar sin JOIN para evitar fallos si la persona no existe
       const { data, error } = await supabase
         .from('cuenta')
-        .select(`
-          id_cuenta,
-          cta_numero,
-          cta_tipo,
-          cta_estado,
-          persona:id_persona (
-            per_nombre,
-            per_apellido
-          )
-        `)
-        .eq('cta_numero', numeroCuenta)
-        .eq('cta_estado', '00')
+        .select('*')
+        .eq('cue_numero', numeroCuenta)
+        .eq('cue_estado', '00')
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -392,14 +385,13 @@ class TransferenciaRepository {
         return null;
       }
 
+
       if (data) {
         return {
           id_cuenta: data.id_cuenta,
           cta_numero: data.cta_numero,
           cta_tipo: data.cta_tipo,
-          nombre_titular: data.persona 
-            ? `${data.persona.per_nombre || ''} ${data.persona.per_apellido || ''}`.trim()
-            : null
+          nombre_titular: data.id_persona || 'Titular Banco Pichincha'
         };
       }
 
