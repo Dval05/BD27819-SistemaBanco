@@ -66,13 +66,46 @@ class CuentaRepository {
   }
 
   async findByPersona(idPersona) {
-    const { data, error } = await supabase
+    // Obtener todas las cuentas base
+    const { data: cuentas, error } = await supabase
       .from('cuenta')
       .select('*')
       .eq('id_persona', idPersona);
     
     if (error) throw error;
-    return data || [];
+    if (!cuentas || cuentas.length === 0) return [];
+
+    // Para cada cuenta, determinar su tipo verificando en cuenta_ahorro y cuenta_corriente
+    const cuentasConTipo = await Promise.all(
+      cuentas.map(async (cuenta) => {
+        // Verificar si es cuenta de ahorro
+        const { data: ahorro } = await supabase
+          .from('cuenta_ahorro')
+          .select('*')
+          .eq('id_cuenta', cuenta.id_cuenta)
+          .maybeSingle();
+
+        if (ahorro) {
+          return { ...cuenta, ...ahorro, tipo: 'ahorro' };
+        }
+
+        // Verificar si es cuenta corriente
+        const { data: corriente } = await supabase
+          .from('cuenta_corriente')
+          .select('*')
+          .eq('id_cuenta', cuenta.id_cuenta)
+          .maybeSingle();
+
+        if (corriente) {
+          return { ...cuenta, ...corriente, tipo: 'corriente' };
+        }
+
+        // Si no está en ninguna, es cuenta base (no debería pasar)
+        return { ...cuenta, tipo: 'base' };
+      })
+    );
+
+    return cuentasConTipo;
   }
 
   async findCuentasAhorroByPersona(idPersona) {

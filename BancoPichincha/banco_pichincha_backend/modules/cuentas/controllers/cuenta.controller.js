@@ -74,6 +74,43 @@ class CuentaController {
       });
     }
   }
+
+  async crearCuentaConTarjeta(req, res) {
+    try {
+      const { id_persona, idPersona, tipoCuenta } = req.body;
+      const personaId = id_persona || idPersona;
+      
+      if (!personaId) {
+        return res.status(400).json({
+          ok: false,
+          msg: 'id_persona es requerido'
+        });
+      }
+
+      if (!tipoCuenta || !['ahorro', 'corriente'].includes(tipoCuenta)) {
+        return res.status(400).json({
+          ok: false,
+          msg: 'tipoCuenta debe ser "ahorro" o "corriente"'
+        });
+      }
+
+      // Crear cuenta con tarjeta de débito
+      const resultado = await cuentaService.crearCuentaConTarjeta(personaId, tipoCuenta);
+      
+      res.status(201).json({
+        ok: true,
+        success: true,
+        data: resultado,
+        msg: `Cuenta ${tipoCuenta === 'ahorro' ? 'de ahorro' : 'corriente'} y tarjeta de débito creadas exitosamente`
+      });
+    } catch (error) {
+      console.error('Error creando cuenta con tarjeta:', error);
+      res.status(error.status || 500).json({
+        ok: false,
+        msg: error.message || 'Error al crear cuenta con tarjeta'
+      });
+    }
+  }
 }
 
 module.exports = new CuentaController();

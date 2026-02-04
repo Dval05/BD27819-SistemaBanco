@@ -27,10 +27,14 @@ class ProductosService {
     const numero = cuenta.cue_numero || '';
     const numeroOculto = '******' + numero.slice(-4);
     
+    // Determinar el nombre según el tipo de cuenta
+    const nombreCuenta = cuenta.tipo === 'corriente' ? 'CUENTA CORRIENTE' : 'CUENTA AHORROS';
+    
     return {
       id: cuenta.id_cuenta,
       tipo: 'cuenta',
-      nombre: 'CUENTA AHORROS',
+      tipoCuenta: cuenta.tipo || 'ahorro', // ahorro o corriente
+      nombre: nombreCuenta,
       numero: numeroOculto,
       numeroCompleto: numero,
       saldo: parseFloat(cuenta.cue_saldo_disponible) || 0,

@@ -6,6 +6,9 @@ const CuentaController = require('./controllers/cuenta.controller');
 router.post('/crear-ahorro', CuentaController.crearCuentaAhorro);
 router.post('/ahorro', CuentaController.crearCuentaAhorro);
 
+// Crear cuenta con tarjeta de débito automática (ahorro o corriente)
+router.post('/crear-con-tarjeta', CuentaController.crearCuentaConTarjeta);
+
 // Obtener cuentas por persona
 router.get('/persona/:idPersona', CuentaController.getCuentasByPersona);
 

@@ -137,6 +137,14 @@ const clienteService = {
     return response.data;
   },
 
+  crearCuentaConTarjeta: async (idPersona: string, tipoCuenta: 'ahorro' | 'corriente'): Promise<{ ok: boolean; msg: string; data: any }> => {
+    const response = await axios.post<{ ok: boolean; msg: string; data: any }>(`${API_URL}/cuentas/crear-con-tarjeta`, { 
+      idPersona, 
+      tipoCuenta 
+    });
+    return response.data;
+  },
+
   // Métodos para gestión de tarjetas
   obtenerEstadoTarjeta: async (idTarjeta: string): Promise<{ success: boolean; data: any }> => {
     const response = await axios.get<{ success: boolean; data: any }>(`${API_URL}/cajero/tarjeta/estado/${idTarjeta}`);

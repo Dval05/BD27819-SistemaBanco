@@ -8,6 +8,7 @@ import { ChevronRight, Loader2, Eye, EyeOff, Users, CreditCard, Plus, X, Lock, U
 import type { Cliente } from '../../types';
 import clienteService, { type Cuenta, type Tarjeta, type InversionProducto } from '../../services/clienteService';
 import './Inicio.css';
+import ModalCrearCuenta from './ModalCrearCuenta';
 
 interface InicioProps {
   cliente: Cliente;
@@ -40,6 +41,7 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
   const [mostrarModal, setMostrarModal] = useState(false);
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState<'cancelar' | 'bloquear-permanente' | null>(null);
   const [procesando, setProcesando] = useState(false);
+  const [mostrarModalCrearCuenta, setMostrarModalCrearCuenta] = useState(false);
 
   useEffect(() => {
     const cargarProductos = async () => {
@@ -113,6 +115,25 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       alert('Error al crear cuenta de ahorro: ' + (error.response?.data?.msg || error.message));
     } finally {
       setCreandoCuenta(false);
+    }
+  };
+
+  const crearCuentaConTarjeta = async (tipoCuenta: 'ahorro' | 'corriente') => {
+    if (!cliente.id) return;
+    
+    try {
+      const response = await clienteService.crearCuentaConTarjeta(cliente.id, tipoCuenta);
+      
+      if (response.ok) {
+        alert(`✅ ${response.msg}\n\n📋 Número de cuenta: ${response.data.cuenta.cue_numero}\n💳 Tarjeta: ${response.data.tarjeta.numeroOculto}\n🔑 PIN inicial: ${response.data.tarjeta.pinPorDefecto}`);
+        // Recargar productos
+        const productos = await clienteService.obtenerProductos(cliente.id);
+        setCuentas(productos.cuentas);
+        setTarjetas(productos.tarjetas);
+      }
+    } catch (error: any) {
+      console.error('Error creando cuenta:', error);
+      throw error;
     }
   };
 
@@ -241,20 +262,10 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
             ) : (
               <button 
                 className="crear-cuenta-btn"
-                onClick={crearCuentaAhorro}
-                disabled={creandoCuenta}
+                onClick={() => setMostrarModalCrearCuenta(true)}
               >
-                {creandoCuenta ? (
-                  <>
-                    <Loader2 size={16} className="spinner" />
-                    Creando...
-                  </>
-                ) : (
-                  <>
-                    <Plus size={16} />
-                    Crear Cuenta de Ahorro
-                  </>
-                )}
+                <Plus size={16} />
+                Crear Cuenta
               </button>
             )}
             <button 
@@ -537,6 +548,13 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
             )}
           </div>
         </div>
+      )}
+
+      {mostrarModalCrearCuenta && (
+        <ModalCrearCuenta
+          onClose={() => setMostrarModalCrearCuenta(false)}
+          onCrear={crearCuentaConTarjeta}
+        />
       )}
     </div>
   );
