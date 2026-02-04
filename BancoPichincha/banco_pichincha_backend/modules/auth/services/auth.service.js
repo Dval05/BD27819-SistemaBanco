@@ -1,12 +1,17 @@
 const { v4: uuidv4 } = require('uuid');
-const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 const authRepository = require('../repositories/auth.repository');
 const cuentaService = require('../../cuentas/services/cuenta.service');
 const tarjetaService = require('../../tarjetas/services/tarjeta.service');
 
 class AuthService {
-  hashPassword(password) {
-    return crypto.createHash('sha256').update(password).digest('hex');
+  async hashPassword(password) {
+    const saltRounds = 10;
+    return await bcrypt.hash(password, saltRounds);
+  }
+
+  async verifyPassword(password, hash) {
+    return await bcrypt.compare(password, hash);
   }
 
   async login(usuario, password) {
@@ -23,16 +28,13 @@ class AuthService {
       throw { status: 401, message: 'Usuario no encontrado. Registra una cuenta primero.' };
     }
 
-    const passwordHash = this.hashPassword(password);
+    // Verificar contraseña con bcrypt
+    const passwordValid = await this.verifyPassword(password, persona.per_contrasenia);
     
     console.log('Password check:', { 
-      inputHash: passwordHash, 
-      storedHash: persona.per_contrasenia,
-      matchHash: persona.per_contrasenia === passwordHash,
-      matchPlain: persona.per_contrasenia === password
+      passwordValid,
+      storedHashType: persona.per_contrasenia.substring(0, 4)
     });
-
-    const passwordValid = persona.per_contrasenia === passwordHash || persona.per_contrasenia === password;
     
     if (!passwordValid) {
       throw { status: 401, message: 'Contraseña incorrecta' };
@@ -79,7 +81,7 @@ class AuthService {
     }
 
     const idPersona = uuidv4();
-    const passwordHash = this.hashPassword(data.password);
+    const passwordHash = await this.hashPassword(data.password);
 
     const persona = {
       id_persona: idPersona,
@@ -136,19 +138,32 @@ class AuthService {
   }
 
   async getProfile(id) {
+    console.log('🔍 Obteniendo perfil para id:', id);
+    
     const persona = await authRepository.findById(id);
     if (!persona) {
       throw { status: 404, message: 'Usuario no encontrado' };
     }
 
+    console.log('👤 Persona encontrada:', { 
+      id: persona.id_persona, 
+      usuario: persona.per_usuario,
+      tipo: persona.per_tipo_persona 
+    });
+
     let datosAdicionales = null;
     if (persona.per_tipo_persona === '00') {
       datosAdicionales = await authRepository.findPersonaNatural(persona.id_persona);
+      console.log('📋 Datos persona_natural:', datosAdicionales);
     } else {
       datosAdicionales = await authRepository.findPersonaJuridica(persona.id_persona);
+      console.log('📋 Datos persona_juridica:', datosAdicionales);
     }
 
-    return this._formatPersonaResponse(persona, datosAdicionales);
+    const response = this._formatPersonaResponse(persona, datosAdicionales);
+    console.log('✅ Respuesta formateada:', response);
+    
+    return response;
   }
 
   _validateRegistro(data) {

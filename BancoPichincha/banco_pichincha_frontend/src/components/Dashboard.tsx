@@ -28,6 +28,7 @@ const PagosModule = lazy(() => import('../modules/pagos/Pagos'));
 const SolicitudesModule = lazy(() => import('../modules/solicitudes/Solicitudes'));
 const InversionesModule = lazy(() => import('../modules/inversiones/InversionesModule'));
 const RetiroSinTarjetaModule = lazy(() => import('../modules/retiro-sin-tarjeta/RetiroSinTarjeta'));
+const PerfilModule = lazy(() => import('../modules/perfil/Perfil'));
 
 interface DashboardProps {
   cliente: Cliente;
@@ -172,6 +173,8 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
             }}
           />
         );
+      case 'perfil':
+        return <PerfilModule {...moduleProps} />;
       default:
         return <InicioModule {...moduleProps} />;
     }
@@ -204,7 +207,7 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
           <div className="user-avatar">{getIniciales()}</div>
           <div className="user-details">
             <span className="user-name">{getNombreCorto().toUpperCase()}</span>
-            <span className="user-link">Mi perfil</span>
+            <span className="user-link" onClick={() => handleNavigate('perfil')}>Mi perfil</span>
           </div>
         </div>
 

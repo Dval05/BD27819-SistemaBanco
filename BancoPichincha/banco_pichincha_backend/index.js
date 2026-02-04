@@ -41,7 +41,12 @@ app.use('/api/transferencias', transferenciasRoutes);
 // Health check endpoint
 app.get('/health', async (req, res) => {
   try {
-    
+    // Verificar conexión a la base de datos
+    const { data, error } = await supabase
+      .from('persona')
+      .select('id_persona')
+      .limit(1);
+
     if (error) {
       return res.status(500).json({
         status: 'error',
