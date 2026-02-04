@@ -32,7 +32,9 @@ const ConfiguradorLimites: React.FC<ConfiguradorLimitesProps> = ({ clienteId }) 
 
   const cargarLimites = async () => {
     try {
+      console.log('📊 ConfiguradorLimites: Cargando límites para clienteId:', clienteId);
       const data = await transferenciasService.obtenerLimitesDisponibles(clienteId);
+      console.log('📊 ConfiguradorLimites: Límites obtenidos:', data);
       setLimites(data);
       setMontoMaximoDiario(data.montoMaximoDiario?.toString() || '15000');
       setMontoMaximoTransaccion(data.montoMaximoTransaccion?.toString() || '5000');
@@ -73,11 +75,16 @@ const ConfiguradorLimites: React.FC<ConfiguradorLimitesProps> = ({ clienteId }) 
 
     try {
       setGuardando(true);
+      console.log('💾 Guardando límites para clienteId:', clienteId);
+      console.log('💾 Nuevos límites:', { montoMaximoDiario: monto1, montoMaximoTransaccion: monto2, cantidadMaximaDiaria: cantidad });
+      
       const resultado = await transferenciasService.guardarLimites(clienteId, {
         montoMaximoDiario: monto1,
         montoMaximoTransaccion: monto2,
         cantidadMaximaDiaria: cantidad
       });
+
+      console.log('💾 Respuesta del guardado:', resultado);
 
       if (resultado.exito) {
         setExito(true);
@@ -88,6 +95,7 @@ const ConfiguradorLimites: React.FC<ConfiguradorLimitesProps> = ({ clienteId }) 
         setError(resultado.mensaje || 'Error al guardar límites');
       }
     } catch (err: any) {
+      console.error('❌ Error al guardar:', err);
       setError(err.response?.data?.message || 'Error al guardar límites');
     } finally {
       setGuardando(false);

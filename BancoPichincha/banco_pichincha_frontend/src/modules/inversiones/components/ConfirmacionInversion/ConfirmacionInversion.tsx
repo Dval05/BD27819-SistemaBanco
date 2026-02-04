@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useInversiones } from '../../hooks/useInversiones';
+import { useNotificacion } from '../../../../contexts/NotificacionContext';
 import { MENSAJES } from '../../constants/inversiones.constants';
 import type { Cuenta } from '../../types/inversion.types';
 import styles from './ConfirmacionInversion.module.css';
@@ -29,6 +30,7 @@ const ConfirmacionInversion: React.FC<Props> = ({
 }) => {
   const [procesando, setProcesando] = useState(false);
   const { createInversion } = useInversiones();
+  const { exito, error: notificarError } = useNotificacion();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(amount);
@@ -47,10 +49,10 @@ const ConfirmacionInversion: React.FC<Props> = ({
         renovacionAuto: '01', // No
       });
 
-      alert(MENSAJES.EXITO_CREACION);
+      exito(MENSAJES.EXITO_CREACION, 'Inversión Creada');
       onExito();
     } catch (error: any) {
-      alert(error.message || MENSAJES.ERROR_CREACION);
+      notificarError(error.message || MENSAJES.ERROR_CREACION, 'Error');
     } finally {
       setProcesando(false);
     }

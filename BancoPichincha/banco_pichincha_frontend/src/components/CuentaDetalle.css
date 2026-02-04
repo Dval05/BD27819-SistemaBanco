@@ -178,8 +178,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
+
+
 
 .movimiento-descripcion {
   font-size: 14px;
@@ -191,6 +193,7 @@
   font-size: 12px;
   color: #888;
 }
+
 
 .movimiento-montos {
   display: flex;
@@ -209,7 +212,7 @@
 }
 
 .movimiento-monto.negativo {
-  color: #1a1a2e;
+  color: #dc2626;
 }
 
 .movimiento-saldo {

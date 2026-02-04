@@ -330,28 +330,33 @@ class LimiteTransaccionalService {
         };
       }
 
-      // Usar la primera cuenta (principal)
-      const idCuenta = cuentas[0].id_cuenta;
-      console.log('Usando cuenta:', idCuenta);
-
-      // Guardar límites para tipo transferencia ('00')
-      const resultado = await limiteTransaccionalRepository.guardarLimitePorCuenta(
-        idCuenta,
-        '00',
-        limites.montoMaximoDiario,
-        limites.montoMaximoTransaccion,
-        limites.cantidadMaximaDiaria
+      // Guardar límites para TODAS las cuentas de la persona
+      const resultados = await Promise.all(
+        cuentas.map(cuenta => {
+          console.log('Guardando límites para cuenta:', cuenta.id_cuenta);
+          return limiteTransaccionalRepository.guardarLimitePorCuenta(
+            cuenta.id_cuenta,
+            '00',
+            limites.montoMaximoDiario,
+            limites.montoMaximoTransaccion,
+            limites.cantidadMaximaDiaria
+          );
+        })
       );
 
-      if (resultado) {
+      // Verificar si al menos una fue exitosa
+      const alguna_exitosa = resultados.some(r => r !== null);
+
+      if (alguna_exitosa) {
         return {
           exito: true,
           codigo: 'LIMITES_GUARDADOS',
-          mensaje: 'Límites guardados correctamente',
+          mensaje: `Límites guardados correctamente para ${cuentas.length} cuenta(s)`,
           datos: {
             montoMaximoDiario: limites.montoMaximoDiario,
             montoMaximoTransaccion: limites.montoMaximoTransaccion,
-            cantidadMaximaDiaria: limites.cantidadMaximaDiaria
+            cantidadMaximaDiaria: limites.cantidadMaximaDiaria,
+            cuentasActualizadas: cuentas.length
           }
         };
       } else {

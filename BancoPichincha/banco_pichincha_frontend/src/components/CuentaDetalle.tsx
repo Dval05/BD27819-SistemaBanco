@@ -147,7 +147,9 @@ function CuentaDetalle({ cuenta, onBack }: CuentaDetalleProps) {
             </div>
           ) : (
             <div className="movimientos-lista">
-              {Object.entries(movimientosAgrupados).map(([fecha, movs]) => (
+              {Object.entries(movimientosAgrupados)
+                .sort(([fechaA], [fechaB]) => new Date(fechaB).getTime() - new Date(fechaA).getTime())
+                .map(([fecha, movs]) => (
                 <div key={fecha} className="movimientos-grupo">
                   <div className="movimientos-fecha">
                     {formatDate(fecha)}

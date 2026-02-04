@@ -222,7 +222,11 @@ export const transferenciasService = {
     console.log('3. Payload a enviar:', JSON.stringify(datos, null, 2));
     
     try {
-      const response = await axios.post(url, datos);
+      // Obtener el token del localStorage
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const response = await axios.post(url, datos, { headers });
       console.log('4. Respuesta recibida:', response.status, response.data);
       return response.data.datos || response.data.data || response.data;
     } catch (error: any) {

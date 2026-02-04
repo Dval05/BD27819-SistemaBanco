@@ -212,8 +212,7 @@ class LimiteTransaccionalRepository {
         .select('*')
         .eq('id_persona', idPersona)
         .eq('cue_estado', '00')
-        .order('cue_fecha_apertura', { ascending: false })
-        .limit(1);
+        .order('cue_fecha_apertura', { ascending: false });
 
       if (error) throw error;
       return data || [];

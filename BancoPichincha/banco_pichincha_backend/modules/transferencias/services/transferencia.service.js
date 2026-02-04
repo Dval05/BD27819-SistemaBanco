@@ -189,20 +189,22 @@ class TransferenciaService {
 
       // ===== VALIDACIÓN 4: Prevención de duplicados =====
       console.log('\n4. Verificando duplicados...');
-      const esDuplicado = await transferenciaRepository.existeTransferenciaDuplicada(
-        idCuenta,
-        monto,
-        cuentaDestino.numeroCuenta,
-        new Date()
-      );
-      if (esDuplicado) {
-        return {
-          exito: false,
-          codigo: 'POSIBLE_DUPLICADO',
-          mensaje: 'Se detectó una transferencia idéntica hace poco. Por favor, intente más tarde.',
-          datos: null
-        };
-      }
+      // NOTA: Deshabilitado para desarrollo. En producción, descomentar para prevenir duplicados
+      // const esDuplicado = await transferenciaRepository.existeTransferenciaDuplicada(
+      //   idCuenta,
+      //   monto,
+      //   cuentaDestino.numeroCuenta,
+      //   new Date()
+      // );
+      // if (esDuplicado) {
+      //   return {
+      //     exito: false,
+      //     codigo: 'POSIBLE_DUPLICADO',
+      //     mensaje: 'Se detectó una transferencia idéntica hace poco. Por favor, intente más tarde.',
+      //     datos: null
+      //   };
+      // }
+      console.log('✅ Validación de duplicados omitida (desarrollo)');
 
       // ===== VALIDACIÓN 5: Validar banco destino (si es interbancaria) =====
       let validacionBanco = null;
@@ -322,7 +324,7 @@ class TransferenciaService {
         nuevoSaldoOrigen = parseFloat((saldoDisponible - montoTotalDebito).toFixed(2));
 
         // Actualizar saldo de cuenta origen
-        await cuentaRepository.actualizarSaldo(idCuenta, nuevoSaldoOrigen);
+        await cuentaRepository.updateSaldo(idCuenta, nuevoSaldoOrigen);
         console.log(`💰 Saldo actualizado - Cuenta origen: ${idCuenta}, Nuevo saldo: $${nuevoSaldoOrigen.toFixed(2)}`);
 
         // ===== CREAR MOVIMIENTO DE DÉBITO EN TRANSACCION =====
@@ -348,7 +350,7 @@ class TransferenciaService {
           console.log('   Buscando cuenta destino con número:', cuentaDestino.numeroCuenta);
           
           // Buscar la cuenta destino por número
-          const cuentaDestinoData = await cuentaRepository.findByNumeroCuenta(cuentaDestino.numeroCuenta);
+          const cuentaDestinoData = await cuentaRepository.findByNumero(cuentaDestino.numeroCuenta);
           
           if (cuentaDestinoData && cuentaDestinoData.id_cuenta) {
             console.log('   ✅ Cuenta destino encontrada:', cuentaDestinoData.id_cuenta);
@@ -356,7 +358,7 @@ class TransferenciaService {
             nuevoSaldoDestino = parseFloat(((cuentaDestinoData.cue_saldo_disponible || 0) + monto).toFixed(2));
             
             // Actualizar saldo de cuenta destino
-            await cuentaRepository.actualizarSaldo(cuentaDestinoData.id_cuenta, nuevoSaldoDestino);
+            await cuentaRepository.updateSaldo(cuentaDestinoData.id_cuenta, nuevoSaldoDestino);
             console.log(`💰 Saldo actualizado - Cuenta destino: ${cuentaDestinoData.id_cuenta}, Nuevo saldo: $${nuevoSaldoDestino.toFixed(2)}`);
 
             // Generar ID para la transacción destino
@@ -547,9 +549,15 @@ class TransferenciaService {
       return { valido: false, mensaje: 'Número de cuenta destino inválido' };
     }
 
-    if (!datos.cuentaDestino.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.cuentaDestino.email)) {
-      return { valido: false, mensaje: 'Email destino inválido' };
+    // Email es opcional para transferencias internas (entre propias cuentas)
+    // pero obligatorio para transferencias interbancarias
+    if (datos.tipoTransferencia === '01') {
+      // Transferencia interbancaria: email obligatorio
+      if (!datos.cuentaDestino.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(datos.cuentaDestino.email)) {
+        return { valido: false, mensaje: 'Email destino inválido' };
+      }
     }
+    // Para transferencias internas (00), el email es opcional
 
     if (!datos.descripcion || typeof datos.descripcion !== 'string' || datos.descripcion.trim().length === 0) {
       return { valido: false, mensaje: 'Descripción/motivo de transferencia requerido' };

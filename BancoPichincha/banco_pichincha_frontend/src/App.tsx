@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import { NotificacionProvider } from './contexts/NotificacionContext';
 import type { Cliente } from './types';
 import './App.css';
+import './styles/notificacion.css';
 
 function App() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
@@ -36,17 +38,19 @@ function App() {
   
 
   return (
-    <div className="App">
-      {cliente ? (
-        <Dashboard 
-          cliente={cliente} 
-          onLogout={handleLogout} 
-          onClienteUpdate={handleClienteUpdate}
-        />
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
-    </div>
+    <NotificacionProvider>
+      <div className="App">
+        {cliente ? (
+          <Dashboard 
+            cliente={cliente} 
+            onLogout={handleLogout} 
+            onClienteUpdate={handleClienteUpdate}
+          />
+        ) : (
+          <Login onLogin={handleLogin} />
+        )}
+      </div>
+    </NotificacionProvider>
   );
 }
 

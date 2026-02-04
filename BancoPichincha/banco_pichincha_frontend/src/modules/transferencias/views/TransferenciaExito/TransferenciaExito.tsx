@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { CheckCircle2, Download, Share2, Home, RefreshCw, ArrowRight } from 'lucide-react';
+import { useNotificacion } from '../../../../contexts/NotificacionContext';
 import { ActionButton } from '../../components';
 import type { VistaTransferencia, TransferenciaResponse, Contacto, Cuenta } from '../../types/transferencias.types';
 import styles from './TransferenciaExito.module.css';
@@ -33,6 +34,8 @@ const TransferenciaExito: React.FC<TransferenciaExitoProps> = ({
   onNavigate,
   onVolverInicio
 }) => {
+  const { info } = useNotificacion();
+  
   const formatearMoneda = (valor: number): string => {
     return new Intl.NumberFormat('es-EC', {
       style: 'currency',
@@ -53,7 +56,7 @@ const TransferenciaExito: React.FC<TransferenciaExitoProps> = ({
 
   const handleDescargarComprobante = () => {
     // Aquí se implementaría la descarga del PDF
-    alert('Funcionalidad de descarga próximamente');
+    info('Funcionalidad de descarga próximamente', 'En Desarrollo');
   };
 
   const handleCompartir = () => {
