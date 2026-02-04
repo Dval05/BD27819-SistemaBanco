@@ -7,6 +7,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { supabase } = require('./shared/config/database.config');
+const CronJobManager = require('./shared/cron/cronJobs');
 
 // Módulos
 const authRoutes = require('./modules/auth/auth.routes');
@@ -86,4 +87,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Banco Pichincha Backend running on port ${PORT}`);
   console.log(`📊 Database: ${process.env.SUPABASE_URL ? 'Connected' : 'Not configured'}`);
   console.log(`🌐 Health check: http://localhost:${PORT}/health`);
+  
+  // Iniciar tareas programadas (Cron Jobs)
+  CronJobManager.iniciar();
 });

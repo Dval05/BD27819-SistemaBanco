@@ -25,7 +25,13 @@ class CalculadoraInversion {
    * Calcula el interés ganado
    */
   static calcularInteres(monto, tasaAnual, plazoDias) {
-    const interes = (monto * (tasaAnual / 100) * plazoDias) / 360;
+    // Auto-detectar formato de tasa
+    let tasa = tasaAnual;
+    if (tasa > 1) {
+      tasa = tasa / 100; // Convertir porcentaje a decimal
+    }
+    
+    const interes = (monto * tasa * plazoDias) / 360;
     return Math.round(interes * 100) / 100; // Redondear a 2 decimales
   }
 
