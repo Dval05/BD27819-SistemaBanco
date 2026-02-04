@@ -167,9 +167,24 @@ const transaccionRepository = {
    */
   findPagoServiciosByCuenta: async (idCuenta) => {
     const { data, error } = await supabase
-      .from('pago_servicios')
-      .select('*')
+      .from('transaccion')
+      .select(`
+        id_tra,
+        tra_fecha_hora,
+        tra_monto,
+        tra_descripcion,
+        tra_estado,
+        pago_servicios!inner (
+          id_pagser,
+          id_srv,
+          id_subtipo,
+          pagser_estado,
+          pagser_comprobante,
+          pagser_referencia
+        )
+      `)
       .eq('id_cuenta', idCuenta)
+      .eq('tra_tipo', '03')
       .order('tra_fecha_hora', { ascending: false });
 
     if (error) throw error;

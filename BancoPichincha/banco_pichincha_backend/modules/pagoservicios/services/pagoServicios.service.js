@@ -344,36 +344,45 @@ class PagoServiciosService {
         }
       }
 
-      // 7. Generar IDs usando UUID
-      const id_tra = uuidv4();
-      const id_pagser = uuidv4();
+      // 7. Generar IDs cortos (≤20) compatibles con columnas varchar(20)
+      const genId20 = () => (Date.now().toString(36) + uuidv4().replace(/-/g, '')).slice(0, 20).toUpperCase();
+      const id_tra = genId20();
+      const id_pagser = genId20();
 
-      // 8. Crear transacción
+      // 8. Crear transacción (descripción truncada a 20 caracteres)
+      const descBase = tra_descripcion || `Pago de ${servicio.srv_nombre}`;
+      const descCorta = descBase.length > 20 ? descBase.slice(0, 20) : descBase;
       const transaccion = await pagoServiciosRepository.createTransaccion({
         id_tra,
         id_cuenta,
         tra_monto,
         tra_tipo: '03', // Tipo 03 = Pago de servicio
-        tra_descripcion: tra_descripcion || `Pago de ${servicio.srv_nombre}`,
+        tra_descripcion: descCorta,
         tra_estado: '01' // Estado 01 = Completada
       });
 
-      // 9. Generar comprobante y referencia
-      const comprobante = `COMP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-      const referencia = JSON.stringify(datos_servicio);
+      // 9. Generar comprobante y referencia (respetando posibles límites de longitud)
+      // Comprobante máximo 20 caracteres
+      const compBase = `${Date.now().toString(36).toUpperCase()}${uuidv4().replace(/-/g, '').slice(0, 6).toUpperCase()}`;
+      const comprobante = `CP-${compBase}`.slice(0, 20);
+      // Referencia compacta: base64 del JSON, truncada si el esquema impone límite corto (p.ej. 20)
+      let referencia;
+      try {
+        const json = JSON.stringify(datos_servicio || {});
+        const b64 = Buffer.from(json).toString('base64');
+        referencia = b64.length > 20 ? b64.slice(0, 20) : b64;
+      } catch (_) {
+        referencia = 'REF';
+      }
 
-      // 10. Crear pago de servicio
+      // 10. Crear pago de servicio (límite de 20 para strings en columnas varchas cortas)
       const pagoServicio = await pagoServiciosRepository.createPagoServicio({
         id_tra,
         id_pagser,
-        id_cuenta,
-        tra_monto,
-        tra_descripcion: tra_descripcion || `Pago de ${servicio.srv_nombre}`,
-        tra_estado: '01',
         id_srv,
-        pagser_estado: '01', // Estado 01 = Completado
-        pagser_comprobante: comprobante,
-        pagser_referencia: referencia,
+        pagser_estado: '01', // Completado
+        pagser_comprobante: (comprobante || '').slice(0, 20),
+        pagser_referencia: (referencia || '').slice(0, 20),
         id_subtipo: id_subtipo || null
       });
 
@@ -393,10 +402,19 @@ class PagoServiciosService {
       };
 
     } catch (error) {
+      console.error('❌ Error al procesar pago:', {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
+      });
       throw { 
         status: error.status || 500, 
         message: error.message || 'Error al procesar pago',
-        errores: error.errores
+        errores: error.errores,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code
       };
     }
   }
@@ -468,6 +486,9 @@ class PagoServiciosService {
       };
       
       return {
+        // IDs crudos necesarios para navegación desde frontend
+        id_srv: comprobante.id_srv,
+        id_subtipo: comprobante.id_subtipo || null,
         id_pagser: comprobante.id_pagser,
         id_tra: comprobante.id_tra,
         fecha_transaccion: comprobante.tra_fecha_hora,
@@ -489,6 +510,49 @@ class PagoServiciosService {
     }
   }
 
+  /**
+   * Obtener top N pagos frecuentes por persona
+   */
+  async getPagosFrecuentesByPersona(idPersona, limit = 6) {
+    try {
+      if (!idPersona) {
+        throw { status: 400, message: 'ID de persona requerido' };
+      }
+
+      const pagos = await pagoServiciosRepository.getPagosServiciosByPersona(idPersona);
+
+      const map = new Map();
+      pagos.forEach(p => {
+        const key = `${p.id_srv}|${p.id_subtipo || ''}`;
+        const count = map.get(key)?.count || 0;
+        const last = map.get(key)?.ultimo_pago || null;
+        const fecha = p.transaccion?.tra_fecha_hora || p.tra_fecha_hora;
+        map.set(key, {
+          id_srv: p.id_srv,
+          id_subtipo: p.id_subtipo || null,
+          srv_nombre: p.servicio?.srv_nombre,
+          srv_tiene_subtipos: p.servicio?.srv_tiene_subtipos === '01' || p.servicio?.srv_tiene_subtipos === true,
+          categoria: p.servicio?.categoria_servicio?.cat_nombre || null,
+          subcategoria: p.servicio?.subcategoria_servicio?.subcat_nombre || null,
+          count: count + 1,
+          ultimo_pago: (!last || (fecha && new Date(fecha) > new Date(last))) ? fecha : last
+        });
+      });
+
+      const lista = Array.from(map.values()).sort((a, b) => {
+        if (b.count !== a.count) return b.count - a.count;
+        return new Date(b.ultimo_pago) - new Date(a.ultimo_pago);
+      }).slice(0, limit);
+
+      return lista;
+    } catch (error) {
+      throw { 
+        status: error.status || 500, 
+        message: error.message || 'Error al obtener pagos frecuentes'
+      };
+    }
+  }
+
   // =====================================
   // MÉTODOS PRIVADOS DE FORMATO
   // =====================================
@@ -502,6 +566,8 @@ class PagoServiciosService {
     };
     
     return {
+      id_srv: pago.id_srv,
+      id_subtipo: pago.id_subtipo || null,
       id_pagser: pago.id_pagser,
       id_tra: pago.id_tra,
       fecha: pago.tra_fecha_hora,

@@ -313,7 +313,6 @@ class PagoServiciosRepository {
         .insert({
           id_tra,
           id_cuenta,
-          id_invmov: null,
           tra_fecha_hora: new Date().toISOString(),
           tra_monto,
           tra_tipo,
@@ -336,10 +335,6 @@ class PagoServiciosRepository {
       const {
         id_tra,
         id_pagser,
-        id_cuenta,
-        tra_monto,
-        tra_descripcion,
-        tra_estado,
         id_srv,
         pagser_estado,
         pagser_comprobante,
@@ -352,13 +347,6 @@ class PagoServiciosRepository {
         .insert({
           id_tra,
           id_pagser,
-          id_cuenta,
-          id_invmov: null,
-          tra_fecha_hora: new Date().toISOString(),
-          tra_monto,
-          tra_tipo: '03',
-          tra_descripcion,
-          tra_estado,
           id_srv,
           pagser_estado,
           pagser_comprobante,
@@ -410,35 +398,42 @@ class PagoServiciosRepository {
   async getHistorialPagosByPersona(idPersona, limit, offset) {
     try {
       const { data, error } = await supabase
-        .from('pago_servicios')
+        .from('transaccion')
         .select(`
-          id_pagser,
           id_tra,
           tra_fecha_hora,
           tra_monto,
           tra_descripcion,
-          pagser_comprobante,
-          pagser_estado,
-          servicio!inner (srv_nombre),
-          subtipo_pago_servicio (subtipo_nombre),
-          cuenta!inner (cue_numero, id_persona)
+          tra_estado,
+          cuenta!inner (cue_numero, id_persona),
+          pago_servicios!inner (
+            id_pagser,
+            id_subtipo,
+            pagser_comprobante,
+            pagser_estado,
+            servicio (id_srv, srv_nombre),
+            subtipo_pago_servicio (id_subtipo, subtipo_nombre)
+          )
         `)
         .eq('cuenta.id_persona', idPersona)
+        .eq('tra_tipo', '03')
         .order('tra_fecha_hora', { ascending: false })
         .range(offset, offset + limit - 1);
       
       if (error) throw error;
       
       return (data || []).map(d => ({
-        id_pagser: d.id_pagser,
+        id_pagser: d.pago_servicios?.id_pagser,
         id_tra: d.id_tra,
         tra_fecha_hora: d.tra_fecha_hora,
         tra_monto: d.tra_monto,
         tra_descripcion: d.tra_descripcion,
-        pagser_comprobante: d.pagser_comprobante,
-        pagser_estado: d.pagser_estado,
-        srv_nombre: d.servicio?.srv_nombre,
-        subtipo_nombre: d.subtipo_pago_servicio?.subtipo_nombre,
+        pagser_comprobante: d.pago_servicios?.pagser_comprobante,
+        pagser_estado: d.pago_servicios?.pagser_estado,
+        id_srv: d.pago_servicios?.servicio?.id_srv,
+        srv_nombre: d.pago_servicios?.servicio?.srv_nombre,
+        id_subtipo: d.pago_servicios?.id_subtipo || d.pago_servicios?.subtipo_pago_servicio?.id_subtipo || null,
+        subtipo_nombre: d.pago_servicios?.subtipo_pago_servicio?.subtipo_nombre,
         cue_numero: d.cuenta?.cue_numero
       }));
     } catch (error) {
@@ -450,9 +445,10 @@ class PagoServiciosRepository {
   async getTotalHistorialPagosByPersona(idPersona) {
     try {
       const { count, error } = await supabase
-        .from('pago_servicios')
-        .select('id_pagser', { count: 'exact', head: true })
-        .eq('cuenta.id_persona', idPersona);
+        .from('transaccion')
+        .select('id_tra, cuenta!inner (id_persona)', { count: 'exact', head: true })
+        .eq('cuenta.id_persona', idPersona)
+        .eq('tra_tipo', '03');
       
       if (error) throw error;
       return count || 0;
@@ -467,10 +463,21 @@ class PagoServiciosRepository {
       const { data, error } = await supabase
         .from('pago_servicios')
         .select(`
-          *,
+          id_pagser,
+          id_tra,
+          id_srv,
+          id_subtipo,
+          pagser_estado,
+          pagser_comprobante,
+          pagser_referencia,
           servicio (srv_nombre),
           subtipo_pago_servicio (subtipo_nombre),
-          cuenta!inner (cue_numero, id_persona, persona!inner (per_email))
+          transaccion!inner (
+            tra_fecha_hora,
+            tra_monto,
+            tra_descripcion,
+            cuenta!inner (cue_numero, id_persona, persona!inner (per_email))
+          )
         `)
         .eq('id_pagser', idPagser)
         .single();
@@ -484,11 +491,49 @@ class PagoServiciosRepository {
         ...data,
         srv_nombre: data.servicio?.srv_nombre,
         subtipo_nombre: data.subtipo_pago_servicio?.subtipo_nombre,
-        cue_numero: data.cuenta?.cue_numero,
-        per_email: data.cuenta?.persona?.per_email
+        cue_numero: data.transaccion?.cuenta?.cue_numero,
+        per_email: data.transaccion?.cuenta?.persona?.per_email,
+        tra_fecha_hora: data.transaccion?.tra_fecha_hora,
+        tra_monto: data.transaccion?.tra_monto,
+        tra_descripcion: data.transaccion?.tra_descripcion
       };
     } catch (error) {
       console.error('Error en getComprobante:', error);
+      throw error;
+    }
+  }
+
+  // =====================================
+  // PAGOS FRECUENTES
+  // =====================================
+
+  async getPagosServiciosByPersona(idPersona) {
+    try {
+      const { data, error } = await supabase
+        .from('pago_servicios')
+        .select(`
+          id_srv,
+          id_subtipo,
+          servicio (
+            srv_nombre,
+            srv_tiene_subtipos,
+            id_cat,
+            id_subcat,
+            categoria_servicio:id_cat (cat_nombre),
+            subcategoria_servicio:id_subcat (subcat_nombre)
+          ),
+          transaccion!inner (
+            tra_fecha_hora,
+            cuenta!inner (id_persona)
+          )
+        `)
+        .eq('transaccion.cuenta.id_persona', idPersona)
+        .order('transaccion.tra_fecha_hora', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error en getPagosServiciosByPersona:', error);
       throw error;
     }
   }
