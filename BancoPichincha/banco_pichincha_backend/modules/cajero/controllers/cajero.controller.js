@@ -1,12 +1,28 @@
 const { supabase } = require('../../../shared/config/database.config');
 const { v4: uuidv4 } = require('uuid');
 
+// Códigos BIN por marca de tarjeta (primeros 4-6 dígitos)
+const CARD_BINS = {
+  VISA: ['4532', '4556', '4916', '4929'],
+  MASTERCARD: ['5234', '5425', '2221', '5555'],
+  DINERS: ['3600', '3605', '3620', '3095'],
+  AMEX: ['3400', '3700', '3704', '3711'],
+  DISCOVER: ['6011', '6500', '6550', '6444'],
+  JCB: ['3528', '3529', '3530', '3589']
+};
+
+// Marcas que ofrecen débito y crédito
+const MARCAS_POR_TIPO = {
+  debito: ['VISA', 'MASTERCARD', 'DISCOVER', 'JCB'],
+  credito: ['VISA', 'MASTERCARD', 'DINERS', 'AMEX', 'DISCOVER', 'JCB']
+};
+
 /**
  * Generar una tarjeta débito con PIN temporal de 4 dígitos
  */
 exports.generarTarjetaDebito = async (req, res) => {
   try {
-    const { id_cuenta, id_persona } = req.body;
+    const { id_cuenta, id_persona, marca = 'VISA' } = req.body;
 
     if (!id_cuenta || !id_persona) {
       return res.status(400).json({
@@ -15,10 +31,26 @@ exports.generarTarjetaDebito = async (req, res) => {
       });
     }
 
+    // Validar marca
+    if (!CARD_BINS[marca]) {
+      return res.status(400).json({
+        success: false,
+        message: 'Marca de tarjeta no válida. Usa: VISA, MASTERCARD, DINERS, AMEX, DISCOVER o JCB'
+      });
+    }
+
+    // Validar que la marca ofrezca tarjetas de débito
+    if (!MARCAS_POR_TIPO.debito.includes(marca)) {
+      return res.status(400).json({
+        success: false,
+        message: `${marca} no ofrece tarjetas de débito. Solo está disponible para tarjetas de crédito.`
+      });
+    }
+
     // Generar IDs cortos para evitar error de longitud
     const id_tarjeta = 'TAR' + Date.now().toString().slice(-8);
     const id_tardeb = 'TDB' + Date.now().toString().slice(-8);
-    const numeroTarjeta = generarNumeroTarjeta();
+    const numeroTarjeta = generarNumeroTarjeta(marca);
     const pinTemporal = generarPinTemporal(); // PIN temporal aleatorio (no 1234)
     const pinHash = require('crypto')
       .createHash('sha256')
@@ -77,6 +109,7 @@ exports.generarTarjetaDebito = async (req, res) => {
         cvv,
         fechaExpiracion: formatearFechaExpiracion(fechaExpiracion),
         estado: 'Activa',
+        marca: marca,
         mensaje: 'IMPORTANTE: Su clave temporal es ' + pinTemporal + '. Al usar su tarjeta por primera vez deberá cambiarla obligatoriamente.'
       }
     });
@@ -1018,13 +1051,21 @@ exports.validarPin = async (req, res) => {
 // ============== FUNCIONES AUXILIARES ==============
 
 /**
- * Generar un número de tarjeta válido (16 dígitos)
+ * Generar un número de tarjeta válido según la marca
  */
-function generarNumeroTarjeta() {
-  let numero = '';
-  for (let i = 0; i < 16; i++) {
+function generarNumeroTarjeta(marca = 'VISA') {
+  // Obtener prefijos BIN según la marca
+  const bins = CARD_BINS[marca] || CARD_BINS.VISA;
+  const prefix = bins[Math.floor(Math.random() * bins.length)];
+  
+  let numero = prefix;
+  
+  // Generar el resto de dígitos
+  const digitsToGenerate = 16 - prefix.length;
+  for (let i = 0; i < digitsToGenerate; i++) {
     numero += Math.floor(Math.random() * 10);
   }
+  
   return numero;
 }
 

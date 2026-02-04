@@ -210,8 +210,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     setScreen('procesando');
 
     try {
-      console.log('Validando cuenta:', numeroCuentaDeposito);
-
       const response = await fetch('http://localhost:3000/api/transferencias/validar-cuenta-pichincha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -220,10 +218,7 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
         })
       });
 
-      console.log('Response status:', response.status);
-
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (response.ok && data.existe) {
         // Cuenta válida - continuar al siguiente paso
@@ -247,12 +242,11 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
         }, 100);
       }
     } catch (error) {
-      console.error('Error completo:', error);
       setCuentaValidada(false);
       setDatosCuentaDeposito(null);
       setScreen('deposito-numero-cuenta');
       setTimeout(() => {
-        setMensaje('⚠️ ERROR DE CONEXIÓN - Verifique e intente nuevamente');
+        setMensaje('ERROR DE CONEXIÓN - Verifique e intente nuevamente');
       }, 100);
     }
   };
@@ -279,17 +273,13 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
         monto: montoSeleccionado
       };
 
-      console.log('Procesando depósito con datos:', requestBody);
-
       const response = await fetch('http://localhost:3000/api/depositos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (response.ok) {
         setMensaje('Depósito realizado exitosamente');
@@ -299,7 +289,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
         irAPantalla('error');
       }
     } catch (error) {
-      console.error('Error completo:', error);
       setMensaje('Error de conexión');
       irAPantalla('error');
     }
@@ -890,7 +879,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   irAPantalla('tarjeta-pin');
                 }
               } catch (error) {
-                console.error('Error:', error);
                 setMensaje('Error de conexión');
                 irAPantalla('error');
               }
@@ -944,7 +932,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   irAPantalla('tarjeta-cambio-pin');
                 }
               } catch (error) {
-                console.error('Error:', error);
                 setMensaje('Error de conexión');
                 irAPantalla('error');
               }
@@ -1028,7 +1015,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   irAPantalla('retiro-sin-tarjeta-codigo');
                 }
               } catch (error) {
-                console.error('Error:', error);
                 setMensaje('Error de conexión');
                 irAPantalla('error');
               }

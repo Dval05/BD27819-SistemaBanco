@@ -46,6 +46,10 @@ export interface Tarjeta {
   fechaMaximaPago?: number;
   pagoMinimo: number;
   tasaInteres: number;
+  // Campos para tarjetas de débito
+  tipoCuenta?: 'ahorro' | 'corriente';
+  numeroCuenta?: string;
+  idCuenta?: string;
 }
 
 export interface InversionProducto {

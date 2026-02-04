@@ -13,10 +13,6 @@ const ListadoInversiones: React.FC<Props> = ({ idPersona, onVerDetalle }) => {
   const { inversiones, loading, error, refresh } = useInversiones(idPersona);
   const [filtroEstado, setFiltroEstado] = useState<string>('TODOS');
 
-  // Debug: verificar que se está pasando el idPersona correcto
-  console.log('ListadoInversiones - idPersona:', idPersona);
-  console.log('ListadoInversiones - inversiones:', inversiones);
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(amount);
   };
@@ -28,11 +24,7 @@ const ListadoInversiones: React.FC<Props> = ({ idPersona, onVerDetalle }) => {
 
   // Filtrar inversiones por estado Y por persona (doble verificación)
   const inversionesValidadas = inversiones.filter((inv) => {
-    // Verificar que la inversión pertenece a la persona correcta
     const perteneceAPersona = inv.cuenta?.id_persona === idPersona;
-    if (!perteneceAPersona) {
-      console.warn(`Inversión ${inv.id_inv} no pertenece a persona ${idPersona}, pertenece a ${inv.cuenta?.id_persona}`);
-    }
     return perteneceAPersona;
   });
 

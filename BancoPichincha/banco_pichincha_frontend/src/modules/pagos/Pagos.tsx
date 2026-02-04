@@ -202,11 +202,9 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
       if (body.ok) {
         return body.data || [];
       } else {
-        console.error('Error al obtener subcategorías:', body.msg);
         return [];
       }
     } catch (err) {
-      console.error('Error de conexión al obtener subcategorías:', err);
       return [];
     } finally {
       setLoadingSubcategorias(false);
@@ -222,11 +220,9 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
       if (body.ok) {
         setServicios(body.data || []);
       } else {
-        console.error('Error al obtener servicios:', body.msg);
         setServicios([]);
       }
     } catch (err) {
-      console.error('Error de conexión al obtener servicios:', err);
       setServicios([]);
     } finally {
       setLoadingServicios(false);
@@ -242,11 +238,9 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
       if (body.ok) {
         setServicios(body.data || []);
       } else {
-        console.error('Error al obtener servicios:', body.msg);
         setServicios([]);
       }
     } catch (err) {
-      console.error('Error de conexión al obtener servicios:', err);
       setServicios([]);
     } finally {
       setLoadingServicios(false);

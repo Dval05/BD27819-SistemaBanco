@@ -12,14 +12,11 @@ export function useInversiones(idPersona?: string) {
     setError(null);
 
     try {
-      console.log('useInversiones - fetchInversiones - idPersona:', idPersona);
       const data = idPersona
         ? await inversionService.getByPersona(idPersona)
         : await inversionService.getAll();
-      console.log('useInversiones - data recibida:', data);
       setInversiones(data);
     } catch (err: any) {
-      console.error('useInversiones - Error:', err);
       setError(err.response?.data?.message || 'Error al cargar inversiones');
     } finally {
       setLoading(false);

@@ -65,7 +65,7 @@ function Solicitudes({ cliente, onNavigate }: SolicitudesProps) {
           }
         }
       } catch (err) {
-        console.error('Error obteniendo cuenta:', err);
+        // Error silencioso
       }
     };
     obtenerCuenta();

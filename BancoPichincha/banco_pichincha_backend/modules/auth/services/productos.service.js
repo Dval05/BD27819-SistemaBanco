@@ -16,9 +16,15 @@ class ProductosService {
       inversiones: inversiones.length 
     });
 
+    // Crear mapa de cuentas por ID para vincular con tarjetas
+    const cuentasMap = {};
+    cuentas.forEach(cuenta => {
+      cuentasMap[cuenta.id_cuenta] = cuenta;
+    });
+
     return {
       cuentas: cuentas.map(c => this._formatCuenta(c)),
-      tarjetas: tarjetas.map(t => this._formatTarjeta(t)),
+      tarjetas: tarjetas.map(t => this._formatTarjeta(t, cuentasMap[t.id_cuenta])),
       inversiones: inversiones.map(i => this._formatInversion(i))
     };
   }
@@ -43,7 +49,7 @@ class ProductosService {
     };
   }
 
-  _formatTarjeta(tarjeta) {
+  _formatTarjeta(tarjeta, cuentaAsociada = null) {
     const numero = tarjeta.tar_numero || '';
     const numeroOculto = numero.slice(0, 6) + '******' + numero.slice(-4);
     
@@ -59,15 +65,27 @@ class ProductosService {
     };
     
     // Datos de tarjeta de crédito (si existen)
-    const datosCredito = tarjeta.tarjeta_credito && tarjeta.tarjeta_credito.length > 0 
+    const datosCredito = tarjeta.tarjeta_credito && 
+                         Array.isArray(tarjeta.tarjeta_credito) && 
+                         tarjeta.tarjeta_credito.length > 0 && 
+                         tarjeta.tarjeta_credito[0] && 
+                         tarjeta.tarjeta_credito[0].id_tarcre
       ? tarjeta.tarjeta_credito[0] 
       : null;
     
-    return {
+    // Determinar si es tarjeta de débito o crédito
+    const esDebito = !datosCredito;
+    const subtipo = esDebito ? 'debito' : 'credito';
+    const nombre = esDebito ? 'TARJETA DE DÉBITO' : 'TARJETA DE CRÉDITO';
+    
+    console.log(`Tarjeta ${tarjeta.id_tarjeta}: subtipo=${subtipo}, datosCredito=${datosCredito ? 'SI' : 'NO'}`);
+    
+    // Datos base de la tarjeta
+    const tarjetaBase = {
       id: tarjeta.id_tarjeta,
       tipo: 'tarjeta',
-      subtipo: 'credito',
-      nombre: 'TARJETA DE CRÉDITO',
+      subtipo: subtipo,
+      nombre: nombre,
       marca: marca,
       numero: numeroOculto,
       numeroCompleto: numero,
@@ -75,6 +93,25 @@ class ProductosService {
       estado: estadoDescripcion[tarjeta.tar_estado] || 'Desconocido',
       estadoCodigo: tarjeta.tar_estado,
       cvv: tarjeta.tar_cvv,
+      idCuenta: tarjeta.id_cuenta
+    };
+    
+    // Si es tarjeta de débito, usar saldo de la cuenta asociada
+    if (esDebito && cuentaAsociada) {
+      return {
+        ...tarjetaBase,
+        saldoActual: parseFloat(cuentaAsociada.cue_saldo_disponible) || 0,
+        cupoDisponible: 0,
+        tipoCuenta: cuentaAsociada.tipo || 'ahorro',
+        numeroCuenta: cuentaAsociada.cue_numero || '',
+        pagoMinimo: 0,
+        tasaInteres: 0
+      };
+    }
+    
+    // Si es tarjeta de crédito, usar datos de tarjeta_credito
+    return {
+      ...tarjetaBase,
       cupoDisponible: datosCredito ? parseFloat(datosCredito.tarcre_cupo_disponible) || 0 : 0,
       saldoActual: datosCredito ? parseFloat(datosCredito.tarcre_saldo_actual) || 0 : 0,
       fechaCorte: datosCredito ? datosCredito.tarcre_fecha_corte : null,

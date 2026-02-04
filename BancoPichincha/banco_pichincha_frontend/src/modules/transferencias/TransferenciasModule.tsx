@@ -87,7 +87,6 @@ const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({
 
   // Callback cuando se crea un contacto nuevo
   const handleContactoCreado = useCallback((contacto: Contacto) => {
-    console.log('Contacto creado:', contacto);
     // Aquí podrías actualizar algún estado global o cache
   }, []);
 

@@ -177,6 +177,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  position: relative;
 }
 
 /* Chip de la tarjeta */
@@ -185,7 +186,10 @@
   height: 35px;
   background: linear-gradient(135deg, #f0c14b 0%, #d4a017 100%);
   border-radius: 6px;
-  margin-bottom: 20px;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1;
 }
 
 /* Número de tarjeta */
@@ -195,6 +199,9 @@
   letter-spacing: 3px;
   font-family: 'Courier New', monospace;
   margin-bottom: 16px;
+  margin-top: 70px;
+  position: relative;
+  z-index: 2;
 }
 
 /* Fila de info (vence y cvv) */

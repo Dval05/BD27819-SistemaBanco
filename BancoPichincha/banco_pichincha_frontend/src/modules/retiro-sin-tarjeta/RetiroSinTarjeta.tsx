@@ -51,7 +51,7 @@ function RetiroSinTarjeta({ cliente, onNavigate }: RetiroSinTarjetaProps) {
         setCuentaSeleccionada(cuentasFormateadas[0]);
       }
     } catch (err) {
-      console.error('Error cargando cuentas:', err);
+      // Error silencioso
     }
   };
 
