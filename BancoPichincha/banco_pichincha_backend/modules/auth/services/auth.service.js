@@ -35,7 +35,7 @@ class AuthService {
       passwordValid,
       storedHashType: persona.per_contrasenia.substring(0, 4)
     });
-    
+      
     if (!passwordValid) {
       throw { status: 401, message: 'Contraseña incorrecta' };
     }

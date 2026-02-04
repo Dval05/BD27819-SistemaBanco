@@ -177,11 +177,18 @@ class LimiteTransaccionalService {
         tipoTransaccion
       );
 
+      // Si no hay límite configurado, retornar valores por defecto
       if (!limite) {
         return {
-          exito: false,
-          mensaje: 'No hay límite configurado',
-          datos: null
+          exito: true,
+          mensaje: 'Límites por defecto aplicados',
+          datos: {
+            montoMaximoDiario: 15000,
+            montoMaximoTransaccion: 15000,
+            cantidadMaximaDiaria: 20,
+            montoDisponibleDiario: 15000,
+            cantidadDisponibleDiaria: 20
+          }
         };
       }
 

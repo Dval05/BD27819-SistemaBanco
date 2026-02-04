@@ -3,7 +3,7 @@
  * Gestiona la navegación entre las diferentes vistas del flujo de transferencias
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   TransferenciaInicio,
   NuevoContactoSeleccion,
@@ -15,6 +15,7 @@ import {
 } from './views';
 import { LoadingSpinner } from './components';
 import type { VistaTransferencia, Cuenta, Contacto } from './types/transferencias.types';
+import clienteService from '../../services/clienteService';
 import styles from './TransferenciasModule.module.css';
 
 // Tipo para el estado de navegación
@@ -30,36 +31,49 @@ interface TransferenciasModuleProps {
   onVolverInicio?: () => void;
 }
 
-// Mock de cuentas del cliente (esto vendría de un servicio real)
-const CUENTAS_MOCK: Cuenta[] = [
-  {
-    id: 1,
-    numeroCuenta: '2200123456',
-    tipoCuenta: 'Ahorros',
-    saldoDisponible: 5420.75
-  },
-  {
-    id: 2,
-    numeroCuenta: '3100987654',
-    tipoCuenta: 'Corriente',
-    saldoDisponible: 12350.00
-  }
-];
-
 const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({ 
   clienteId: clienteIdProp,
   cliente,
   onVolverInicio 
 }) => {
   // Obtener clienteId desde props o desde el objeto cliente
-  const clienteId = clienteIdProp || cliente?.id_persona || '';
+  const clienteId = clienteIdProp || cliente?.id_persona || cliente?.id || '';
   
   // Estado de navegación con historial
   const [navigationStack, setNavigationStack] = useState<NavigationState[]>([
     { vista: 'INICIO' }
   ]);
-  const [cuentas] = useState<Cuenta[]>(CUENTAS_MOCK);
-  const [loading] = useState(false);
+  const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Cargar cuentas del cliente
+  useEffect(() => {
+    const cargarCuentas = async () => {
+      if (!clienteId) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const productos = await clienteService.obtenerProductos(String(clienteId));
+        // Mapear las cuentas al formato esperado por el módulo de transferencias
+        const cuentasMapeadas: Cuenta[] = productos.cuentas.map(cuenta => ({
+          id: cuenta.id as unknown as number,
+          numeroCuenta: cuenta.numeroCompleto || cuenta.numero,
+          tipoCuenta: cuenta.nombre || 'Ahorros',
+          saldoDisponible: cuenta.saldo
+        }));
+        setCuentas(cuentasMapeadas);
+      } catch (error) {
+        console.error('Error al cargar cuentas:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarCuentas();
+  }, [clienteId]);
 
   // Estado actual (último en el stack)
   const currentState = navigationStack[navigationStack.length - 1];

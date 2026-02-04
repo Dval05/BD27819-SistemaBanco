@@ -1,35 +1,32 @@
 .container {
   padding: 24px;
-  max-width: 600px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
 /* Header */
 .header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .backButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border: none;
-  background: #f3f4f6;
-  border-radius: 12px;
+  background: transparent;
   cursor: pointer;
   color: #374151;
   transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-top: 4px;
 }
 
 .backButton:hover:not(:disabled) {
-  background: #e5e7eb;
+  color: #00377b;
 }
 
 .backButton:disabled {
@@ -39,205 +36,123 @@
 
 .headerText {
   flex: 1;
+  text-align: center;
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   color: #1f2937;
-  margin: 0 0 4px 0;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: #6b7280;
   margin: 0;
 }
 
-/* Resumen card */
-.resumenCard {
+/* Card de confirmación */
+.confirmacionCard {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 32px 24px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
 }
 
-.resumenTitulo {
+.subtitulo {
   font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 20px 0;
-}
-
-.resumenLinea {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-}
-
-.resumenLinea.highlight {
-  background: #fef9e7;
-  margin: 0 -16px;
-  padding: 12px 16px;
-  border-radius: 8px;
-}
-
-.resumenLabel {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.resumenValor {
-  font-size: 14px;
   font-weight: 500;
-  color: #1f2937;
-  text-align: right;
+  color: #374151;
+  margin: 0 0 24px 0;
 }
 
-.resumenLinea.highlight .resumenLabel,
-.resumenLinea.highlight .resumenValor {
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.separador {
-  height: 1px;
-  background: #e5e7eb;
-  margin: 12px 0;
-}
-
-/* Código section */
-.codigoSection {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-}
-
-.codigoHeader {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 20px;
-}
-
-.codigoHeader svg {
-  color: #ffc907;
-}
-
-.codigoGenerado {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  background: linear-gradient(135deg, #fef9e7 0%, #fef3c7 100%);
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.codigoLabel {
-  font-size: 13px;
-  color: #6b7280;
-  margin-bottom: 12px;
-}
-
-.codigoDisplay {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.codigoDigit {
-  width: 40px;
-  height: 48px;
+/* Icono de check */
+.iconoConfirmacion {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  border-radius: 8px;
-  font-size: 24px;
+  margin: 0 auto 8px;
+}
+
+.iconoConfirmacion svg {
+  color: #4caf50;
+  width: 40px;
+  height: 40px;
+}
+
+.referencia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.referencia svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Monto destacado */
+.montoSection {
+  margin-bottom: 24px;
+}
+
+.montoLabel {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.montoDestacado {
+  font-size: 28px;
   font-weight: 700;
   color: #1f2937;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.codigoTimer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.cuentaOrigen {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Datos del beneficiario */
+.datosSection {
+  text-align: left;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+}
+
+.datoLinea {
+  margin-bottom: 12px;
+}
+
+.datoLinea:last-child {
+  margin-bottom: 0;
+}
+
+.datoLabel {
   font-size: 13px;
-  color: #6b7280;
-}
-
-.refreshButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #6b7280;
-  margin-left: 8px;
-  transition: all 0.2s ease;
-}
-
-.refreshButton:hover {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.codigoInput {
-  display: flex;
-  flex-direction: column;
-}
-
-.inputLabel {
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.input {
-  padding: 16px;
-  font-size: 24px;
   font-weight: 600;
-  text-align: center;
-  letter-spacing: 12px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  outline: none;
-  transition: all 0.2s ease;
+  color: #1f2937;
 }
 
-.input:focus {
-  border-color: #ffc907;
-  box-shadow: 0 0 0 3px rgba(255, 201, 7, 0.1);
-}
-
-.input::placeholder {
-  color: #d1d5db;
-  letter-spacing: 12px;
-}
-
-.codigoValido {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 12px;
-  color: #15803d;
+.datoValor {
   font-size: 14px;
-  font-weight: 500;
+  color: #4b5563;
+}
+
+/* Info sin costo */
+.sinCosto {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
 }
 
 /* Error */
@@ -257,8 +172,8 @@
 /* Actions */
 .actions {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  justify-content: flex-end;
 }
 
 /* Responsive */
@@ -267,32 +182,11 @@
     padding: 16px;
   }
 
-  .resumenCard,
-  .codigoSection {
-    padding: 20px;
+  .confirmacionCard {
+    padding: 24px 20px;
   }
 
-  .codigoDigit {
-    width: 36px;
-    height: 44px;
-    font-size: 20px;
-  }
-
-  .input {
-    font-size: 20px;
-    letter-spacing: 8px;
-    padding: 14px;
-  }
-
-  .input::placeholder {
-    letter-spacing: 8px;
-  }
-
-  .actions {
-    flex-direction: column-reverse;
-  }
-
-  .actions button {
-    width: 100%;
+  .montoDestacado {
+    font-size: 24px;
   }
 }

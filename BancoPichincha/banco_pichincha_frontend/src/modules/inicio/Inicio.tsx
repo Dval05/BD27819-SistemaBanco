@@ -79,22 +79,23 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
   ];
 
   const getProductosToShow = () => {
-    // Filtrar solo tarjetas de crédito (las de débito solo se muestran en Mis Productos)
+    // Separar tarjetas por tipo
     const tarjetasCredito = tarjetas.filter(t => t.subtipo === 'credito');
+    const tarjetasDebito = tarjetas.filter(t => t.subtipo === 'debito');
     
     switch (activeTab) {
       case 'cuentas':
         return { cuentas, tarjetas: [], inversiones: [] };
       case 'tarjetas':
-        // Solo mostrar tarjetas de crédito
-        return { cuentas: [], tarjetas: tarjetasCredito, inversiones: [] };
+        // Mostrar todas las tarjetas (crédito y débito)
+        return { cuentas: [], tarjetas: [...tarjetasCredito, ...tarjetasDebito], inversiones: [] };
       case 'prestamos':
         return { cuentas: [], tarjetas: [], inversiones: [] };
       case 'inversiones':
         return { cuentas: [], tarjetas: [], inversiones };
       default:
-        // En 'todos' solo mostrar cuentas y tarjetas de crédito (no débito, no inversiones)
-        return { cuentas, tarjetas: tarjetasCredito, inversiones: [] };
+        // En 'todos' mostrar cuentas y todas las tarjetas (crédito y débito)
+        return { cuentas, tarjetas: [...tarjetasCredito, ...tarjetasDebito], inversiones: [] };
     }
   };
 

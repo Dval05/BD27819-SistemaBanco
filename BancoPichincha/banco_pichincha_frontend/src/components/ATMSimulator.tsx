@@ -1009,6 +1009,10 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   setMontoSeleccionado(data.data.monto);
                   setMetodoRetiro('codigo');
                   setTipoCuenta('ahorro');
+                  // Actualizar saldo disponible de la cuenta
+                  if (data.data.saldoDisponible !== undefined) {
+                    setSaldoActual(data.data.saldoDisponible);
+                  }
                   irAPantalla('confirmacion');
                 } else {
                   setMensaje(data.message || 'Código inválido');

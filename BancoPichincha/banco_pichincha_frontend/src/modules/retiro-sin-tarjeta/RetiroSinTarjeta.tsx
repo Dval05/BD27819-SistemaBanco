@@ -31,6 +31,7 @@ function RetiroSinTarjeta({ cliente, onNavigate }: RetiroSinTarjetaProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [codigoGenerado, setCodigoGenerado] = useState<any>(null);
+  const [mostrarSelectorCuenta, setMostrarSelectorCuenta] = useState(false);
 
   useEffect(() => {
     cargarCuentas();
@@ -45,7 +46,7 @@ function RetiroSinTarjeta({ cliente, onNavigate }: RetiroSinTarjetaProps) {
           id_cuenta: c.id_cuenta,
           cue_numero: c.cue_numero,
           cue_saldo_disponible: c.cue_saldo_disponible || 0,
-          alias: 'MAIN'
+          alias: c.nombre || c.tipo_cuenta || 'CUENTA AHORROS'
         }));
         setCuentas(cuentasFormateadas);
         setCuentaSeleccionada(cuentasFormateadas[0]);
@@ -251,17 +252,47 @@ function RetiroSinTarjeta({ cliente, onNavigate }: RetiroSinTarjetaProps) {
           </div>
 
           {cuentaSeleccionada && (
-            <div className="cuenta-origen">
-              <div className="cuenta-info">
-                <span className="cuenta-alias">Desde</span>
-                <p className="cuenta-nombre">{cuentaSeleccionada.alias || 'MAIN'}</p>
-                <span className="cuenta-numero">Nro {cuentaSeleccionada.cue_numero}</span>
+            <div className="cuenta-selector-container">
+              <div 
+                className="cuenta-origen clickable"
+                onClick={() => setMostrarSelectorCuenta(!mostrarSelectorCuenta)}
+              >
+                <div className="cuenta-info">
+                  <span className="cuenta-alias">Desde</span>
+                  <p className="cuenta-nombre">{cuentaSeleccionada.alias || 'CUENTA AHORROS'}</p>
+                  <span className="cuenta-numero">Nro {cuentaSeleccionada.cue_numero}</span>
+                </div>
+                <div className="cuenta-saldo">
+                  <span>{formatMoney(cuentaSeleccionada.cue_saldo_disponible)}</span>
+                  <span className="saldo-label">Saldo disponible</span>
+                </div>
+                <ChevronDown size={20} className={mostrarSelectorCuenta ? 'rotated' : ''} />
               </div>
-              <div className="cuenta-saldo">
-                <span>{formatMoney(cuentaSeleccionada.cue_saldo_disponible)}</span>
-                <span className="saldo-label">Saldo disponible</span>
-              </div>
-              <ChevronDown size={20} />
+              
+              {mostrarSelectorCuenta && cuentas.length > 1 && (
+                <div className="cuentas-dropdown">
+                  {cuentas.map((cuenta) => (
+                    <div
+                      key={cuenta.id_cuenta}
+                      className={`cuenta-opcion ${cuenta.id_cuenta === cuentaSeleccionada.id_cuenta ? 'selected' : ''}`}
+                      onClick={() => {
+                        setCuentaSeleccionada(cuenta);
+                        setMostrarSelectorCuenta(false);
+                        // Resetear monto si excede el nuevo saldo
+                        if (monto > cuenta.cue_saldo_disponible) {
+                          setMonto(0);
+                        }
+                      }}
+                    >
+                      <div className="cuenta-opcion-info">
+                        <span className="cuenta-opcion-nombre">{cuenta.alias || 'CUENTA AHORROS'}</span>
+                        <span className="cuenta-opcion-numero">Nro {cuenta.cue_numero}</span>
+                      </div>
+                      <span className="cuenta-opcion-saldo">{formatMoney(cuenta.cue_saldo_disponible)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

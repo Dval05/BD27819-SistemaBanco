@@ -226,6 +226,11 @@
   cursor: not-allowed;
 }
 
+.cuenta-selector-container {
+  position: relative;
+  margin-bottom: 16px;
+}
+
 .cuenta-origen {
   display: flex;
   align-items: center;
@@ -233,7 +238,77 @@
   padding: 16px;
   background: #f8f9fa;
   border-radius: 12px;
-  margin-bottom: 16px;
+}
+
+.cuenta-origen.clickable {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cuenta-origen.clickable:hover {
+  background: #e9ecef;
+}
+
+.cuenta-origen svg.rotated {
+  transform: rotate(180deg);
+}
+
+.cuentas-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.cuenta-opcion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s;
+}
+
+.cuenta-opcion:last-child {
+  border-bottom: none;
+}
+
+.cuenta-opcion:hover {
+  background: #f8f9fa;
+}
+
+.cuenta-opcion.selected {
+  background: #fff8e1;
+}
+
+.cuenta-opcion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cuenta-opcion-nombre {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.cuenta-opcion-numero {
+  font-size: 12px;
+  color: #666;
+}
+
+.cuenta-opcion-saldo {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
 }
 
 .cuenta-info {

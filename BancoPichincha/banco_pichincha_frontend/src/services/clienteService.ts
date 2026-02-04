@@ -168,7 +168,61 @@ const clienteService = {
   cancelarTarjeta: async (idTarjeta: string): Promise<{ success: boolean; message: string }> => {
     const response = await axios.delete<{ success: boolean; message: string }>(`${API_URL}/cajero/tarjeta/cancelar/${idTarjeta}`);
     return response.data;
+  },
+
+  // ============================================
+  // MÉTODOS DE CONTACTOS
+  // ============================================
+  
+  obtenerContactos: async (clienteId: string): Promise<{ exito: boolean; datos: Contacto[] }> => {
+    const response = await axios.get<{ exito: boolean; datos: Contacto[] }>(`${API_URL}/transferencias/contactos/cliente/${clienteId}`);
+    return response.data;
+  },
+
+  crearContacto: async (clienteId: string, contacto: CrearContactoData): Promise<{ exito: boolean; mensaje: string; datos: Contacto }> => {
+    const response = await axios.post<{ exito: boolean; mensaje: string; datos: Contacto }>(`${API_URL}/transferencias/contactos`, {
+      idPersona: clienteId,
+      ...contacto
+    });
+    return response.data;
+  },
+
+  actualizarContacto: async (idContacto: string, datos: Partial<CrearContactoData>): Promise<{ exito: boolean; mensaje: string; datos: Contacto }> => {
+    const response = await axios.put<{ exito: boolean; mensaje: string; datos: Contacto }>(`${API_URL}/transferencias/contactos/${idContacto}`, datos);
+    return response.data;
+  },
+
+  eliminarContacto: async (idContacto: string): Promise<{ exito: boolean; mensaje: string }> => {
+    const response = await axios.delete<{ exito: boolean; mensaje: string }>(`${API_URL}/transferencias/contactos/${idContacto}`);
+    return response.data;
   }
 };
+
+// Interfaces adicionales para contactos
+export interface Contacto {
+  id: string;
+  alias: string;
+  nombreBeneficiario: string;
+  tipoIdentificacion: string;
+  identificacion: string;
+  numeroCuenta: string;
+  email: string;
+  tipoCuenta: string;
+  tipoCuentaDescripcion: string;
+  banco?: string;
+  bancoNombre?: string;
+  esFavorito?: boolean;
+}
+
+export interface CrearContactoData {
+  conAlias: string;
+  conNombreBeneficiario?: string;
+  conTipoIdentificacion: string;
+  conIdentificacion: string;
+  conNumeroCuenta: string;
+  conEmail: string;
+  conTipoCuenta: string;
+  idBanco?: string;
+}
 
 export default clienteService;

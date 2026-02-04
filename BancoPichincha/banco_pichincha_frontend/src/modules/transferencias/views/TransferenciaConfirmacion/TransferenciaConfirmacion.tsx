@@ -1,10 +1,10 @@
 /**
- * TransferenciaConfirmacion - Pantalla de confirmación con código de seguridad
- * Código se renueva cada 10 segundos
+ * TransferenciaConfirmacion - Pantalla de confirmación de transferencia
+ * Muestra resumen con datos censurados para confirmar
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { ArrowLeft, AlertCircle, Shield, RefreshCw, Clock, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, AlertCircle, CheckCircle, FileText } from 'lucide-react';
 import { ActionButton } from '../../components';
 import { transferenciasService } from '../../services/transferencias.service';
 import type { VistaTransferencia, Contacto, Cuenta, TransferenciaResponse } from '../../types/transferencias.types';
@@ -28,55 +28,17 @@ interface TransferenciaConfirmacionProps {
   onBack: () => void;
 }
 
-const CODIGO_DURACION = 10; // segundos
-
 const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({ 
   clienteId,
   datos,
   onNavigate, 
   onBack 
 }) => {
-  const [codigoIngresado, setCodigoIngresado] = useState('');
-  const [codigoGenerado, setCodigoGenerado] = useState('');
-  const [tiempoRestante, setTiempoRestante] = useState(CODIGO_DURACION);
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Generar código aleatorio de 6 dígitos
-  const generarCodigo = useCallback(() => {
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-    setCodigoGenerado(codigo);
-    setTiempoRestante(CODIGO_DURACION);
-    setCodigoIngresado('');
-    setError(null);
-  }, []);
-
-  // Efecto para generar código inicial
-  useEffect(() => {
-    generarCodigo();
-  }, [generarCodigo]);
-
-  // Efecto para countdown del código
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTiempoRestante(prev => {
-        if (prev <= 1) {
-          generarCodigo();
-          return CODIGO_DURACION;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [generarCodigo]);
-
-  const handleCodigoChange = (value: string) => {
-    // Solo números, máximo 6 dígitos
-    const numerico = value.replace(/\D/g, '').slice(0, 6);
-    setCodigoIngresado(numerico);
-    setError(null);
-  };
+  // Generar número de referencia aleatorio
+  const numeroReferencia = Math.floor(100000 + Math.random() * 900000).toString();
 
   const formatearMoneda = (valor: number): string => {
     return new Intl.NumberFormat('es-EC', {
@@ -87,11 +49,6 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
   };
 
   const handleConfirmar = async () => {
-    if (codigoIngresado !== codigoGenerado) {
-      setError('El código de seguridad es incorrecto');
-      return;
-    }
-
     try {
       setProcesando(true);
       setError(null);
@@ -149,12 +106,43 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
     }
   };
 
-  const renderResumenLinea = (label: string, value: string, highlight?: boolean) => (
-    <div className={`${styles.resumenLinea} ${highlight ? styles.highlight : ''}`}>
-      <span className={styles.resumenLabel}>{label}</span>
-      <span className={styles.resumenValor}>{value}</span>
-    </div>
-  );
+  // Obtener nombre del beneficiario
+  const getNombreBeneficiario = () => {
+    if (datos.contacto) {
+      return datos.contacto.nombreBeneficiario || datos.contacto.alias || 'Beneficiario';
+    }
+    if (datos.cuentaDestino) {
+      return 'Cuenta propia';
+    }
+    return 'Beneficiario';
+  };
+
+  // Obtener alias del contacto
+  const getAliasContacto = () => {
+    if (datos.contacto?.alias) {
+      return datos.contacto.alias;
+    }
+    return null;
+  };
+
+  // Obtener cuenta destino
+  const getCuentaDestino = () => {
+    if (datos.contacto) {
+      return datos.contacto.numeroCuenta;
+    }
+    if (datos.cuentaDestino) {
+      return datos.cuentaDestino.numeroCuenta;
+    }
+    return '';
+  };
+
+  // Obtener banco destino
+  const getBancoDestino = () => {
+    if (datos.contacto?.bancoNombre) {
+      return datos.contacto.bancoNombre;
+    }
+    return 'Banco Pichincha';
+  };
 
   return (
     <div className={styles.container}>
@@ -164,93 +152,64 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
           <ArrowLeft size={24} />
         </button>
         <div className={styles.headerText}>
-          <h1 className={styles.title}>Confirmar transferencia</h1>
-          <p className={styles.subtitle}>Verifica los datos y confirma con el código</p>
+          <h1 className={styles.title}>Transferir</h1>
         </div>
       </div>
 
-      {/* Resumen de transferencia */}
-      <div className={styles.resumenCard}>
-        <h3 className={styles.resumenTitulo}>Resumen de la transferencia</h3>
-        
-        {datos.contacto ? (
-          <>
-            {renderResumenLinea('Beneficiario', datos.contacto.nombreBeneficiario)}
-            {renderResumenLinea('Cuenta destino', datos.contacto.numeroCuenta)}
-            {renderResumenLinea('Banco', datos.contacto.banco ? datos.contacto.bancoNombre! : 'Banco Pichincha')}
-          </>
-        ) : datos.cuentaDestino && (
-          <>
-            {renderResumenLinea('Cuenta destino', datos.cuentaDestino.numeroCuenta)}
-            {renderResumenLinea('Tipo', datos.cuentaDestino.tipoCuenta)}
-          </>
-        )}
+      {/* Card de confirmación */}
+      <div className={styles.confirmacionCard}>
+        <p className={styles.subtitulo}>Confirma los datos de la transferencia</p>
 
-        <div className={styles.separador}></div>
-
-        {renderResumenLinea('Cuenta origen', datos.cuentaOrigen.numeroCuenta)}
-        {renderResumenLinea('Monto', formatearMoneda(datos.monto))}
-        
-        {datos.comision > 0 && (
-          renderResumenLinea('Comisión', formatearMoneda(datos.comision))
-        )}
-        
-        {renderResumenLinea('Total a debitar', formatearMoneda(datos.total), true)}
-
-        {datos.descripcion && (
-          <>
-            <div className={styles.separador}></div>
-            {renderResumenLinea('Descripción', datos.descripcion)}
-          </>
-        )}
-      </div>
-
-      {/* Código de seguridad */}
-      <div className={styles.codigoSection}>
-        <div className={styles.codigoHeader}>
-          <Shield size={20} />
-          <span>Código de seguridad</span>
+        {/* Icono de check */}
+        <div className={styles.iconoConfirmacion}>
+          <CheckCircle />
         </div>
-        
-        <div className={styles.codigoGenerado}>
-          <span className={styles.codigoLabel}>Tu código:</span>
-          <div className={styles.codigoDisplay}>
-            {codigoGenerado.split('').map((digit, index) => (
-              <span key={index} className={styles.codigoDigit}>{digit}</span>
-            ))}
+
+        {/* Número de referencia */}
+        <div className={styles.referencia}>
+          <FileText />
+          <span>{numeroReferencia}</span>
+        </div>
+
+        {/* Monto */}
+        <div className={styles.montoSection}>
+          <p className={styles.montoLabel}>Vas a transferir:</p>
+          <p className={styles.montoDestacado}>{formatearMoneda(datos.monto)}</p>
+          <p className={styles.cuentaOrigen}>De la cuenta: {datos.cuentaOrigen.tipoCuenta}</p>
+        </div>
+
+        {/* Datos del beneficiario */}
+        <div className={styles.datosSection}>
+          <div className={styles.datoLinea}>
+            <span className={styles.datoLabel}>Beneficiario: </span>
+            <span className={styles.datoValor}>{getNombreBeneficiario()}</span>
           </div>
-          <div className={styles.codigoTimer}>
-            <Clock size={14} />
-            <span>Expira en {tiempoRestante}s</span>
-            <button 
-              className={styles.refreshButton} 
-              onClick={generarCodigo}
-              title="Generar nuevo código"
-            >
-              <RefreshCw size={14} />
-            </button>
+
+          {getAliasContacto() && (
+            <div className={styles.datoLinea}>
+              <span className={styles.datoLabel}>Alias del contacto: </span>
+              <span className={styles.datoValor}>{getAliasContacto()}</span>
+            </div>
+          )}
+
+          <div className={styles.datoLinea}>
+            <span className={styles.datoLabel}>A la cuenta: </span>
+            <span className={styles.datoValor}>{getCuentaDestino()}</span>
+          </div>
+
+          <div className={styles.datoLinea}>
+            <span className={styles.datoLabel}>Banco destino: </span>
+            <span className={styles.datoValor}>{getBancoDestino()}</span>
           </div>
         </div>
 
-        <div className={styles.codigoInput}>
-          <label className={styles.inputLabel}>Ingresa el código</label>
-          <input
-            type="text"
-            className={styles.input}
-            value={codigoIngresado}
-            onChange={(e) => handleCodigoChange(e.target.value)}
-            placeholder="000000"
-            maxLength={6}
-            disabled={procesando}
-          />
-        </div>
-
-        {codigoIngresado.length === 6 && codigoIngresado === codigoGenerado && (
-          <div className={styles.codigoValido}>
-            <CheckCircle2 size={16} />
-            <span>Código válido</span>
-          </div>
-        )}
+        {/* Info sin costo */}
+        <p className={styles.sinCosto}>
+          {datos.comision > 0 
+            ? `Comisión: ${formatearMoneda(datos.comision)}`
+            : 'Esta transacción no tiene costo'
+          }
+        </p>
       </div>
 
       {/* Error */}
@@ -263,15 +222,14 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
 
       {/* Acciones */}
       <div className={styles.actions}>
-        <ActionButton variant="outline" onClick={onBack} disabled={procesando}>
-          Cancelar
-        </ActionButton>
         <ActionButton 
           onClick={handleConfirmar} 
           loading={procesando}
-          disabled={codigoIngresado.length !== 6}
         >
           Confirmar transferencia
+        </ActionButton>
+        <ActionButton variant="outline" onClick={onBack} disabled={procesando}>
+          Cancelar
         </ActionButton>
       </div>
     </div>

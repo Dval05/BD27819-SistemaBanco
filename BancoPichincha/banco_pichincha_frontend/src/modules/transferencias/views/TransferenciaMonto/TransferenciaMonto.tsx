@@ -34,21 +34,30 @@ const TransferenciaMonto: React.FC<TransferenciaMontoProps> = ({
   const [descripcion, setDescripcion] = useState('');
   const [cuentaOrigen, setCuentaOrigen] = useState<Cuenta | null>(cuentas[0] || null);
   const [cuentaDestino, setCuentaDestino] = useState<Cuenta | null>(null);
-  const [limites, setLimites] = useState<LimiteTransaccional | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [limites, setLimites] = useState<LimiteTransaccional>({
+    montoMaximoDiario: 15000,
+    montoMaximoTransaccion: 15000,
+    cantidadMaximaDiaria: 20,
+    disponibleDiario: 15000,
+    cantidadDisponible: 20,
+    transferenciasHoy: 0
+  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    cargarLimites();
-  }, [clienteId]);
+    if (cuentaOrigen?.id) {
+      cargarLimites(cuentaOrigen.id);
+    }
+  }, [cuentaOrigen]);
 
-  const cargarLimites = async () => {
+  const cargarLimites = async (idCuenta: number | string) => {
     try {
       setLoading(true);
-      const data = await transferenciasService.obtenerLimitesDisponibles(clienteId);
+      const data = await transferenciasService.obtenerLimitesDisponibles(idCuenta);
       setLimites(data);
     } catch (err) {
-      // Error silencioso
+      // Usar valores por defecto silenciosamente
     } finally {
       setLoading(false);
     }
@@ -192,11 +201,11 @@ const TransferenciaMonto: React.FC<TransferenciaMontoProps> = ({
       {/* Cuenta destino (solo entre cuentas) */}
       {tipoTransferencia === 'ENTRE_CUENTAS' && (
         <div className={styles.cuentaDestinoSection}>
-          <label className={styles.label}>Cuenta destino</label>
           <CuentaSelector
             cuentas={cuentasParaDestino}
             cuentaSeleccionada={cuentaDestino}
             onSelect={setCuentaDestino}
+            label="Cuenta destino"
           />
         </div>
       )}

@@ -13,13 +13,15 @@ interface CuentaSelectorProps {
   cuentaSeleccionada: Cuenta | null;
   onSelect: (cuenta: Cuenta) => void;
   disabled?: boolean;
+  label?: string;
 }
 
 const CuentaSelector: React.FC<CuentaSelectorProps> = ({
   cuentas,
   cuentaSeleccionada,
   onSelect,
-  disabled = false
+  disabled = false,
+  label = 'Cuenta origen'
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -42,7 +44,7 @@ const CuentaSelector: React.FC<CuentaSelectorProps> = ({
 
   return (
     <div className={styles.container}>
-      <label className={styles.label}>Cuenta origen</label>
+      <label className={styles.label}>{label}</label>
       
       <div 
         className={`${styles.selector} ${disabled ? styles.disabled : ''} ${isOpen ? styles.open : ''}`}

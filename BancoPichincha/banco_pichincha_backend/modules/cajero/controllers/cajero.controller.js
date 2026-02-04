@@ -510,6 +510,20 @@ exports.validarCodigoEnCajero = async (req, res) => {
       });
     }
 
+    // Obtener saldo disponible de la cuenta
+    let saldoDisponible = 0;
+    if (data.transaccion?.id_cuenta) {
+      const { data: cuentaData, error: cuentaError } = await supabase
+        .from('cuenta')
+        .select('cue_saldo_disponible')
+        .eq('id_cuenta', data.transaccion.id_cuenta)
+        .single();
+      
+      if (!cuentaError && cuentaData) {
+        saldoDisponible = parseFloat(cuentaData.cue_saldo_disponible) || 0;
+      }
+    }
+
     res.json({
       success: true,
       message: 'Código válido',
@@ -517,7 +531,8 @@ exports.validarCodigoEnCajero = async (req, res) => {
         id_retst: data.id_retst,
         id_tra: data.id_tra,
         id_cuenta: data.transaccion?.id_cuenta,
-        monto: data.transaccion?.tra_monto || 0
+        monto: data.transaccion?.tra_monto || 0,
+        saldoDisponible: saldoDisponible
       }
     });
   } catch (error) {
