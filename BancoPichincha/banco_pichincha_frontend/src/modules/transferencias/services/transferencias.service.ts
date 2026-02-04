@@ -34,6 +34,7 @@ export const transferenciasService = {
       // Compatibilidad con la respuesta del backend: { exito, mensaje, datos }
       return response.data.datos || response.data.data || response.data || [];
     } catch (error) {
+      console.error('Error al obtener bancos:', error);
       return [];
     }
   },
@@ -46,6 +47,7 @@ export const transferenciasService = {
       const response = await axios.get(`${BASE_URL}/bancos/${bancoId}/validar`);
       return response.data;
     } catch (error) {
+      console.error('Error al validar banco:', error);
       return { valido: false, mensaje: 'Error al validar banco' };
     }
   },
@@ -63,6 +65,7 @@ export const transferenciasService = {
       const response = await axios.get(`${BASE_URL}/contactos/cliente/${clienteId}`);
       return response.data.datos || response.data.data || response.data || [];
     } catch (error) {
+      console.error('Error al obtener contactos:', error);
       return [];
     }
   },
@@ -126,6 +129,7 @@ export const transferenciasService = {
       const response = await axios.delete(`${BASE_URL}/contactos/${contactoId}`);
       return response.data;
     } catch (error: any) {
+      console.error('Error al eliminar contacto:', error);
       return {
         exito: false,
         mensaje: error.response?.data?.message || 'Error al eliminar contacto'
@@ -161,6 +165,7 @@ export const transferenciasService = {
         transferenciasHoy: 0
       };
     } catch (error) {
+      console.error('Error al obtener límites:', error);
       return {
         montoMaximoDiario: 15000,
         montoMaximoTransaccion: 15000,
@@ -187,6 +192,7 @@ export const transferenciasService = {
       return response.data;
 
     } catch (error: any) {
+      console.error('Error al validar límite:', error);
       return {
         valido: false,
         mensaje: error.response?.data?.message || 'Error al validar límite'
@@ -237,6 +243,7 @@ export const transferenciasService = {
       const response = await axios.get(`${BASE_URL}/${transferenciaId}/estado`);
       return response.data;
     } catch (error) {
+      console.error('Error al obtener estado:', error);
       return null;
     }
   },
@@ -251,6 +258,7 @@ export const transferenciasService = {
       );
       return response.data.data || response.data;
     } catch (error) {
+      console.error('Error al obtener historial:', error);
       return { transferencias: [], total: 0 };
     }
   },
@@ -271,6 +279,7 @@ export const transferenciasService = {
       });
       return response.data.data || response.data;
     } catch (error: any) {
+      console.error('Error al validar cuenta:', error);
       // Simulación para desarrollo si el endpoint no existe aún
       if (numeroCuenta.length === 10 && /^\d+$/.test(numeroCuenta)) {
         return {

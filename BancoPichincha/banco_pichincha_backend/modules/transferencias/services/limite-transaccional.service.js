@@ -318,7 +318,7 @@ class LimiteTransaccionalService {
         };
       }
 
-      // Obtener TODAS las cuentas de la persona (no solo la primera)
+      // Primero obtener la cuenta de la persona
       const cuentas = await limiteTransaccionalRepository.obtenerCuentasPorPersona(idPersona);
       console.log('Cuentas encontradas:', cuentas.length);
 

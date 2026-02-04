@@ -61,7 +61,6 @@ const TransferenciaMonto: React.FC<TransferenciaMontoProps> = ({
       const data = await transferenciasService.obtenerLimitesDisponibles(clienteId);
       setLimites(data);
     } catch (err) {
-      // Error silencioso
     } finally {
       setLoading(false);
     }
