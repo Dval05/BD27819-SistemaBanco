@@ -189,3 +189,189 @@ export const exportarEstadisticasExcel = (estadisticas: Estadisticas): void => {
   XLSX.utils.book_append_sheet(wb, ws, 'Estadísticas');
   XLSX.writeFile(wb, 'estadisticas.xlsx');
 };
+
+// ============================================
+// TRANSFERENCIAS
+// ============================================
+
+interface ComprobanteTransferencia {
+  numeroOperacion: string;
+  fecha: string;
+  cuentaOrigen: {
+    tipoCuenta: string;
+    numeroCuenta: string;
+  };
+  beneficiario: string;
+  cuentaDestino: string;
+  tipoTransferencia: string;
+  monto: number;
+  comision: number;
+  total: number;
+  descripcion?: string;
+}
+
+/**
+ * Exportar comprobante de transferencia a PDF
+ */
+export const exportarComprobantePDF = (datos: ComprobanteTransferencia): void => {
+  const doc = new jsPDF();
+
+  // Colores Banco Pichincha
+  const colorPrimario: [number, number, number] = [255, 221, 0]; // Amarillo
+  const colorSecundario: [number, number, number] = [0, 51, 102]; // Azul oscuro
+  const colorTexto: [number, number, number] = [51, 51, 51]; // Gris oscuro
+
+  // Encabezado con fondo amarillo
+  doc.setFillColor(...colorPrimario);
+  doc.rect(0, 0, 210, 40, 'F');
+
+  // Logo/Título
+  doc.setTextColor(...colorSecundario);
+  doc.setFontSize(22);
+  doc.text('BANCO PICHINCHA', 105, 20, { align: 'center' });
+  doc.setFontSize(14);
+  doc.text('Comprobante de Transferencia', 105, 30, { align: 'center' });
+
+  // Resetear color de texto
+  doc.setTextColor(...colorTexto);
+
+  // Sección: Estado
+  let y = 50;
+  doc.setFillColor(46, 204, 113); // Verde éxito
+  doc.circle(20, y + 3, 4, 'F');
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('TRANSFERENCIA EXITOSA', 28, y + 5);
+
+  // Información de la transferencia
+  y += 20;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  
+  // Número de operación destacado
+  doc.setFillColor(240, 240, 240);
+  doc.rect(14, y - 5, 182, 12, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.text('Número de Operación:', 20, y);
+  doc.setFont('helvetica', 'normal');
+  doc.text(datos.numeroOperacion, 140, y, { align: 'right' });
+
+  y += 10;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Fecha y Hora:', 20, y);
+  doc.setFont('helvetica', 'normal');
+  const fechaFormateada = new Date(datos.fecha).toLocaleString('es-EC', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  doc.text(fechaFormateada, 140, y, { align: 'right' });
+
+  // Línea separadora
+  y += 8;
+  doc.setDrawColor(200, 200, 200);
+  doc.line(14, y, 196, y);
+
+  // Detalles de origen
+  y += 10;
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CUENTA DE ORIGEN', 20, y);
+  y += 7;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Tipo: ${datos.cuentaOrigen.tipoCuenta}`, 20, y);
+  y += 6;
+  const cuentaOrigenFormato = datos.cuentaOrigen.numeroCuenta.length >= 4 
+    ? `****${datos.cuentaOrigen.numeroCuenta.slice(-4)}` 
+    : datos.cuentaOrigen.numeroCuenta;
+  doc.text(`Número: ${cuentaOrigenFormato}`, 20, y);
+
+  // Flecha indicadora
+  y += 10;
+  doc.setFontSize(12);
+  doc.text('↓', 105, y, { align: 'center' });
+
+  // Detalles de destino
+  y += 8;
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CUENTA DE DESTINO', 20, y);
+  y += 7;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Beneficiario: ${datos.beneficiario}`, 20, y);
+  y += 6;
+  const cuentaDestinoFormato = datos.cuentaDestino && datos.cuentaDestino.length >= 4
+    ? `****${datos.cuentaDestino.slice(-4)}`
+    : datos.cuentaDestino || 'N/A';
+  doc.text(`Número de cuenta: ${cuentaDestinoFormato}`, 20, y);
+  y += 6;
+  doc.text(`Tipo: ${datos.tipoTransferencia}`, 20, y);
+
+  // Línea separadora
+  y += 8;
+  doc.line(14, y, 196, y);
+
+  // Detalles financieros
+  y += 10;
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DETALLES FINANCIEROS', 20, y);
+
+  y += 10;
+  const detallesFinancieros: [string, string][] = [
+    ['Monto transferido', `$${datos.monto.toFixed(2)}`],
+  ];
+
+  if (datos.comision > 0) {
+    detallesFinancieros.push(['Comisión', `$${datos.comision.toFixed(2)}`]);
+  }
+
+  detallesFinancieros.push(['Total debitado', `$${datos.total.toFixed(2)}`]);
+
+  // Dibujar tabla manualmente
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  
+  detallesFinancieros.forEach((fila) => {
+    doc.text(fila[0], 20, y);
+    doc.text(fila[1], 180, y, { align: 'right' });
+    y += 8;
+  });
+
+  y += 2;
+
+  // Descripción si existe
+  if (datos.descripcion) {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Descripción:', 20, y);
+    doc.setFont('helvetica', 'normal');
+    y += 6;
+    const descripcionLines = doc.splitTextToSize(datos.descripcion, 170);
+    doc.text(descripcionLines, 20, y);
+    y += descripcionLines.length * 5 + 10;
+  }
+
+  // Pie de página
+  y += 10;
+  doc.setDrawColor(...colorPrimario);
+  doc.setLineWidth(0.5);
+  doc.line(14, y, 196, y);
+  
+  y += 8;
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 120);
+  doc.text('Este es un comprobante electrónico válido.', 105, y, { align: 'center' });
+  y += 5;
+  doc.text(`Generado el ${new Date().toLocaleString('es-EC')}`, 105, y, { align: 'center' });
+  y += 5;
+  doc.text('Banco Pichincha - Contigo siempre', 105, y, { align: 'center' });
+
+  // Guardar PDF
+  const nombreArchivo = `Comprobante_${datos.numeroOperacion}_${new Date().getTime()}.pdf`;
+  doc.save(nombreArchivo);
+};

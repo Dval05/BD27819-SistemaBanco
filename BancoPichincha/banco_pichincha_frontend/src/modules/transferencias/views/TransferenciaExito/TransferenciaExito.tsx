@@ -7,6 +7,7 @@ import React from 'react';
 import { CheckCircle2, Download, Share2, Home, RefreshCw, ArrowRight } from 'lucide-react';
 import { useNotificacion } from '../../../../contexts/NotificacionContext';
 import { ActionButton } from '../../components';
+import { exportarComprobantePDF } from '../../../../services/exportService';
 import type { VistaTransferencia, TransferenciaResponse, Contacto, Cuenta } from '../../types/transferencias.types';
 import styles from './TransferenciaExito.module.css';
 
@@ -55,8 +56,60 @@ const TransferenciaExito: React.FC<TransferenciaExitoProps> = ({
   };
 
   const handleDescargarComprobante = () => {
-    // Aquí se implementaría la descarga del PDF
-    info('Funcionalidad de descarga próximamente', 'En Desarrollo');
+    try {
+      console.log('=== Iniciando descarga de comprobante ===');
+      console.log('Transferencia:', transferencia);
+      console.log('Datos originales:', datosOriginales);
+
+      // Determinar tipo de transferencia
+      let tipoTransferencia = 'Transferencia Interna';
+      if (datosOriginales.tipoTransferencia === 'INTERBANCARIA') {
+        tipoTransferencia = 'Transferencia Interbancaria';
+      } else if (datosOriginales.tipoTransferencia === 'ENTRE_CUENTAS') {
+        tipoTransferencia = 'Transferencia Entre Mis Cuentas';
+      }
+
+      // Obtener número de cuenta destino con validación
+      let cuentaDestino = '';
+      if (datosOriginales.contacto && datosOriginales.contacto.numeroCuenta) {
+        cuentaDestino = datosOriginales.contacto.numeroCuenta;
+      } else if (datosOriginales.cuentaDestino && datosOriginales.cuentaDestino.numeroCuenta) {
+        cuentaDestino = datosOriginales.cuentaDestino.numeroCuenta;
+      }
+
+      console.log('Cuenta destino:', cuentaDestino);
+
+      // Validar datos requeridos
+      if (!datosOriginales.cuentaOrigen || !datosOriginales.cuentaOrigen.numeroCuenta) {
+        throw new Error('No se encontró información de cuenta origen');
+      }
+
+      // Preparar datos para el PDF
+      const datosPDF = {
+        numeroOperacion: String(transferencia.numeroOperacion || transferencia.id || 'N/A'),
+        fecha: transferencia.fecha || new Date().toISOString(),
+        cuentaOrigen: {
+          tipoCuenta: datosOriginales.cuentaOrigen.tipoCuenta || 'Cuenta',
+          numeroCuenta: datosOriginales.cuentaOrigen.numeroCuenta
+        },
+        beneficiario: getBeneficiarioNombre(),
+        cuentaDestino: cuentaDestino || 'No disponible',
+        tipoTransferencia: tipoTransferencia,
+        monto: Number(datosOriginales.monto) || 0,
+        comision: Number(datosOriginales.comision) || 0,
+        total: Number(datosOriginales.total) || 0,
+        descripcion: datosOriginales.descripcion || ''
+      };
+
+      console.log('Datos PDF:', datosPDF);
+
+      // Generar y descargar PDF
+      exportarComprobantePDF(datosPDF);
+      info('Comprobante descargado exitosamente', 'Éxito');
+    } catch (error) {
+      console.error('Error al generar PDF:', error);
+      info(`Error: ${error instanceof Error ? error.message : 'Error desconocido'}`, 'Error');
+    }
   };
 
   const handleCompartir = () => {
