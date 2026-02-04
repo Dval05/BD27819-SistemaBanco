@@ -291,6 +291,27 @@ class InversionService {
     const id_invmov = uuidv4();
     const id_tra = uuidv4();
 
+    // Obtener descripción amigable según el tipo de movimiento
+    let descripcion = 'Inversión a Plazo Fijo';
+    const productoNombre = inversion.inv_producto === '00' ? 'Plazo Fijo' : 'Ahorro Programado';
+    
+    switch(tipo) {
+      case MovimientoTipo.APERTURA:
+        descripcion = `Apertura de ${productoNombre}`;
+        break;
+      case MovimientoTipo.PAGO_INTERES:
+        descripcion = `Pago de intereses - ${productoNombre}`;
+        break;
+      case MovimientoTipo.DEVOLUCION_CAPITAL:
+        descripcion = `Devolución de capital - ${productoNombre}`;
+        break;
+      case MovimientoTipo.CANCELACION:
+        descripcion = `Cancelación anticipada - ${productoNombre}`;
+        break;
+      default:
+        descripcion = `Movimiento de ${productoNombre}`;
+    }
+
     // Crear transacción asociada (registro en tabla transaccion)
     const monto = parseFloat(inversion.inv_monto);
     const transaccion = {
@@ -300,7 +321,7 @@ class InversionService {
       // monto negativo porque se debita de la cuenta
       tra_monto: Math.round(-Math.abs(monto) * 100) / 100,
       tra_tipo: '01', // Retiro
-      tra_descripcion: `Apertura inversión ${inversion.id_inv}`,
+      tra_descripcion: descripcion,
       tra_estado: '01', // Completada
     };
 
