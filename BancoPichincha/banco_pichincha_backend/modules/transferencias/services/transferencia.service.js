@@ -2,7 +2,8 @@ const transferenciaRepository = require('../repositories/transferencia.repositor
 const contactoService = require('./contacto.service');
 const limiteService = require('./limite-transaccional.service');
 const bancoService = require('./banco.service');
-const { v4: uuidv4 } = require('uuid');
+const cuentaRepository = require('../../cuentas/repositories/cuenta.repository');
+const { nanoid } = require('nanoid');
 
 /**
  * Transferencia Service
@@ -124,9 +125,14 @@ class TransferenciaService {
    */
   async crearTransferencia(datosTransferencia) {
     try {
+      console.log('\n=== DEBUG transferenciaService.crearTransferencia - INICIO ===');
+      console.log('Datos recibidos:', JSON.stringify(datosTransferencia, null, 2));
+
       // ===== VALIDACIÓN 1: Datos básicos =====
+      console.log('\n1. Validando datos básicos...');
       const validacionBasica = this._validarDatosBasicos(datosTransferencia);
       if (!validacionBasica.valido) {
+        console.log('❌ Validación básica fallida:', validacionBasica.mensaje);
         return {
           exito: false,
           codigo: 'VALIDACION_BASICA_FALLIDA',
@@ -134,6 +140,7 @@ class TransferenciaService {
           datos: null
         };
       }
+      console.log('✅ Validación básica OK');
 
       const {
         idCuenta,
@@ -148,8 +155,10 @@ class TransferenciaService {
       } = datosTransferencia;
 
       // ===== VALIDACIÓN 2: Monto =====
+      console.log('\n2. Validando monto...');
       const validacionMonto = this._validarMonto(monto, saldoDisponible);
       if (!validacionMonto.valido) {
+        console.log('❌ Validación de monto fallida:', validacionMonto.mensaje);
         return {
           exito: false,
           codigo: 'VALIDACION_MONTO_FALLIDA',
@@ -157,14 +166,17 @@ class TransferenciaService {
           datos: null
         };
       }
+      console.log('✅ Validación de monto OK');
 
       // ===== VALIDACIÓN 3: Límites transaccionales =====
+      console.log('\n3. Validando límites transaccionales...');
       const validacionLimites = await limiteService.validarLimiteTransaccion(
         idCuenta,
         '00', // Tipo de transacción: Transferencia
         monto
       );
       if (!validacionLimites.valido) {
+        console.log('❌ Límites excedidos:', validacionLimites.mensaje);
         return {
           exito: false,
           codigo: 'LIMITE_EXCEDIDO',
@@ -173,8 +185,10 @@ class TransferenciaService {
           datos: null
         };
       }
+      console.log('✅ Validación de límites OK');
 
       // ===== VALIDACIÓN 4: Prevención de duplicados =====
+      console.log('\n4. Verificando duplicados...');
       const esDuplicado = await transferenciaRepository.existeTransferenciaDuplicada(
         idCuenta,
         monto,
@@ -205,13 +219,23 @@ class TransferenciaService {
       }
 
       // ===== GENERACIÓN DE IDs =====
-      const idTra = uuidv4();
-      const idTrf = uuidv4();
-      const traFechaHora = new Date();
+      const idTra = nanoid(20);  // ID de transacción (20 caracteres)
+      const idTrf = nanoid(20);  // ID de transferencia (20 caracteres)
+      const traFechaHora = new Date().toISOString(); // Convertir a ISO string para Supabase
 
       // ===== GUARDAR CONTACTO SI SE SOLICITA =====
       let idContactoGuardado = cuentaDestino.idContacto || null;
       if (guardarContacto && guardarContacto.guardar) {
+        // Validar que tenemos email antes de guardar contacto
+        if (!cuentaDestino.email || typeof cuentaDestino.email !== 'string') {
+          return {
+            exito: false,
+            codigo: 'EMAIL_REQUERIDO_CONTACTO',
+            mensaje: 'El email es requerido para guardar el contacto',
+            datos: null
+          };
+        }
+
         const datosNuevoContacto = {
           conNombreBeneficiario: guardarContacto.nombreBeneficiario || cuentaDestino.nombreBeneficiario,
           conAlias: guardarContacto.alias,
@@ -224,13 +248,20 @@ class TransferenciaService {
         };
 
         const resultadoContacto = await contactoService.crearContacto(
-          uuidv4(),
+          nanoid(20),
           idPersona,
           datosNuevoContacto
         );
 
         if (resultadoContacto.exito) {
           idContactoGuardado = resultadoContacto.datos.id;
+        } else {
+          return {
+            exito: false,
+            codigo: 'ERROR_GUARDAR_CONTACTO',
+            mensaje: resultadoContacto.mensaje,
+            datos: null
+          };
         }
       }
 
@@ -240,25 +271,28 @@ class TransferenciaService {
         // Interbancaria: aplicar comisión (ejemplo: 1% del monto)
         comision = this._calcularComision(monto);
       }
+      comision = parseFloat(comision.toFixed(2));
 
       // ===== CREAR TRANSFERENCIA EN BASE DE DATOS =====
+      // Preparar datos de transferencia con validación de strings vacíos
       const datosNuevaTransferencia = {
         idTra,
         idTrf,
         idCuenta,
         idInvmov: null,
         traFechaHora,
-        traMonto: -monto, // Negativo porque es debito
+        traMonto: parseFloat((-monto).toFixed(2)), // Negativo porque es debito, redondeado
         traTipo: tipoTransferencia === '00' ? '00' : '01', // Código de tipo
-        traDescripcion: descripcion,
+        traDescripcion: descripcion || 'Transferencia bancaria',
         traEstado: '00', // Pendiente
         idBancoDestino: cuentaDestino.idBanco || null,
         idContacto: idContactoGuardado,
         trfNumeroCuentaDestino: cuentaDestino.numeroCuenta,
         trfEmailDestino: cuentaDestino.email,
-        trfTipoIdentificacionDestino: cuentaDestino.tipoIdentificacion,
-        trfIdentificacionDestino: cuentaDestino.identificacion,
-        trfTipoCuentaDestino: cuentaDestino.tipoCuenta,
+        trfTipoIdentificacionDestino: cuentaDestino.tipoIdentificacion || '00',
+        // Solo asignar trf_identificacion_destino si no es string vacío
+        trfIdentificacionDestino: (cuentaDestino.identificacion && cuentaDestino.identificacion.trim() !== '') ? cuentaDestino.identificacion : null,
+        trfTipoCuentaDestino: cuentaDestino.tipoCuenta || '00',
         trfTipoTransferencia: tipoTransferencia,
         trfComision: comision,
         idTraDestino: null // Se establecería con la transacción de crédito en destino
@@ -277,6 +311,94 @@ class TransferenciaService {
         };
       }
 
+      // ===== ACTUALIZAR SALDOS Y CREAR MOVIMIENTOS EN AMBAS CUENTAS =====
+      let nuevoSaldoOrigen = saldoDisponible;
+      let nuevoSaldoDestino = 0;
+      let idTraDestino = null;
+      
+      try {
+        // Calcular monto total a debitar de la cuenta origen (con redondeo)
+        const montoTotalDebito = parseFloat((monto + comision).toFixed(2));
+        nuevoSaldoOrigen = parseFloat((saldoDisponible - montoTotalDebito).toFixed(2));
+
+        // Actualizar saldo de cuenta origen
+        await cuentaRepository.actualizarSaldo(idCuenta, nuevoSaldoOrigen);
+        console.log(`💰 Saldo actualizado - Cuenta origen: ${idCuenta}, Nuevo saldo: $${nuevoSaldoOrigen.toFixed(2)}`);
+
+        // ===== CREAR MOVIMIENTO DE DÉBITO EN TRANSACCION =====
+        console.log('📝 Creando movimiento de débito en cuenta origen...');
+        const { supabase } = require('../../../shared/config/database.config');
+        
+        const transaccionDebito = {
+          id_tra: idTra,
+          id_cuenta: idCuenta,
+          tra_fecha_hora: traFechaHora,
+          tra_monto: parseFloat((-monto).toFixed(2)), // NEGATIVO (débito)
+          tra_tipo: '00', // Transferencia
+          tra_descripcion: descripcion || 'Transferencia enviada',
+          tra_estado: '01' // Completada
+        };
+        
+        await supabase.from('transaccion').insert([transaccionDebito]);
+        console.log('✅ Movimiento de débito registrado en TRANSACCION');
+
+        // ===== CREAR MOVIMIENTO DE CRÉDITO EN CUENTA DESTINO (SOLO SI ES INTERNA) =====
+        if (tipoTransferencia === '00') {
+          console.log('📝 Creando movimiento de crédito en cuenta destino...');
+          console.log('   Buscando cuenta destino con número:', cuentaDestino.numeroCuenta);
+          
+          // Buscar la cuenta destino por número
+          const cuentaDestinoData = await cuentaRepository.findByNumeroCuenta(cuentaDestino.numeroCuenta);
+          
+          if (cuentaDestinoData && cuentaDestinoData.id_cuenta) {
+            console.log('   ✅ Cuenta destino encontrada:', cuentaDestinoData.id_cuenta);
+            
+            nuevoSaldoDestino = parseFloat(((cuentaDestinoData.cue_saldo_disponible || 0) + monto).toFixed(2));
+            
+            // Actualizar saldo de cuenta destino
+            await cuentaRepository.actualizarSaldo(cuentaDestinoData.id_cuenta, nuevoSaldoDestino);
+            console.log(`💰 Saldo actualizado - Cuenta destino: ${cuentaDestinoData.id_cuenta}, Nuevo saldo: $${nuevoSaldoDestino.toFixed(2)}`);
+
+            // Generar ID para la transacción destino
+            idTraDestino = nanoid(20);
+
+            // Crear movimiento de CRÉDITO en la cuenta destino
+            const transaccionCredito = {
+              id_tra: idTraDestino,
+              id_cuenta: cuentaDestinoData.id_cuenta,
+              tra_fecha_hora: traFechaHora,
+              tra_monto: parseFloat(monto.toFixed(2)), // POSITIVO (crédito)
+              tra_tipo: '00', // Transferencia
+              tra_descripcion: `Transferencia recibida`,
+              tra_estado: '01' // Completada
+            };
+            
+            console.log('   📝 Movimiento de crédito a registrar:', JSON.stringify(transaccionCredito, null, 2));
+            
+            const { error: errCredito } = await supabase.from('transaccion').insert([transaccionCredito]);
+            
+            if (errCredito) {
+              console.warn('   ⚠️ Error al crear movimiento de crédito:', errCredito.message);
+            } else {
+              console.log('   ✅ Movimiento de crédito registrado en cuenta destino:', idTraDestino);
+              
+              // Actualizar el registro de transferencia con la referencia al movimiento de crédito
+              await supabase
+                .from('transferencia')
+                .update({ id_tra_destino: idTraDestino })
+                .eq('id_tra', idTra)
+                .eq('id_trf', idTrf);
+            }
+          } else {
+            console.warn('   ⚠️ Cuenta destino NO encontrada para número:', cuentaDestino.numeroCuenta);
+          }
+        } else {
+          console.log('📝 Transferencia interbancaria - No se crea movimiento en cuenta destino');
+        }
+      } catch (errSaldo) {
+        console.warn('⚠️ Error al actualizar saldos o crear movimientos:', errSaldo.message);
+      }
+
       // ===== RESPUESTA EXITOSA =====
       return {
         exito: true,
@@ -287,11 +409,11 @@ class TransferenciaService {
           idTransaccion: idTra,
           transferencia: this._formatarTransferencia(transferenciaCreada),
           resumen: {
-            montoTransferencia: monto,
-            comisiones: comision,
-            montoTotal: monto + comision,
-            saldoAnterior: saldoDisponibleAnterior,
-            saldoNuevo: saldoDisponible - monto - comision,
+            montoTransferencia: parseFloat(monto.toFixed(2)),
+            comisiones: parseFloat(comision.toFixed(2)),
+            montoTotal: parseFloat((monto + comision).toFixed(2)),
+            saldoAnterior: parseFloat(saldoDisponibleAnterior.toFixed(2)),
+            saldoNuevo: parseFloat(nuevoSaldoOrigen.toFixed(2)),
             timestamp: traFechaHora,
             tipoTransferencia: tipoTransferencia === '00' ? 'Interna' : 'Interbancaria',
             contactoGuardado: guardarContacto?.guardar || false
@@ -299,7 +421,6 @@ class TransferenciaService {
         }
       };
     } catch (error) {
-      console.error('Error en crearTransferencia:', error);
       return {
         exito: false,
         codigo: 'ERROR_INTERNO',
@@ -540,11 +661,14 @@ class TransferenciaService {
       const cuenta = await transferenciaRepository.buscarCuentaPorNumero(numeroCuenta);
 
       if (cuenta) {
-        return {
+        const respuesta = {
           existe: true,
-          nombreTitular: cuenta.nombre_titular || cuenta.per_nombre || 'Titular Banco Pichincha',
-          tipoCuenta: cuenta.cta_tipo === '00' ? 'Ahorros' : 'Corriente'
+          nombreTitular: cuenta.nombre_titular || 'Titular Banco Pichincha',
+          tipoCuenta: cuenta.cta_tipo === '00' ? 'Ahorros' : 'Corriente',
+          tipoIdentificacion: cuenta.per_tipo_identificacion || '00',
+          identificacion: cuenta.per_identificacion || ''
         };
+        return respuesta;
       }
 
       // Si no se encuentra, retornar como no existente
@@ -553,12 +677,13 @@ class TransferenciaService {
         mensaje: 'La cuenta no existe o no pertenece a Banco Pichincha'
       };
     } catch (error) {
-      console.error('Error validando cuenta Pichincha:', error);
       // En caso de error, simular para desarrollo
       return {
         existe: true,
         nombreTitular: 'Titular Demo',
         tipoCuenta: 'Ahorros',
+        tipoIdentificacion: '00',
+        identificacion: '1234567890',
         mensaje: 'Validación simulada (desarrollo)'
       };
     }

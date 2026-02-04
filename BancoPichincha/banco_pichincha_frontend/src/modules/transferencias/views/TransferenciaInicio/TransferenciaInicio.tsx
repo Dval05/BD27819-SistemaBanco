@@ -8,6 +8,7 @@ import { UserPlus, ArrowLeftRight, Search } from 'lucide-react';
 import { ContactoCard, SearchBar, LoadingSpinner, ActionButton } from '../../components';
 import { transferenciasService } from '../../services/transferencias.service';
 import type { Contacto, VistaTransferencia } from '../../types/transferencias.types';
+import ConfiguradorLimites from './ConfiguradorLimites';
 import styles from './TransferenciaInicio.module.css';
 
 interface TransferenciaInicioProps {
@@ -164,6 +165,9 @@ const TransferenciaInicio: React.FC<TransferenciaInicioProps> = ({
             ))}
           </div>
         )}
+
+        {/* Configurador de límites */}
+        <ConfiguradorLimites clienteId={clienteId} />
       </div>
     </div>
   );

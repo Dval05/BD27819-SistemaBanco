@@ -1,4 +1,5 @@
 const transferenciaService = require('../services/transferencia.service');
+const transferenciaRepository = require('../repositories/transferencia.repository');
 
 /**
  * Transferencia Controller
@@ -248,9 +249,14 @@ class TransferenciaController {
    */
   async crearTransferencia(req, res) {
     try {
+      console.log('\n=== DEBUG crearTransferencia - INICIO ===');
+      
       // Validar usuario autenticado
-      const idPersona = req.user?.id_persona || req.body?.idPersona;
+      const idPersona = req.body?.cliId || req.body?.idPersona || req.user?.id_persona;
+      console.log('1. idPersona recibida:', idPersona);
+      
       if (!idPersona) {
+        console.log('❌ Usuario no autenticado');
         return res.status(401).json({
           exito: false,
           codigo: 'NO_AUTENTICADO',
@@ -258,84 +264,89 @@ class TransferenciaController {
         });
       }
 
-      // Validar que se proporcionaron los datos necesarios
       const {
-        idCuenta,
-        monto,
-        descripcion,
-        tipoTransferencia,
-        cuentaDestino,
-        saldoDisponible,
-        saldoDisponibleAnterior,
-        guardarContacto
+        traCuentaOrigen,
+        traCuentaDestino,
+        traMonto,
+        traDescripcion,
+        traTipoTransferencia,
+        traEmail,
+        traSaldoDisponible,
+        conId
       } = req.body;
 
-      // Validación básica de campos requeridos
-      if (!idCuenta || !monto || !descripcion || !tipoTransferencia || !cuentaDestino || saldoDisponible === undefined) {
+      console.log('2. Datos recibidos del frontend:');
+      console.log('   - traCuentaOrigen:', traCuentaOrigen);
+      console.log('   - traCuentaDestino:', traCuentaDestino);
+      console.log('   - traMonto:', traMonto);
+
+      if (!traCuentaOrigen || !traCuentaDestino || !traMonto || !traTipoTransferencia) {
+        console.log('❌ Campos incompletos');
         return res.status(400).json({
           exito: false,
           codigo: 'CAMPOS_INCOMPLETOS',
-          mensaje: 'Faltan campos requeridos para procesar la transferencia'
+          mensaje: 'Faltan campos requeridos'
         });
       }
 
-      // Validación de tipo de transferencia
-      if (!['00', '01'].includes(tipoTransferencia)) {
+      if (!['00', '01'].includes(traTipoTransferencia)) {
+        console.log('❌ Tipo de transferencia inválido:', traTipoTransferencia);
         return res.status(400).json({
           exito: false,
           codigo: 'TIPO_TRANSFERENCIA_INVALIDO',
-          mensaje: 'Tipo de transferencia debe ser 00 (Interna) o 01 (Interbancaria)'
+          mensaje: 'Tipo de transferencia debe ser 00 o 01'
         });
       }
 
-      // Validación de datos de cuenta destino
-      const { numeroCuenta, email, tipoIdentificacion, identificacion, tipoCuenta } = cuentaDestino;
-      if (!numeroCuenta || !email || !tipoIdentificacion || !identificacion || !tipoCuenta) {
-        return res.status(400).json({
+      // PASO CRÍTICO: Obtener id_cuenta desde el número de cuenta
+      console.log('3. Buscando cuenta por número:', traCuentaOrigen);
+      const cuentaOrigen = await transferenciaRepository.buscarCuentaPorNumero(traCuentaOrigen);
+      
+      if (!cuentaOrigen) {
+        console.log('❌ Cuenta origen no encontrada');
+        return res.status(404).json({
           exito: false,
-          codigo: 'DATOS_DESTINO_INCOMPLETOS',
-          mensaje: 'Faltan datos de la cuenta destino'
+          codigo: 'CUENTA_NO_ENCONTRADA',
+          mensaje: 'La cuenta origen no existe'
         });
       }
 
-      // Validación para transferencias interbancarias
-      if (tipoTransferencia === '01' && !cuentaDestino.idBanco) {
-        return res.status(400).json({
-          exito: false,
-          codigo: 'BANCO_DESTINO_REQUERIDO',
-          mensaje: 'Para transferencias interbancarias, el banco destino es requerido'
-        });
-      }
+      console.log('✅ Cuenta origen encontrada:', cuentaOrigen.id_cuenta);
 
       // Preparar datos para el service
       const datosTransferencia = {
-        idCuenta,
-        idPersona,
-        monto: parseFloat(monto),
-        descripcion,
-        tipoTransferencia,
+        idCuenta: cuentaOrigen.id_cuenta,
+        idPersona: idPersona,
+        monto: parseFloat(traMonto),
+        descripcion: traDescripcion || 'Transferencia bancaria',
+        tipoTransferencia: traTipoTransferencia,
         cuentaDestino: {
-          numeroCuenta,
-          email,
-          tipoIdentificacion,
-          identificacion,
-          tipoCuenta,
-          nombreBeneficiario: cuentaDestino.nombreBeneficiario || '',
-          idBanco: cuentaDestino.idBanco || null,
-          idContacto: cuentaDestino.idContacto || null
+          numeroCuenta: traCuentaDestino,
+          email: traEmail || '',
+          tipoIdentificacion: '00',  // Valor por defecto: Cédula
+          identificacion: '',  // Will be set to null if empty in service
+          tipoCuenta: '00',    // Valor por defecto: Ahorros
+          nombreBeneficiario: '',
+          idBanco: null,
+          idContacto: conId || null
         },
-        saldoDisponible: parseFloat(saldoDisponible),
-        saldoDisponibleAnterior: parseFloat(saldoDisponibleAnterior) || parseFloat(saldoDisponible),
-        guardarContacto: guardarContacto || { guardar: false }
+        saldoDisponible: parseFloat(traSaldoDisponible) || 0,
+        saldoDisponibleAnterior: parseFloat(traSaldoDisponible) || 0,
+        guardarContacto: { guardar: false }
       };
 
-      // Llamar al service principal
+      console.log('4. Datos preparados para service - usando idCuenta:', datosTransferencia.idCuenta);
+      console.log('5. Llamando a transferenciaService.crearTransferencia...');
       const resultado = await transferenciaService.crearTransferencia(datosTransferencia);
+      console.log('   - codigo:', resultado.codigo);
+      console.log('   - mensaje:', resultado.mensaje);
 
       // Retornar con status apropiad
       if (resultado.exito) {
+        console.log('✅ Transferencia creada exitosamente');
         return res.status(201).json(resultado);
       } else {
+        console.log('⚠️ Transferencia fallida:', resultado.codigo);
         const statusMap = {
           'VALIDACION_BASICA_FALLIDA': 400,
           'VALIDACION_MONTO_FALLIDA': 422,
@@ -349,7 +360,8 @@ class TransferenciaController {
         return res.status(statusCode).json(resultado);
       }
     } catch (error) {
-      console.error('Error en crearTransferencia:', error);
+      console.error('❌ Error en crearTransferencia:', error);
+      console.error('Stack:', error.stack);
       return res.status(500).json({
         exito: false,
         codigo: 'ERROR_SERVIDOR',
@@ -431,12 +443,26 @@ class TransferenciaController {
 
       const resultado = await transferenciaService.validarCuentaPichincha(numeroCuenta);
 
+      console.log('\n=== DEBUG validarCuentaPichincha Controller ===');
+      console.log('1. numeroCuenta validado:', numeroCuenta);
+      console.log('2. resultado del service:', JSON.stringify(resultado, null, 2));
+      console.log('3. Detalles:');
+      console.log('   - existe:', resultado.existe);
+      console.log('   - nombreTitular:', resultado.nombreTitular, `(${typeof resultado.nombreTitular}, length: ${resultado.nombreTitular?.length})`);
+      console.log('   - tipoCuenta:', resultado.tipoCuenta);
+      console.log('   - tipoIdentificacion:', resultado.tipoIdentificacion);
+      console.log('   - identificacion:', resultado.identificacion);
+      console.log('4. Respuesta a enviar:', JSON.stringify({
+        exito: true,
+        ...resultado
+      }, null, 2));
+
       return res.status(200).json({
         exito: true,
         ...resultado
       });
     } catch (error) {
-      console.error('Error en validarCuentaPichincha:', error);
+      console.error('❌ Error en validarCuentaPichincha:', error);
       return res.status(500).json({
         exito: false,
         existe: false,

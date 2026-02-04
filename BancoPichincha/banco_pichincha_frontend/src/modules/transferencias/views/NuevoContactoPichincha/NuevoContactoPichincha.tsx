@@ -27,6 +27,8 @@ interface ValidacionCuenta {
   valida: boolean;
   nombreTitular: string | null;
   tipoCuenta: string | null;
+  tipoIdentificacion: string | null;
+  identificacion: string | null;
 }
 
 const NuevoContactoPichincha: React.FC<NuevoContactoPichinchaProps> = ({ 
@@ -67,19 +69,37 @@ const NuevoContactoPichincha: React.FC<NuevoContactoPichinchaProps> = ({
       setValidando(true);
       setError(null);
       
+      console.log('=== DEBUG handleValidarCuenta ===');
+      console.log('1. numeroCuenta enviado:', formData.numeroCuenta);
+      
       const resultado = await transferenciasService.validarCuentaPichincha(formData.numeroCuenta);
       
+      console.log('2. Resultado recibido del backend:', resultado);
+      console.log('3. Detalles del resultado:');
+      console.log('   - existe:', resultado.existe);
+      console.log('   - nombreTitular:', resultado.nombreTitular, `(${typeof resultado.nombreTitular})`);
+      console.log('   - nombreTitular length:', resultado.nombreTitular?.length);
+      console.log('   - tipoCuenta:', resultado.tipoCuenta);
+      console.log('   - tipoIdentificacion:', resultado.tipoIdentificacion);
+      console.log('   - identificacion:', resultado.identificacion);
+      
       if (resultado.existe) {
-        setValidacion({
+        const validacionData = {
           valida: true,
           nombreTitular: resultado.nombreTitular || null,
-          tipoCuenta: resultado.tipoCuenta || null
-        });
+          tipoCuenta: resultado.tipoCuenta || null,
+          tipoIdentificacion: resultado.tipoIdentificacion || null,
+          identificacion: resultado.identificacion || null
+        };
+        console.log('4. Guardando validacion:', validacionData);
+        setValidacion(validacionData);
       } else {
         setError('La cuenta no existe o no pertenece a Banco Pichincha');
         setValidacion(null);
       }
     } catch (err: any) {
+      console.error('❌ Error en handleValidarCuenta:', err);
+      console.error('Error response data:', err.response?.data);
       setError(err.response?.data?.message || 'Error al validar cuenta');
       setValidacion(null);
     } finally {
@@ -98,6 +118,22 @@ const NuevoContactoPichincha: React.FC<NuevoContactoPichinchaProps> = ({
       return;
     }
 
+    if (!formData.email.trim()) {
+      setError('El email es obligatorio');
+      return;
+    }
+
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(formData.email.trim())) {
+      setError('El email no es válido');
+      return;
+    }
+
+    if (!clienteId) {
+      setError('Error: Cliente no identificado');
+      return;
+    }
+
     try {
       setGuardando(true);
       setError(null);
@@ -107,10 +143,10 @@ const NuevoContactoPichincha: React.FC<NuevoContactoPichinchaProps> = ({
         conNumeroCuenta: formData.numeroCuenta,
         conNombreBeneficiario: validacion.nombreTitular!,
         conAlias: formData.alias.trim(),
-        conEmail: formData.email.trim() || undefined,
+        conEmail: formData.email.trim(),
         conTipoCuenta: validacion.tipoCuenta === 'Ahorros' ? '00' : '01',
-        conTipoIdentificacion: '00',
-        conIdentificacion: ''
+        conTipoIdentificacion: validacion.tipoIdentificacion || '00',
+        conIdentificacion: validacion.identificacion || ''
       });
 
       if (onContactoCreado) {

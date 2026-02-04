@@ -138,6 +138,44 @@ router.delete('/contactos/:idContacto', (req, res) => {
 // RUTAS DE LÍMITES TRANSACCIONALES
 // ============================================
 /**
+ * POST /api/transferencias/limites/guardar
+ * Guarda los límites de transferencia para una persona
+ * IMPORTANTE: Esta ruta debe ir ANTES de las rutas con parámetros
+ * 
+ * Body: {
+ *   idPersona (string, requerido),
+ *   montoMaximoDiario (number),
+ *   montoMaximoTransaccion (number),
+ *   cantidadMaximaDiaria (number)
+ * }
+ */
+router.post('/limites/guardar', (req, res) => {
+  limiteTransaccionalController.guardarLimites(req, res);
+});
+
+/**
+ * POST /api/transferencias/limites/validar
+ * ENDPOINT CRÍTICO: Valida si una transacción cumple con los límites
+ * Se llama antes de ejecutar transferencia
+ * IMPORTANTE: Esta ruta debe ir ANTES de las rutas con parámetros
+ * 
+ * Body: {
+ *   idCuenta (string, requerido),
+ *   tipoTransaccion (string, requerido: '00', '01', '02'),
+ *   monto (number, requerido)
+ * }
+ * 
+ * Respuesta: {
+ *   valido: boolean,
+ *   mensaje: string,
+ *   detalles: { limiteMaximo?, limiteDisponible?, cantidadDisponible? }
+ * }
+ */
+router.post('/limites/validar', (req, res) => {
+  limiteTransaccionalController.validarLimiteTransaccion(req, res);
+});
+
+/**
  * GET /api/transferencias/limites/:idCuenta
  * Obtiene todos los límites configurados para una cuenta
  */
@@ -164,24 +202,12 @@ router.get('/limites/:idCuenta/disponibles', (req, res) => {
 });
 
 /**
- * POST /api/transferencias/limites/validar
- * ENDPOINT CRÍTICO: Valida si una transacción cumple con los límites
- * Se llama antes de ejecutar transferencia
- * 
- * Body: {
- *   idCuenta (string, requerido),
- *   tipoTransaccion (string, requerido: '00', '01', '02'),
- *   monto (number, requerido)
- * }
- * 
- * Respuesta: {
- *   valido: boolean,
- *   mensaje: string,
- *   detalles: { limiteMaximo?, limiteDisponible?, cantidadDisponible? }
- * }
+ * GET /api/transferencias/limites/persona/:idPersona/disponibles
+ * ALTERNATIVA: Obtiene los límites disponibles por idPersona (en lugar de idCuenta)
+ * Necesita obtener primero la cuenta por id_persona
  */
-router.post('/limites/validar', (req, res) => {
-  limiteTransaccionalController.validarLimiteTransaccion(req, res);
+router.get('/limites/persona/:idPersona/disponibles', (req, res) => {
+  limiteTransaccionalController.obtenerLimitesDisponiblesPorPersona(req, res);
 });
 
 // ============================================

@@ -63,6 +63,7 @@ export interface CrearContactoRequest {
   cliId?: number | string;
   idPersona?: number | string;
   banId?: number;
+  idBanco?: number;
   conTipoIdentificacion: string;
   conIdentificacion: string;
   conNombreBeneficiario: string;
@@ -145,6 +146,8 @@ export interface ValidacionCuentaResponse {
   existe: boolean;
   nombreTitular?: string;
   tipoCuenta?: string;
+  tipoIdentificacion?: string;  // '00'=Cédula, '01'=RUC, '02'=Pasaporte
+  identificacion?: string;       // Número de identificación
   mensaje?: string;
 }
 

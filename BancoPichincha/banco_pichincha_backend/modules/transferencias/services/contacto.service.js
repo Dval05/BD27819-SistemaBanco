@@ -88,6 +88,7 @@ class ContactoService {
     try {
       // Validaciones básicas
       const validacion = this._validarDatosContacto(datosContacto);
+
       if (!validacion.valido) {
         return {
           exito: false,
