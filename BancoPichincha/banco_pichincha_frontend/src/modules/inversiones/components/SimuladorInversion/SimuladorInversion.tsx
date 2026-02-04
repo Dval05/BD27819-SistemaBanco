@@ -61,7 +61,7 @@ const SimuladorInversion: React.FC<Props> = ({
       await simular(monto, plazoDias);
       // Ya no cambiamos de paso, el resultado se muestra en el mismo componente
     } catch (err) {
-      console.error(err);
+      // Error silencioso
     }
   };
 

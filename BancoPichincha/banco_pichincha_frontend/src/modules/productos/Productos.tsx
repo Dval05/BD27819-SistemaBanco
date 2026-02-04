@@ -33,7 +33,7 @@ function Productos({ cliente, onNavigate, showSaldos, onToggleSaldos }: Producto
         setTarjetas(productos.tarjetas);
         setInversiones(productos.inversiones);
       } catch (error) {
-        console.error('Error cargando productos:', error);
+        // Error silencioso
       } finally {
         setLoading(false);
       }
@@ -134,11 +134,14 @@ function Productos({ cliente, onNavigate, showSaldos, onToggleSaldos }: Producto
                 <div className="producto-info">
                   <span className="producto-nombre">{tarjeta.nombre}</span>
                   <span className="producto-numero">**** {tarjeta.numero.slice(-4)}</span>
+                  <span className="producto-tipo">{tarjeta.subtipo === 'debito' ? 'Débito' : 'Crédito'}</span>
                 </div>
                 <div className="producto-saldo">
-                  <span className="saldo-label">Saldo</span>
+                  <span className="saldo-label">
+                    {tarjeta.subtipo === 'debito' ? 'Saldo' : 'Cupo disponible'}
+                  </span>
                   <span className="saldo-valor">
-                    {showSaldos ? formatMoney(tarjeta.saldo) : '$ ***.**'}
+                    {showSaldos ? formatMoney(tarjeta.subtipo === 'debito' ? tarjeta.saldoActual : tarjeta.cupoDisponible) : '$ ***.**'}
                   </span>
                 </div>
                 <ChevronRight size={20} className="arrow" />

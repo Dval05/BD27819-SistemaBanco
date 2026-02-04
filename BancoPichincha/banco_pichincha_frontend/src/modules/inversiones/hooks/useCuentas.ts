@@ -25,10 +25,8 @@ export function useCuentas(idPersona: string | null) {
             cue_saldo_disponible: Number(cuenta.cue_saldo_disponible) || 0
           }));
         
-        console.log('Cuentas cargadas:', cuentasFormateadas);
         setCuentas(cuentasFormateadas);
       } catch (err: any) {
-        console.error('Error al cargar cuentas:', err);
         setError(err.response?.data?.message || 'Error al cargar cuentas');
       } finally {
         setLoading(false);

@@ -24,9 +24,15 @@ const DetalleInversion: React.FC<Props> = ({ inversion, onVolver }) => {
 
   const calcularInteres = () => {
     const monto = parseFloat(inversion.inv_monto.toString());
-    const tasa = parseFloat((inversion.inv_tasa_interes || 0).toString());
+    let tasa = parseFloat((inversion.inv_tasa_interes || 0).toString());
+    
+    // Auto-detectar formato: si tasa > 1, está en porcentaje (2.65%), si <= 1, está en decimal (0.0265)
+    if (tasa > 1) {
+      tasa = tasa / 100; // Convertir porcentaje a decimal
+    }
+    
     const dias = inversion.inv_plazo_dias;
-    return (monto * (tasa / 100) * dias) / 360;
+    return (monto * tasa * dias) / 360;
   };
 
   const interes = calcularInteres();

@@ -5,6 +5,7 @@ const CronogramaController = require('./controllers/cronograma.controller');
 const MovimientoController = require('./controllers/movimiento.controller');
 const SimuladorController = require('./controllers/simulador.controller');
 const TasasController = require('./controllers/tasas.controller');
+const VencimientoController = require('./controllers/vencimiento.controller');
 
 // ========== SIMULADOR ==========
 // Simular inversión
@@ -19,6 +20,16 @@ router.get('/tasas', TasasController.obtenerTabla);
 
 // Obtener tasa específica
 router.get('/tasas/especifica', TasasController.obtenerTasaEspecifica);
+
+// ========== VENCIMIENTOS ==========
+// Procesar todas las inversiones vencidas
+router.post('/vencimientos/procesar', VencimientoController.procesarVencimientos);
+
+// Liquidar una inversión específica (para demo/pruebas)
+router.post('/vencimientos/:idInversion/liquidar', VencimientoController.liquidarInversion);
+
+// Obtener inversiones próximas a vencer
+router.get('/vencimientos/proximas', VencimientoController.obtenerProximasVencer);
 
 // ========== INVERSIONES ==========
 // Listar todas las inversiones (con filtros opcionales)

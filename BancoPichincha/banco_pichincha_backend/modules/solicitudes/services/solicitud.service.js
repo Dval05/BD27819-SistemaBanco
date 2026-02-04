@@ -4,6 +4,12 @@ const tarjetaRepository = require('../repositories/tarjeta.repository');
 
 const crypto = require('crypto');
 
+// Marcas que ofrecen débito y crédito
+const MARCAS_POR_TIPO = {
+  debito: ['VISA', 'MASTERCARD', 'DISCOVER', 'JCB'],
+  credito: ['VISA', 'MASTERCARD', 'DINERS', 'AMEX', 'DISCOVER', 'JCB']
+};
+
 class SolicitudService {
   /**
    * Genera un número de tarjeta único de 16 dígitos
@@ -47,6 +53,19 @@ class SolicitudService {
   async crearSolicitud(data) {
     this._validateSolicitud(data);
 
+    // Validar marca si se proporciona
+    if (data.marca) {
+      const tipoTarjetaLower = data.tipoTarjeta.toLowerCase() === 'credito' ? 'credito' : 'debito';
+      const marcasPermitidas = MARCAS_POR_TIPO[tipoTarjetaLower];
+      
+      if (!marcasPermitidas.includes(data.marca)) {
+        throw { 
+          status: 400, 
+          message: `${data.marca} no ofrece tarjetas de ${data.tipoTarjeta.toLowerCase()}. Solo está disponible para tarjetas de ${tipoTarjetaLower === 'debito' ? 'crédito' : 'débito'}.`
+        };
+      }
+    }
+
     const solicitud = {
       id_solicitud: uuidv4(),
       id_persona: data.idPersona,
@@ -55,7 +74,8 @@ class SolicitudService {
       sol_fecha_solicitud: new Date().toISOString(),
       sol_estado: '00', // 00 = Pendiente
       sol_motivo: data.motivo || 'Solicitud de nueva tarjeta',
-      sol_limite_solicitado: data.tipoTarjeta === 'CREDITO' ? (data.limiteSolicitado || 1000) : null
+      sol_limite_solicitado: data.tipoTarjeta === 'CREDITO' ? (data.limiteSolicitado || 1000) : null,
+      sol_marca: data.marca || 'VISA' // Guardar la marca solicitada
     };
 
     const solicitudCreada = await solicitudRepository.create(solicitud);

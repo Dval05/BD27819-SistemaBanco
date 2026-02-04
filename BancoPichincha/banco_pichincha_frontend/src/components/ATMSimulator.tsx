@@ -25,6 +25,8 @@ type ATMScreen =
   | 'tarjeta-seleccionar-monto'
   | 'retiro-sin-tarjeta-telefono'
   | 'retiro-sin-tarjeta-codigo'
+  | 'deposito-numero-cuenta'
+  | 'deposito-monto'
   | 'confirmacion'
   | 'procesando'
   | 'exito'
@@ -52,6 +54,15 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     id_cuenta: string;
     monto: number;
   } | null>(null);
+  
+  // Estados para depósito
+  const [numeroCuentaDeposito, setNumeroCuentaDeposito] = useState('');
+  const [cuentaValidada, setCuentaValidada] = useState(false);
+  const [datosCuentaDeposito, setDatosCuentaDeposito] = useState<{
+    numeroCuenta: string;
+    nombreTitular?: string;
+    tipoCuenta?: string;
+  } | null>(null);
 
   const irAPantalla = (nuevaPantalla: ATMScreen) => {
     setMensaje('');
@@ -73,6 +84,9 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     setDatosRetiroSinTarjeta(null);
     setPrimerUso(false);
     setTarjetaId('');
+    setNumeroCuentaDeposito('');
+    setCuentaValidada(false);
+    setDatosCuentaDeposito(null);
   };
 
   // Manejar tecla del teclado numérico
@@ -115,6 +129,19 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
           setCodigoIngresado(prev => prev + key.toString());
         }
         break;
+      case 'deposito-numero-cuenta':
+        if (typeof key === 'number' && numeroCuentaDeposito.length < 10) {
+          setNumeroCuentaDeposito(prev => prev + key.toString());
+        }
+        break;
+      case 'deposito-monto':
+        if (typeof key === 'number') {
+          setMontoSeleccionado(prev => {
+            const newVal = (prev || 0) * 10 + key;
+            return newVal > 99999 ? prev : newVal;
+          });
+        }
+        break;
     }
   };
 
@@ -147,6 +174,16 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
       case 'retiro-sin-tarjeta-codigo':
         setCodigoIngresado(prev => prev.slice(0, -1));
         break;
+      case 'deposito-numero-cuenta':
+        setNumeroCuentaDeposito(prev => prev.slice(0, -1));
+        break;
+      case 'deposito-monto':
+        setMontoSeleccionado(prev => {
+          if (!prev) return null;
+          const newVal = Math.floor(prev / 10);
+          return newVal === 0 ? null : newVal;
+        });
+        break;
     }
   };
 
@@ -158,6 +195,102 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     );
     if (continueOpt && continueOpt.action) {
       continueOpt.action();
+    }
+  };
+
+  // Validar cuenta para depósito
+  const validarCuentaDeposito = async () => {
+    if (numeroCuentaDeposito.length !== 10) {
+      setMensaje('⚠️ Ingrese número de cuenta válido (10 dígitos)');
+      return;
+    }
+
+    // Limpiar mensaje y mostrar procesando
+    setMensaje('');
+    setScreen('procesando');
+
+    try {
+      const response = await fetch('http://localhost:3000/api/transferencias/validar-cuenta-pichincha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numeroCuenta: numeroCuentaDeposito
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.existe) {
+        // Cuenta válida - continuar al siguiente paso
+        setCuentaValidada(true);
+        setDatosCuentaDeposito({
+          numeroCuenta: numeroCuentaDeposito,
+          nombreTitular: data.nombreTitular || 'Titular de la cuenta',
+          tipoCuenta: data.tipoCuenta || 'Ahorros'
+        });
+        setMensaje('');
+        setScreen('deposito-monto');
+      } else {
+        // Cuenta NO existe - mostrar error en la misma pantalla
+        setCuentaValidada(false);
+        setDatosCuentaDeposito(null);
+        // Primero cambiamos la pantalla, LUEGO establecemos el mensaje
+        setScreen('deposito-numero-cuenta');
+        // Usar setTimeout para asegurar que el mensaje se muestre después del cambio de pantalla
+        setTimeout(() => {
+          setMensaje('❌ CUENTA INCORRECTA - Verifique el número e intente nuevamente');
+        }, 100);
+      }
+    } catch (error) {
+      setCuentaValidada(false);
+      setDatosCuentaDeposito(null);
+      setScreen('deposito-numero-cuenta');
+      setTimeout(() => {
+        setMensaje('ERROR DE CONEXIÓN - Verifique e intente nuevamente');
+      }, 100);
+    }
+  };
+
+  // Procesar depósito
+  const procesarDeposito = async () => {
+    if (!montoSeleccionado || montoSeleccionado <= 0) {
+      setMensaje('Ingrese un monto válido');
+      irAPantalla('error');
+      return;
+    }
+
+    if (!datosCuentaDeposito || !datosCuentaDeposito.numeroCuenta) {
+      setMensaje('Error: cuenta no validada');
+      irAPantalla('error');
+      return;
+    }
+
+    irAPantalla('procesando');
+
+    try {
+      const requestBody = {
+        cuenta_id: datosCuentaDeposito.numeroCuenta,
+        monto: montoSeleccionado
+      };
+
+      const response = await fetch('http://localhost:3000/api/depositos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMensaje('Depósito realizado exitosamente');
+        irAPantalla('exito');
+      } else {
+        setMensaje(data.error || data.mensaje || 'Error al procesar depósito');
+        irAPantalla('error');
+      }
+    } catch (error) {
+      setMensaje('Error de conexión');
+      irAPantalla('error');
     }
   };
 
@@ -230,14 +363,8 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
               <div className="atm-logo-small">■ BANCO PICHINCHA</div>
             </div>
             <div className="atm-main-message">
-              <h2>Estamos trabajando para servirte mejor.</h2>
-              <p className="atm-english">We are working to serve you better.</p>
-              <div className="atm-alert">
-                <p><strong>Alerta:</strong> En este momento NO ingreses tu tarjeta o tu clave.</p>
-                <p className="atm-english"><strong>Warning:</strong> Do NOT enter your card or your key.</p>
-              </div>
-              <p className="atm-footer-msg">Por favor intenta más tarde. Gracias por tu comprensión.</p>
-              <p className="atm-english">Please try again later. Thank you.</p>
+              <h2>Bienvenido</h2>
+              <p>Seleccione una operación</p>
             </div>
           </div>
         );
@@ -250,6 +377,72 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
             </div>
             <div className="atm-main-message">
               <h2>Seleccione tipo de operación</h2>
+            </div>
+          </div>
+        );
+
+      case 'deposito-numero-cuenta':
+        return (
+          <div className="atm-screen-content">
+            <div className="atm-header-bar">
+              <div className="atm-logo-small">■ BANCO PICHINCHA</div>
+            </div>
+            <div className="atm-main-message">
+              <h2>Depósito en efectivo</h2>
+              <p>Ingrese número de cuenta (10 dígitos)</p>
+              <div className="atm-input-display">
+                <input 
+                  type="text" 
+                  maxLength={10}
+                  value={numeroCuentaDeposito}
+                  onChange={(e) => setNumeroCuentaDeposito(e.target.value.replace(/\D/g, ''))}
+                  className="atm-input-field"
+                  placeholder="0000000000"
+                />
+              </div>
+              {numeroCuentaDeposito && (
+                <div className="atm-cuenta-preview">
+                  <p>Cuenta ingresada:</p>
+                  <p className="cuenta-numero">{numeroCuentaDeposito}</p>
+                </div>
+              )}
+              {mensaje && <p className="atm-error-msg">{mensaje}</p>}
+            </div>
+          </div>
+        );
+
+      case 'deposito-monto':
+        return (
+          <div className="atm-screen-content">
+            <div className="atm-header-bar">
+              <div className="atm-logo-small">■ BANCO PICHINCHA</div>
+            </div>
+            <div className="atm-main-message">
+              <h2>Ingrese monto a depositar</h2>
+              {datosCuentaDeposito && (
+                <div className="atm-cuenta-info-box">
+                  <p><strong>Cuenta:</strong> {datosCuentaDeposito.numeroCuenta}</p>
+                  {datosCuentaDeposito.tipoCuenta && (
+                    <p><strong>Tipo:</strong> {datosCuentaDeposito.tipoCuenta}</p>
+                  )}
+                </div>
+              )}
+              {montoSeleccionado && montoSeleccionado > 0 && (
+                <div className="atm-monto-display">
+                  <span>Monto a depositar:</span>
+                  <span className="monto-valor">${montoSeleccionado}</span>
+                </div>
+              )}
+              <div className="atm-input-display">
+                <input 
+                  type="number" 
+                  value={montoSeleccionado || ''}
+                  onChange={(e) => setMontoSeleccionado(parseInt(e.target.value) || null)}
+                  className="atm-input-field"
+                  placeholder="Ingrese monto"
+                />
+              </div>
+              {mensaje && <p className="atm-error-msg">{mensaje}</p>}
             </div>
           </div>
         );
@@ -439,24 +632,41 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   <span>Monto:</span>
                   <span className="resumen-valor">${montoSeleccionado}</span>
                 </div>
-                <div className="resumen-item">
-                  <span>Saldo disponible:</span>
-                  <span className="resumen-valor">${saldoActual.toFixed(2)}</span>
-                </div>
-                {tipoCuenta && (
-                  <div className="resumen-item">
-                    <span>Tipo de cuenta:</span>
-                    <span className="resumen-valor">{tipoCuenta === 'ahorro' ? 'Ahorros' : 'Corriente'}</span>
-                  </div>
-                )}
-                {numeroTelefono && (
-                  <div className="resumen-item">
-                    <span>Celular:</span>
-                    <span className="resumen-valor">****{numeroTelefono.slice(-4)}</span>
-                  </div>
+                {datosCuentaDeposito ? (
+                  <>
+                    <div className="resumen-item">
+                      <span>Cuenta destino:</span>
+                      <span className="resumen-valor">{datosCuentaDeposito.numeroCuenta}</span>
+                    </div>
+                    {datosCuentaDeposito.nombreTitular && (
+                      <div className="resumen-item">
+                        <span>Titular:</span>
+                        <span className="resumen-valor">{datosCuentaDeposito.nombreTitular}</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="resumen-item">
+                      <span>Saldo disponible:</span>
+                      <span className="resumen-valor">${saldoActual.toFixed(2)}</span>
+                    </div>
+                    {tipoCuenta && (
+                      <div className="resumen-item">
+                        <span>Tipo de cuenta:</span>
+                        <span className="resumen-valor">{tipoCuenta === 'ahorro' ? 'Ahorros' : 'Corriente'}</span>
+                      </div>
+                    )}
+                    {numeroTelefono && (
+                      <div className="resumen-item">
+                        <span>Celular:</span>
+                        <span className="resumen-valor">****{numeroTelefono.slice(-4)}</span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
-              {montoSeleccionado && montoSeleccionado > saldoActual && (
+              {!datosCuentaDeposito && montoSeleccionado && montoSeleccionado > saldoActual && (
                 <p className="atm-error-msg">⚠️ Saldo insuficiente</p>
               )}
             </div>
@@ -500,17 +710,35 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
             <div className="atm-main-message success">
               <div className="success-icon-atm">✓</div>
               <h2>Transacción Exitosa</h2>
-              <p>Retire su dinero y comprobante</p>
-              <div className="atm-resumen-box">
-                <div className="resumen-item">
-                  <span>Monto retirado:</span>
-                  <span className="resumen-valor">${montoSeleccionado}</span>
-                </div>
-                <div className="resumen-item">
-                  <span>Nuevo saldo:</span>
-                  <span className="resumen-valor">${saldoActual.toFixed(2)}</span>
-                </div>
-              </div>
+              {datosCuentaDeposito ? (
+                <>
+                  <p>Depósito realizado correctamente</p>
+                  <div className="atm-resumen-box">
+                    <div className="resumen-item">
+                      <span>Monto depositado:</span>
+                      <span className="resumen-valor">${montoSeleccionado}</span>
+                    </div>
+                    <div className="resumen-item">
+                      <span>Cuenta:</span>
+                      <span className="resumen-valor">{datosCuentaDeposito.numeroCuenta}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p>Retire su dinero y comprobante</p>
+                  <div className="atm-resumen-box">
+                    <div className="resumen-item">
+                      <span>Monto retirado:</span>
+                      <span className="resumen-valor">${montoSeleccionado}</span>
+                    </div>
+                    <div className="resumen-item">
+                      <span>Nuevo saldo:</span>
+                      <span className="resumen-valor">${saldoActual.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </>
+              )}
               <p className="atm-footer-msg">Gracias por usar nuestros servicios</p>
             </div>
           </div>
@@ -526,9 +754,9 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
     switch (screen) {
       case 'inicio':
         return [
-          { label: 'RETIRO CON TARJETA', action: () => irAPantalla('tarjeta-digitos') },
-          { label: 'RETIRO SIN TARJETA', action: () => irAPantalla('retiro-sin-tarjeta-telefono') },
-          { label: '', action: () => {} },
+          { label: 'RETIRO CON TARJETA', action: () => { setMetodoRetiro('tarjeta'); irAPantalla('tarjeta-digitos'); } },
+          { label: 'RETIRO SIN TARJETA', action: () => { setMetodoRetiro('codigo'); irAPantalla('retiro-sin-tarjeta-telefono'); } },
+          { label: 'DEPÓSITO', action: () => irAPantalla('deposito-numero-cuenta') },
           { label: '', action: () => {} },
         ];
       case 'seleccionar-tipo':
@@ -546,6 +774,13 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
           { label: '', action: () => {} },
         ];
       case 'tarjeta-seleccionar-monto':
+        return [
+          { label: '$20', action: () => setMontoSeleccionado(20) },
+          { label: '$50', action: () => setMontoSeleccionado(50) },
+          { label: '$100', action: () => setMontoSeleccionado(100) },
+          { label: '$200', action: () => setMontoSeleccionado(200) },
+        ];
+      case 'deposito-monto':
         return [
           { label: '$20', action: () => setMontoSeleccionado(20) },
           { label: '$50', action: () => setMontoSeleccionado(50) },
@@ -644,7 +879,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   irAPantalla('tarjeta-pin');
                 }
               } catch (error) {
-                console.error('Error:', error);
                 setMensaje('Error de conexión');
                 irAPantalla('error');
               }
@@ -698,7 +932,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   irAPantalla('tarjeta-cambio-pin');
                 }
               } catch (error) {
-                console.error('Error:', error);
                 setMensaje('Error de conexión');
                 irAPantalla('error');
               }
@@ -715,6 +948,26 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
               irAPantalla('confirmacion');
             } else {
               setMensaje('Seleccione un monto');
+            }
+          }},
+        ];
+      case 'deposito-numero-cuenta':
+        return [
+          { label: '', action: () => {} },
+          { label: '', action: () => {} },
+          { label: 'CORREGIR', action: () => setNumeroCuentaDeposito('') },
+          { label: 'CONTINUAR', action: validarCuentaDeposito },
+        ];
+      case 'deposito-monto':
+        return [
+          { label: '$500', action: () => setMontoSeleccionado(500) },
+          { label: '$1000', action: () => setMontoSeleccionado(1000) },
+          { label: 'OTRO MONTO', action: () => {} },
+          { label: 'CONTINUAR', action: () => {
+            if (montoSeleccionado && montoSeleccionado > 0) {
+              irAPantalla('confirmacion');
+            } else {
+              setMensaje('Ingrese un monto válido');
             }
           }},
         ];
@@ -762,7 +1015,6 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
                   irAPantalla('retiro-sin-tarjeta-codigo');
                 }
               } catch (error) {
-                console.error('Error:', error);
                 setMensaje('Error de conexión');
                 irAPantalla('error');
               }
@@ -777,7 +1029,11 @@ const ATMSimulator = ({ onBack, cliente }: ATMSimulatorProps) => {
           { label: '', action: () => {} },
           { label: 'CANCELAR', action: () => resetearEstado() },
           { label: 'CONFIRMAR', action: () => {
-            if (montoSeleccionado && montoSeleccionado <= saldoActual) {
+            if (datosCuentaDeposito) {
+              // Es un depósito
+              procesarDeposito();
+            } else if (montoSeleccionado && montoSeleccionado <= saldoActual) {
+              // Es un retiro
               procesarRetiro();
             } else {
               setMensaje('Saldo insuficiente');

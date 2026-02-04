@@ -79,9 +79,38 @@ function PagoServicioDetalle({
   const [loadingDatos, setLoadingDatos] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [erroresValidacion, setErroresValidacion] = useState<Record<string, string>>({});
+  // Deriva si realmente se usan subtipos (según datos existentes)
+  const [usaSubtipos, setUsaSubtipos] = useState<boolean>(!!servicioData.tieneSubtipos);
   
   // Datos del pago exitoso
   const [resultadoPago, setResultadoPago] = useState<any>(null);
+
+  // Utilidades para validación de campos con alternativas (PLACA / RAMV / CPN)
+  const esCampoPlacaRamvCpn = (dato: DatoRequerido): boolean => {
+    const etiqueta = (dato.datreq_etiqueta || '').toLowerCase();
+    const placeholder = (dato.datreq_placeholder || '').toLowerCase();
+    const texto = etiqueta + ' ' + placeholder;
+    return texto.includes('placa') || texto.includes('ramv') || texto.includes('cpn');
+  };
+
+  const validaPlaca = (valor: string): boolean => {
+    // Acepta formatos comunes: ABC1234 o ABC-1234
+    return /^[A-Z]{3}-?[0-9]{4}$/.test(valor.toUpperCase());
+  };
+
+  const validaRamv = (valor: string, dato: DatoRequerido): boolean => {
+    // Se asume RAMV numérico. Se respeta longitud min/max del tipo de dato.
+    if (!/^\d+$/.test(valor)) return false;
+    return valor.length >= (dato.tipodato_longitud_min || 1) &&
+           valor.length <= (dato.tipodato_longitud_max || 50);
+  };
+
+  const validaCpn = (valor: string, dato: DatoRequerido): boolean => {
+    // Se asume CPN numérico. Se respeta longitud min/max del tipo de dato.
+    if (!/^\d+$/.test(valor)) return false;
+    return valor.length >= (dato.tipodato_longitud_min || 1) &&
+           valor.length <= (dato.tipodato_longitud_max || 50);
+  };
 
   useEffect(() => {
     cargarCuentas();
@@ -90,8 +119,17 @@ function PagoServicioDetalle({
 
   const inicializarFormulario = async () => {
     if (servicioData.tieneSubtipos) {
-      await cargarSubtipos();
+      const haySubtipos = await cargarSubtipos();
+      // Si el servicio indica que tiene subtipos pero no existen en BD,
+      // se continúa como servicio sin subtipos.
+      if (!haySubtipos) {
+        setUsaSubtipos(false);
+        await cargarDatosRequeridos(servicioData.servicioId, null);
+      } else {
+        setUsaSubtipos(true);
+      }
     } else {
+      setUsaSubtipos(false);
       await cargarDatosRequeridos(servicioData.servicioId, null);
     }
   };
@@ -108,7 +146,7 @@ function PagoServicioDetalle({
         }
       }
     } catch (err) {
-      console.error('Error al cargar cuentas:', err);
+      // Error silencioso
     }
   };
 
@@ -120,13 +158,16 @@ function PagoServicioDetalle({
       );
       const body = await res.json();
       if (body.ok) {
-        setSubtipos(body.data || []);
+        const lista = body.data || [];
+        setSubtipos(lista);
+        return Array.isArray(lista) && lista.length > 0;
       }
     } catch (err) {
-      console.error('Error al cargar subtipos:', err);
+      // Error silencioso
     } finally {
       setLoadingSubtipos(false);
     }
+    return false;
   };
 
   const cargarDatosRequeridos = async (idSrv: string, idSubtipo: string | null) => {
@@ -204,7 +245,7 @@ function PagoServicioDetalle({
     }
 
     // Validar subtipo si es necesario
-    if (servicioData.tieneSubtipos && !subtipoSeleccionado) {
+    if (usaSubtipos && !subtipoSeleccionado) {
       setError('Debe seleccionar un tipo de servicio');
       return false;
     }
@@ -227,16 +268,27 @@ function PagoServicioDetalle({
           return;
         }
 
-        // Patrón regex
-        if (dato.tipodato_patron_regex) {
-          try {
-            const regex = new RegExp(dato.tipodato_patron_regex);
-            if (!regex.test(valor)) {
-              errores[dato.id_dato_req] = dato.tipodato_mensaje_error || 'Formato inválido';
-              return;
+        // Validación especial para PLACA / RAMV / CPN: aceptar cualquiera de los formatos
+        if (esCampoPlacaRamvCpn(dato)) {
+          const okPlaca = validaPlaca(valor);
+          const okRamv = validaRamv(valor, dato);
+          const okCpn = validaCpn(valor, dato);
+          if (!(okPlaca || okRamv || okCpn)) {
+            errores[dato.id_dato_req] = dato.tipodato_mensaje_error || 'Ingrese PLACA válida (ABC1234) o RAMV/CPN numérico';
+            return;
+          }
+        } else {
+          // Patrón regex genérico (si viene definido desde backend)
+          if (dato.tipodato_patron_regex) {
+            try {
+              const regex = new RegExp(dato.tipodato_patron_regex);
+              if (!regex.test(valor)) {
+                errores[dato.id_dato_req] = dato.tipodato_mensaje_error || 'Formato inválido';
+                return;
+              }
+            } catch (e) {
+              // Error de regex
             }
-          } catch (e) {
-            console.error('Error en regex:', e);
           }
         }
       }
@@ -532,7 +584,7 @@ function PagoServicioDetalle({
           </div>
 
           {/* Selección de Subtipo */}
-          {servicioData.tieneSubtipos && (
+          {usaSubtipos && (
             <div className="form-group">
               <label>
                 Tipo de Servicio

@@ -90,4 +90,10 @@ router.get('/historial/:idPersona', PagoServiciosController.getHistorialPagos);
  */
 router.get('/comprobante/:idPagser', PagoServiciosController.getComprobante);
 
+/**
+ * GET /api/pago-servicios/frecuentes/:idPersona
+ * Obtener top pagos frecuentes por persona
+ */
+router.get('/frecuentes/:idPersona', PagoServiciosController.getPagosFrecuentes);
+
 module.exports = router;

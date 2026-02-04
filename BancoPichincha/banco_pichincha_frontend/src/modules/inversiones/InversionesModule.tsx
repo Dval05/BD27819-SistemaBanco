@@ -27,10 +27,6 @@ const InversionesModule: React.FC<Props> = ({ idPersona, cliente }) => {
   // Obtener idPersona desde props o desde el objeto cliente pasado por Dashboard
   const personaId = idPersona || cliente?.id_persona || '';
   
-  // Debug
-  console.log('InversionesModule - Props:', { idPersona, cliente });
-  console.log('InversionesModule - personaId calculado:', personaId);
-  
   const [vista, setVista] = useState<Vista>(Vista.INICIO);
   const [monto, setMonto] = useState(0);
   const [plazoDias, setPlazoDias] = useState(0);

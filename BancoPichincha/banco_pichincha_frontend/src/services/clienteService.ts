@@ -46,6 +46,10 @@ export interface Tarjeta {
   fechaMaximaPago?: number;
   pagoMinimo: number;
   tasaInteres: number;
+  // Campos para tarjetas de débito
+  tipoCuenta?: 'ahorro' | 'corriente';
+  numeroCuenta?: string;
+  idCuenta?: string;
 }
 
 export interface InversionProducto {
@@ -134,6 +138,14 @@ const clienteService = {
 
   crearCuentaAhorro: async (idPersona: string): Promise<{ ok: boolean; msg: string; data: Cuenta }> => {
     const response = await axios.post<{ ok: boolean; msg: string; data: any }>(`${API_URL}/cuentas/ahorro`, { idPersona });
+    return response.data;
+  },
+
+  crearCuentaConTarjeta: async (idPersona: string, tipoCuenta: 'ahorro' | 'corriente'): Promise<{ ok: boolean; msg: string; data: any }> => {
+    const response = await axios.post<{ ok: boolean; msg: string; data: any }>(`${API_URL}/cuentas/crear-con-tarjeta`, { 
+      idPersona, 
+      tipoCuenta 
+    });
     return response.data;
   },
 

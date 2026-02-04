@@ -25,7 +25,8 @@ export type MenuOptionId =
   | 'solicitudes' 
   | 'inversiones'
   | 'retiro-sin-tarjeta'
-  | 'cajero';
+  | 'cajero'
+  | 'perfil';
 
 export type ProductTabId = 
   | 'todos' 

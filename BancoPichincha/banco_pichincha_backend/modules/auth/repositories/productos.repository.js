@@ -2,38 +2,77 @@ const { supabase } = require('../../../shared/config/database.config');
 
 class ProductosRepository {
   async findCuentasByPersona(idPersona) {
-    const { data, error } = await supabase
+    // Obtener todas las cuentas activas
+    const { data: cuentas, error } = await supabase
       .from('cuenta')
       .select('*')
       .eq('id_persona', idPersona)
       .eq('cue_estado', '00');
     
     if (error) throw error;
-    return data || [];
+    if (!cuentas || cuentas.length === 0) return [];
+
+    // Para cada cuenta, determinar su tipo verificando en cuenta_ahorro y cuenta_corriente
+    const cuentasConTipo = await Promise.all(
+      cuentas.map(async (cuenta) => {
+        // Verificar si es cuenta de ahorro
+        const { data: ahorro } = await supabase
+          .from('cuenta_ahorro')
+          .select('*')
+          .eq('id_cuenta', cuenta.id_cuenta)
+          .maybeSingle();
+
+        if (ahorro) {
+          return { ...cuenta, ...ahorro, tipo: 'ahorro' };
+        }
+
+        // Verificar si es cuenta corriente
+        const { data: corriente } = await supabase
+          .from('cuenta_corriente')
+          .select('*')
+          .eq('id_cuenta', cuenta.id_cuenta)
+          .maybeSingle();
+
+        if (corriente) {
+          return { ...cuenta, ...corriente, tipo: 'corriente' };
+        }
+
+        // Si no está en ninguna, es cuenta base (no debería pasar)
+        return { ...cuenta, tipo: 'base' };
+      })
+    );
+
+    return cuentasConTipo;
   }
 
   async findTarjetasByCuenta(idCuenta) {
-    // Obtener solo tarjetas de crédito (no débito) excepto las canceladas (03)
-    const { data, error } = await supabase
+    // Obtener todas las tarjetas (crédito y débito) excepto las canceladas (03)
+    const { data: tarjetas, error } = await supabase
       .from('tarjeta')
-      .select(`
-        *,
-        tarjeta_credito(
-          id_tarcre,
-          tarcre_cupo_disponible,
-          tarcre_saldo_actual,
-          tarcre_fecha_corte,
-          tarcre_fecha_maxima_pago,
-          tarcre_pago_minimo,
-          tarcre_tasa_interes
-        )
-      `)
+      .select('*')
       .eq('id_cuenta', idCuenta)
-      .neq('tar_estado', '03') // Excluir canceladas
-      .not('tarjeta_credito', 'is', null); // Solo tarjetas con registro en tarjeta_credito
+      .neq('tar_estado', '03'); // Excluir canceladas
     
     if (error) throw error;
-    return data || [];
+    if (!tarjetas || tarjetas.length === 0) return [];
+
+    // Para cada tarjeta, obtener sus datos de crédito si existen
+    const tarjetasConDatos = await Promise.all(
+      tarjetas.map(async (tarjeta) => {
+        const { data: datosCredito } = await supabase
+          .from('tarjeta_credito')
+          .select('*')
+          .eq('id_tarjeta', tarjeta.id_tarjeta)
+          .maybeSingle();
+
+        return {
+          ...tarjeta,
+          tarjeta_credito: datosCredito ? [datosCredito] : []
+        };
+      })
+    );
+
+    return tarjetasConDatos;
   }
 
   async findInversionesByCuenta(idCuenta) {
