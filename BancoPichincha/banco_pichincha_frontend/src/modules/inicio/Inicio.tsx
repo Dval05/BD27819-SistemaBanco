@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronRight, Loader2, Eye, EyeOff, Users, CreditCard, Plus, X, Lock, Unlock, Trash2, Ban, AlertTriangle } from 'lucide-react';
+import { useNotificacion } from '../../contexts/NotificacionContext';
 import type { Cliente } from '../../types';
 import clienteService, { type Cuenta, type Tarjeta, type InversionProducto } from '../../services/clienteService';
 import './Inicio.css';
@@ -28,6 +29,7 @@ interface TarjetaEstado {
 }
 
 function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps) {
+  const { exito, error: notificarError } = useNotificacion();
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
   const [inversiones, setInversiones] = useState<InversionProducto[]>([]);
@@ -109,13 +111,13 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       const response = await clienteService.crearCuentaAhorro(cliente.id);
       
       if (response.ok) {
-        alert('✅ Cuenta de ahorro creada exitosamente');
+        exito('Cuenta de ahorro creada exitosamente', 'Cuenta Creada');
         // Recargar productos
         const productos = await clienteService.obtenerProductos(cliente.id);
         setCuentas(productos.cuentas);
       }
     } catch (error: any) {
-      alert('Error al crear cuenta de ahorro: ' + (error.response?.data?.msg || error.message));
+      notificarError('Error al crear cuenta de ahorro: ' + (error.response?.data?.msg || error.message), 'Error');
     } finally {
       setCreandoCuenta(false);
     }
@@ -128,7 +130,7 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       const response = await clienteService.crearCuentaConTarjeta(cliente.id, tipoCuenta);
       
       if (response.ok) {
-        alert(` ${response.msg}\n\n📋 Número de cuenta: ${response.data.cuenta.cue_numero}\n💳 Tarjeta: ${response.data.tarjeta.numeroOculto}\n🔑 PIN inicial: ${response.data.tarjeta.pinPorDefecto}`);
+        exito(`${response.msg}\n\n📋 Número de cuenta: ${response.data.cuenta.cue_numero}\n💳 Tarjeta: ${response.data.tarjeta.numeroOculto}\n🔑 PIN inicial: ${response.data.tarjeta.pinPorDefecto}`, 'Cuenta Creada');
         // Recargar productos
         const productos = await clienteService.obtenerProductos(cliente.id);
         setCuentas(productos.cuentas);
@@ -176,14 +178,14 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       setProcesando(true);
       const response = await clienteService.bloquearTarjeta(tarjetaSeleccionada.id, tipo);
       if (response.success) {
-        alert(` ${response.message}`);
+        exito(response.message, 'Tarjeta Bloqueada');
         // Recargar productos
         const productos = await clienteService.obtenerProductos(cliente.id);
         setTarjetas(productos.tarjetas);
         cerrarModal();
       }
     } catch (error: any) {
-      alert(' Error: ' + (error.response?.data?.message || error.message));
+      notificarError(error.response?.data?.message || error.message, 'Error');
     } finally {
       setProcesando(false);
     }
@@ -197,14 +199,14 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       setProcesando(true);
       const response = await clienteService.desbloquearTarjeta(tarjetaSeleccionada.id);
       if (response.success) {
-        alert(` ${response.message}`);
+        exito(response.message, 'Tarjeta Desbloqueada');
         // Recargar productos
         const productos = await clienteService.obtenerProductos(cliente.id);
         setTarjetas(productos.tarjetas);
         cerrarModal();
       }
     } catch (error: any) {
-      alert('Error: ' + (error.response?.data?.message || error.message));
+      notificarError(error.response?.data?.message || error.message, 'Error');
     } finally {
       setProcesando(false);
     }
@@ -223,14 +225,14 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
       setProcesando(true);
       const response = await clienteService.cancelarTarjeta(tarjetaSeleccionada.id);
       if (response.success) {
-        alert(` ${response.message}`);
+        exito(response.message, 'Tarjeta Cancelada');
         // Recargar productos
         const productos = await clienteService.obtenerProductos(cliente.id);
         setTarjetas(productos.tarjetas);
         cerrarModal();
       }
     } catch (error: any) {
-      alert('❌ Error: ' + (error.response?.data?.message || error.message));
+      notificarError(error.response?.data?.message || error.message, 'Error');
     } finally {
       setProcesando(false);
     }
@@ -390,7 +392,7 @@ function Inicio({ cliente, onNavigate, showSaldos, onToggleSaldos }: InicioProps
                       </div>
                     </div>
                     <div className="tarjeta-footer">
-                      <span className="tarjeta-titular">{cliente.primerNombre?.toUpperCase() || ''} {cliente.segundoNombre?.toUpperCase() || ''} {cliente.primerApellido?.toUpperCase() || ''} {cliente.segundoApellido?.toUpperCase() || ''}</span>
+                      <span className="tarjeta-titular">{cliente.primerNombre?.toUpperCase() || ''} {cliente.primerApellido?.toUpperCase() || ''} </span>
                       <span className="tarjeta-marca-logo">{tarjeta.marca}</span>
                     </div>
                     <div className="tarjeta-click-hint">

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Eye, EyeOff, Lock, User, CreditCard } from 'lucide-react';
+import { useNotificacion } from '../contexts/NotificacionContext';
 import clienteService from '../services/clienteService';
 import type { Cliente } from '../types';
 import ATMSimulator from './ATMSimulator';
@@ -10,6 +11,7 @@ interface LoginProps {
 }
 
 const Login = ({ onLogin }: LoginProps) => {
+  const { exito, error: notificarError, advertencia } = useNotificacion();
   const [isLogin, setIsLogin] = useState(true);
   const [showATM, setShowATM] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ const Login = ({ onLogin }: LoginProps) => {
       }
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { msg?: string } } };
-      alert(axiosError.response?.data?.msg || 'Usuario o contraseña incorrectos');
+      notificarError(axiosError.response?.data?.msg || 'Usuario o contraseña incorrectos', 'Error de Inicio de Sesión');
     } finally {
       setLoading(false);
     }
@@ -75,27 +77,27 @@ const Login = ({ onLogin }: LoginProps) => {
     e.preventDefault();
 
     if (!cedula || cedula.length !== 10) {
-      alert('La cédula debe tener 10 dígitos');
+      advertencia('La cédula debe tener 10 dígitos', 'Validación');
       return;
     }
 
     if (!validarCedulaEcuatoriana(cedula)) {
-      alert('La cédula ingresada no es válida');
+      advertencia('La cédula ingresada no es válida', 'Validación');
       return;
     }
 
     if (nuevoUsuario.length < 4) {
-      alert('El usuario debe tener al menos 4 caracteres');
+      advertencia('El usuario debe tener al menos 4 caracteres', 'Validación');
       return;
     }
 
     if (nuevaPassword.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
+      advertencia('La contraseña debe tener al menos 6 caracteres', 'Validación');
       return;
     }
 
     if (nuevaPassword !== confirmarPassword) {
-      alert('Las contraseñas no coinciden');
+      advertencia('Las contraseñas no coinciden', 'Validación');
       return;
     }
 
@@ -114,7 +116,7 @@ const Login = ({ onLogin }: LoginProps) => {
         password: nuevaPassword,
       });
       if (response.ok) {
-        alert('Registro exitoso. Ahora puedes iniciar sesión.');
+        exito('Ahora puedes iniciar sesión con tus credenciales.', 'Registro Exitoso');
         setIsLogin(true);
         setUsuario(nuevoUsuario);
         setCedula('');
@@ -130,7 +132,7 @@ const Login = ({ onLogin }: LoginProps) => {
       }
     } catch (error: unknown) {
       const axiosError = error as { response?: { data?: { msg?: string } } };
-      alert(axiosError.response?.data?.msg || 'Error al registrarse');
+      notificarError(axiosError.response?.data?.msg || 'Error al registrarse', 'Error de Registro');
     } finally {
       setLoading(false);
     }

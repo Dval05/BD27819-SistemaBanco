@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronRight, Loader2, Eye, EyeOff, Wallet, CreditCard, TrendingUp } from 'lucide-react';
+import { useNotificacion } from '../../contexts/NotificacionContext';
 import type { Cliente } from '../../types';
 import clienteService, { type Cuenta, type Tarjeta, type InversionProducto } from '../../services/clienteService';
 import './Productos.css';
@@ -17,6 +18,7 @@ interface ProductosProps {
 }
 
 function Productos({ cliente, onNavigate, showSaldos, onToggleSaldos }: ProductosProps) {
+  const { exito, error: notificarError } = useNotificacion();
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
   const [inversiones, setInversiones] = useState<InversionProducto[]>([]);
@@ -62,15 +64,15 @@ function Productos({ cliente, onNavigate, showSaldos, onToggleSaldos }: Producto
       const data = await response.json();
       
       if (data.success) {
-        alert(`✅ ${data.eliminadas} tarjetas eliminadas`);
+        exito(`${data.eliminadas} tarjetas eliminadas exitosamente`, 'Limpieza Completada');
         // Recargar productos
         const productos = await clienteService.obtenerProductos(cliente.id);
         setTarjetas(productos.tarjetas);
       } else {
-        alert('❌ Error: ' + data.message);
+        notificarError(data.message, 'Error');
       }
     } catch (error) {
-      alert('❌ Error al limpiar tarjetas');
+      notificarError('Error al limpiar tarjetas', 'Error');
     } finally {
       setLimpiando(false);
     }

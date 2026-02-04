@@ -51,6 +51,7 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const [navigationData, setNavigationData] = useState<NavigationData | null>(null);
   const [showSolicitudTarjeta, setShowSolicitudTarjeta] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Estado especial para vistas de detalle
   const [selectedCuenta, setSelectedCuenta] = useState<Cuenta | null>(null);
@@ -94,6 +95,12 @@ if (moduleId === 'tarjeta-detalle' && data) {
     setSelectedTarjeta(null);
     setNavigationData(null);
   }, []);
+
+  // Cerrar sidebar al navegar en móvil
+  const handleNavigateAndCloseSidebar = useCallback((moduleId: string, data?: any) => {
+    handleNavigate(moduleId, data);
+    setSidebarOpen(false);
+  }, [handleNavigate]);
 
   const getNombreCorto = () => {
     // Prioridad: primer nombre + primer apellido
@@ -192,30 +199,45 @@ if (moduleId === 'tarjeta-detalle' && data) {
   const LoadingFallback = () => (
     <div className="module-loading">
       <Loader2 className="spinner" size={32} />
-      <p>Cargando módulo...</p>
+      <p>Cargando...</p>
     </div>
   );
 
   return (
     <div className="dashboard">
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div className="brand">
-            <div className="brand-icon">
-              <svg viewBox="0 0 40 40" fill="none">
-                <rect width="40" height="40" rx="4" fill="#FFD100"/>
-                <path d="M10 30V10h8c4.5 0 8 3 8 7s-3.5 7-8 7h-4v6h-4z" fill="#00377B"/>
-              </svg>
-            </div>
-            <span className="brand-text">BANCO<br/>PICHINCHA</span>
-          </div>
-        </div>
+      {/* Botón hamburguesa móvil */}
+      <button 
+        className="menu-toggle" 
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        aria-label="Toggle menu"
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
 
-        <div className="user-info">
-          <div className="user-avatar">{getIniciales()}</div>
-          <div className="user-details">
-            <span className="user-name">{getNombreCorto().toUpperCase()}</span>
-            <span className="user-link" onClick={() => handleNavigate('perfil')}>Mi perfil</span>
+      {/* Overlay para cerrar sidebar en móvil */}
+      {sidebarOpen && (
+        <div 
+          className="sidebar-overlay active" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={`sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-header">
+          <div className="logo">
+            <img src="/Banco-Pichincha.png" alt="Banco Pichincha Logo" className="logo-image" />
+            <span className="logo-text">Banco Pichincha</span>
+          </div>
+          <div className="user-profile" onClick={() => handleNavigateAndCloseSidebar('perfil')}>
+            <div className="user-avatar">{getIniciales()}</div>
+            <div className="user-info">
+              <span className="user-name">{getNombreCorto()}</span>
+              <span className="user-link">Mi perfil</span>
+            </div>
           </div>
         </div>
 
@@ -228,7 +250,7 @@ if (moduleId === 'tarjeta-detalle' && data) {
                   if (item.hasSubmenu) {
                     toggleSubmenu(item.id);
                   } else {
-                    handleNavigate(item.id);
+                    handleNavigateAndCloseSidebar(item.id);
                   }
                 }}
               >
@@ -247,7 +269,7 @@ if (moduleId === 'tarjeta-detalle' && data) {
                     <button 
                       key={subItem.id} 
                       className="submenu-item"
-                      onClick={() => handleNavigate(subItem.parentId, { subMenu: subItem.id })}
+                      onClick={() => handleNavigateAndCloseSidebar(subItem.parentId, { subMenu: subItem.id })}
                     >
                       {subItem.label}
                     </button>
@@ -334,5 +356,6 @@ if (moduleId === 'tarjeta-detalle' && data) {
     </div>
   );
 }
+
 
 export default Dashboard;
