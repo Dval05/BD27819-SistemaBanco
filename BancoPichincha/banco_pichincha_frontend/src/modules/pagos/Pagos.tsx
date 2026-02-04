@@ -110,6 +110,7 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
     id_pagser?: string;
     id_srv: string;
     id_subtipo?: string | null;
+    subtipo_nombre?: string | null;
     srv_nombre: string;
     srv_tiene_subtipos?: boolean | null;
     cat_nombre?: string | null;
@@ -137,6 +138,37 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
     // Cargar pagos frecuentes para acceso rápido
     cargarPagosFrecuentes(cliente.id_persona);
   }, []);
+
+  // Auto-actualización de pagos frecuentes cuando estamos en "categorias"
+  useEffect(() => {
+    if (vistaActual !== 'categorias') return;
+    let cancelled = false;
+    const refresh = async () => {
+      if (cancelled) return;
+      await cargarPagosFrecuentes(cliente.id_persona);
+    };
+
+    // Primer refresh inmediato
+    refresh();
+
+    // Intervalo cada 15s
+    const intervalId = setInterval(refresh, 15000);
+
+    // Refrescar al recuperar foco/visibilidad
+    const onFocus = () => refresh();
+    const onVisible = () => {
+      if (!document.hidden) refresh();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [vistaActual, cliente.id_persona]);
 
   const cargarCategorias = async () => {
     setLoadingCategorias(true);
@@ -238,17 +270,38 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
         const body = await res.json();
         if (body.ok) {
           const pagos = (body.data?.pagos || []) as any[];
-          const items: PagoFrecuenteItem[] = pagos.map((p) => ({
-            id_pagser: p.id_pagser,
-            id_srv: p.id_srv,
-            id_subtipo: p.id_subtipo || null,
-            srv_nombre: p.servicio,
-            srv_tiene_subtipos: null,
-            cat_nombre: null,
-            subcat_nombre: null,
-            count: undefined,
-            ultimo_pago: p.fecha
-          }));
+
+          // Obtener mapeo categoría/subcategoría desde pagos frecuentes agregados
+          let mapCat = new Map<string, { cat?: string | null; subcat?: string | null }>();
+          try {
+            const resFreq = await fetch(`http://localhost:3000/api/pago-servicios/frecuentes/${idPersona}?limit=100`);
+            const bodyFreq = await resFreq.json();
+            if (resFreq.ok && bodyFreq?.ok) {
+              (bodyFreq.data || []).forEach((f: any) => {
+                if (f?.id_srv) {
+                  mapCat.set(f.id_srv, { cat: f.categoria || null, subcat: f.subcategoria || null });
+                }
+              });
+            }
+          } catch (_) {
+            // silencioso
+          }
+
+          const items: PagoFrecuenteItem[] = pagos.map((p) => {
+            const catInfo = mapCat.get(p.id_srv) || { cat: null, subcat: null };
+            return {
+              id_pagser: p.id_pagser,
+              id_srv: p.id_srv,
+              id_subtipo: p.id_subtipo || null,
+              subtipo_nombre: p.subtipo || null,
+              srv_nombre: p.servicio,
+              srv_tiene_subtipos: null,
+              cat_nombre: catInfo.cat,
+              subcat_nombre: catInfo.subcat,
+              count: undefined,
+              ultimo_pago: p.fecha
+            };
+          });
           setPagosFrecuentes(items);
         } else {
           setPagosFrecuentes([]);
@@ -302,32 +355,10 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
     setVistaActual('detalle');
   };
 
-  const handleFrecuenteClick = (item: PagoFrecuenteItem) => {
-    if (!item.id_srv) return;
-    // Navegar inmediato al detalle con estado base
-    setServicioSeleccionado({
-      servicioId: item.id_srv,
-      servicio: item.srv_nombre,
-      categoria: item.cat_nombre || categoriaSeleccionada?.nombre,
-      subcategoria: item.subcat_nombre || subcategoriaSeleccionada?.subcat_nombre,
-      tieneSubtipos: false
-    });
-    setVistaActual('detalle');
-    // Luego resolver si tiene subtipos y actualizar
-    (async () => {
-      try {
-        const res = await fetch(`http://localhost:3000/api/pago-servicios/servicios/${item.id_srv}/subtipos`);
-        const body = await res.json();
-        if (res.ok && body?.ok) {
-          const subtipos = body.data || [];
-          const tiene = Array.isArray(subtipos) && subtipos.length > 0;
-          setServicioSeleccionado((prev: any) => prev ? { ...prev, tieneSubtipos: tiene } : prev);
-        }
-      } catch (_) {
-        // Silenciar errores
-      }
-    })();
-  };
+  // Navegación desde frecuentes deshabilitada (se muestra solo informativo)
+  // Se deja función vacía para mantener compatibilidad si se reactiva.
+  // Evitar warning de función no usada
+  void (function noop() { return; });
 
   const handleVolverDesdeDetalle = () => {
     setServicioSeleccionado(null);
@@ -341,6 +372,8 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
     setSubcategoriaSeleccionada(null);
     setVistaActual('categorias');
     setSearchTerm('');
+    // Refrescar pagos frecuentes inmediatamente
+    cargarPagosFrecuentes(cliente.id_persona);
   };
 
   const handleVolver = () => {
@@ -383,7 +416,7 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
     'instituciones publicas': Building2,
     'telecomunicaciones': Smartphone,
     'educacion': GraduationCap,
-    'recargas': BatteryCharging,
+    'recargas': Smartphone,
     'salud': HeartPulse,
     'servicios financieros': Banknote,
     'aseguradoras': ShieldCheck,
@@ -598,24 +631,27 @@ function Pagos({ cliente, onNavigate }: PagosProps) {
                 ) : pagosFrecuentes.length > 0 ? (
                   <div className="lista-items">
                     {pagosFrecuentes.map((item) => (
-                      <button
-                        type="button"
+                      <div
                         key={item.id_pagser || `${item.id_srv}-${item.id_subtipo ?? ''}-${item.ultimo_pago ?? ''}`}
-                        className="item-lista"
-                        onClick={() => handleFrecuenteClick(item)}
+                        className="item-lista-static"
                       >
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
                           {renderItemIcon(item.srv_nombre)}
-                          {item.srv_nombre}
-                        </span>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontWeight: 600 }}>{item.srv_nombre}</span>
+                            <span style={{ color: '#666', fontSize: 13 }}>
+                              {item.cat_nombre || item.subcat_nombre ? `${item.cat_nombre || ''}${item.cat_nombre && item.subcat_nombre ? ' · ' : ''}${item.subcat_nombre || ''}` : ''}
+                              {item.subtipo_nombre ? `${item.cat_nombre || item.subcat_nombre ? ' · ' : ''}Tipo: ${item.subtipo_nombre}` : ''}
+                            </span>
+                          </div>
+                        </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <span style={{ color: '#666', fontSize: 13 }}>
                             {item.count ? `${item.count} pagos` : ''}
                             {item.ultimo_pago ? ` · último: ${new Date(item.ultimo_pago).toLocaleDateString()}` : ''}
                           </span>
-                          <ChevronRight size={20} />
                         </div>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 ) : (

@@ -486,6 +486,9 @@ class PagoServiciosService {
       };
       
       return {
+        // IDs crudos necesarios para navegación desde frontend
+        id_srv: comprobante.id_srv,
+        id_subtipo: comprobante.id_subtipo || null,
         id_pagser: comprobante.id_pagser,
         id_tra: comprobante.id_tra,
         fecha_transaccion: comprobante.tra_fecha_hora,

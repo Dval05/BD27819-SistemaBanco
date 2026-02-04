@@ -196,6 +196,24 @@
   transform: translateX(4px);
 }
 
+/* Variante estática (no botón) */
+.item-lista-static {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #1a1a2e;
+  cursor: default;
+}
+
+.item-lista-static svg {
+  color: #888;
+}
+
 /* Estados */
 .loading-state,
 .error-state,
