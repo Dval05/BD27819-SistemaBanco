@@ -14,7 +14,9 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
   padding: 20px;
 }
 
@@ -24,6 +26,7 @@
   padding: 20px;
   width: 100%;
   max-width: 750px;
+  margin: auto;
   box-shadow: 
     0 20px 60px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -548,9 +551,16 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .atm-container {
+    padding: 10px;
+    align-items: flex-start;
+  }
+
   .atm-machine {
     max-width: 100%;
     border-radius: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 
   .atm-side-btn {
@@ -590,6 +600,32 @@
   .action-btn {
     flex: 1;
     min-width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .atm-container {
+    padding: 8px;
+  }
+
+  .atm-machine {
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid #333;
+  }
+
+  .atm-top-bar {
+    padding: 8px 12px;
+    margin: -12px -12px 12px -12px;
+  }
+
+  .atm-brand-logo {
+    font-size: 1em;
+  }
+
+  .atm-side-btn {
+    width: 28px;
+    height: 34px;
   }
 }
 

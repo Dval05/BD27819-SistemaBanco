@@ -133,7 +133,12 @@ const SolicitudTarjeta = ({ cliente, onClose, onSuccess }: SolicitudTarjetaProps
 
   // Calcular avalúo total de todas las cuentas
   const calcularAvaluoTotal = (cuentasData: any[]) => {
-    const total = cuentasData.reduce((sum, cuenta) => sum + (cuenta.saldo || 0), 0);
+    // IMPORTANTE: Convertir saldo a número para evitar concatenación de strings
+    const total = cuentasData.reduce((sum, cuenta) => {
+      const saldo = parseFloat(cuenta.saldo) || 0;
+      return sum + saldo;
+    }, 0);
+    
     setAvaluoTotal(total);
     
     // Filtrar marcas según el tipo de tarjeta
@@ -143,11 +148,21 @@ const SolicitudTarjeta = ({ cliente, onClose, onSuccess }: SolicitudTarjetaProps
     const disponibles: MarcaTarjeta[] = [];
     let recomendada: MarcaTarjeta | null = null;
     
-    Object.entries(REQUISITOS_MARCA).forEach(([marca, requisito]) => {
+    // Ordenar marcas por avalúo de MAYOR a MENOR para recomendar la mejor
+    const marcasOrdenadas = Object.entries(REQUISITOS_MARCA).sort(
+      ([, a], [, b]) => b.avaluoMinimo - a.avaluoMinimo
+    );
+    
+    marcasOrdenadas.forEach(([marca, requisito]) => {
+      const estaPermitida = marcasPermitidas.includes(marca as MarcaTarjeta);
+      const cumpleAvaluo = total >= requisito.avaluoMinimo;
+      const califica = estaPermitida && cumpleAvaluo;
+      
       // Solo considerar marcas que estén permitidas para este tipo de tarjeta
-      if (marcasPermitidas.includes(marca as MarcaTarjeta) && total >= requisito.avaluoMinimo) {
+      if (califica) {
         disponibles.push(marca as MarcaTarjeta);
-        if (!recomendada || requisito.avaluoMinimo > REQUISITOS_MARCA[recomendada].avaluoMinimo) {
+        // Recomendar la primera que cumpla (ya están ordenadas de mayor a menor avalúo)
+        if (!recomendada) {
           recomendada = marca as MarcaTarjeta;
         }
       }
@@ -382,7 +397,7 @@ const SolicitudTarjeta = ({ cliente, onClose, onSuccess }: SolicitudTarjetaProps
                 {marcaRecomendada && (
                   <div className="marca-recomendacion">
                     <CheckCircle2 size={16} />
-                    <span>Recomendada: <strong>{REQUISITOS_MARCA[marcaRecomendada].nombre}</strong> - {REQUISITOS_MARCA[marcaRecomendada].descripcion}</span>
+                    <span>Recomendada para {tipoTarjeta === 'debito' ? 'DÉBITO' : 'CRÉDITO'}: <strong>{REQUISITOS_MARCA[marcaRecomendada].nombre}</strong> - {REQUISITOS_MARCA[marcaRecomendada].descripcion}</span>
                   </div>
                 )}
 

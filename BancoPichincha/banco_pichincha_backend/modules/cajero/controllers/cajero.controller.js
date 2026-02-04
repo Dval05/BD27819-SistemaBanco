@@ -123,6 +123,138 @@ exports.generarTarjetaDebito = async (req, res) => {
   }
 };
 
+/**
+ * Generar una tarjeta de crédito
+ */
+exports.generarTarjetaCredito = async (req, res) => {
+  try {
+    const { id_cuenta, id_persona, marca = 'VISA', cupo = 1000, ingresos } = req.body;
+
+    if (!id_cuenta || !id_persona) {
+      return res.status(400).json({
+        success: false,
+        message: 'id_cuenta e id_persona son requeridos'
+      });
+    }
+
+    // Validar marca
+    if (!CARD_BINS[marca]) {
+      return res.status(400).json({
+        success: false,
+        message: 'Marca de tarjeta no válida. Usa: VISA, MASTERCARD, DINERS, AMEX, DISCOVER o JCB'
+      });
+    }
+
+    // Validar que la marca ofrezca tarjetas de crédito
+    if (!MARCAS_POR_TIPO.credito.includes(marca)) {
+      return res.status(400).json({
+        success: false,
+        message: `${marca} no ofrece tarjetas de crédito.`
+      });
+    }
+
+    // Validar cupo mínimo
+    if (cupo < 500) {
+      return res.status(400).json({
+        success: false,
+        message: 'El cupo mínimo es $500'
+      });
+    }
+
+    // Generar IDs cortos
+    const id_tarjeta = 'TAR' + Date.now().toString().slice(-8);
+    const id_tarcre = 'TCR' + Date.now().toString().slice(-8);
+    const numeroTarjeta = generarNumeroTarjeta(marca);
+    const pinTemporal = generarPinTemporal();
+    const pinHash = require('crypto')
+      .createHash('sha256')
+      .update(pinTemporal)
+      .digest('hex');
+    const cvv = generarCVV();
+    const fechaEmision = new Date();
+    const fechaExpiracion = new Date();
+    fechaExpiracion.setFullYear(fechaExpiracion.getFullYear() + 5);
+
+    // Tasas de interés por marca
+    const tasasPorMarca = {
+      'VISA': 18.5,
+      'MASTERCARD': 17.9,
+      'DINERS': 16.5,
+      'AMEX': 15.9,
+      'DISCOVER': 17.5,
+      'JCB': 18.0
+    };
+
+    const tasa = tasasPorMarca[marca] || 18.5;
+
+    // Insertar en tabla tarjeta
+    const { error: errorTarjeta } = await supabase
+      .from('tarjeta')
+      .insert({
+        id_tarjeta,
+        id_cuenta,
+        tar_numero: numeroTarjeta,
+        tar_pin_hash: pinHash,
+        tar_fecha_expiracion: fechaExpiracion.toISOString().split('T')[0],
+        tar_cvv: cvv,
+        tar_estado: '00',
+        tar_fecha_emision: fechaEmision.toISOString().split('T')[0],
+        tar_contactless: '01'
+      });
+
+    if (errorTarjeta) {
+      console.error('Error insertando tarjeta:', errorTarjeta);
+      throw errorTarjeta;
+    }
+
+    // Insertar en tabla tarjeta_credito
+    const { error: errorTarjetaCredito } = await supabase
+      .from('tarjeta_credito')
+      .insert({
+        id_tarjeta,
+        id_tarcre,
+        tarcre_cupo_disponible: cupo,
+        tarcre_saldo_actual: 0,
+        tarcre_fecha_corte: 15,
+        tarcre_fecha_maxima_pago: 28,
+        tarcre_pago_minimo: 0,
+        tarcre_tasa_interes: tasa / 100  // Convertir de porcentaje (23.50) a decimal (0.2350)
+      });
+
+    if (errorTarjetaCredito) {
+      console.error('Error insertando tarjeta_credito:', errorTarjetaCredito);
+      throw errorTarjetaCredito;
+    }
+
+    res.json({
+      success: true,
+      message: 'Tarjeta de crédito generada exitosamente',
+      data: {
+        id_tarjeta,
+        id_tarcre,
+        numeroTarjeta: formatearNumeroTarjeta(numeroTarjeta),
+        numeroOculto: formatearNumeroTarjeta(numeroTarjeta.slice(-4).padStart(16, '*')),
+        pinPorDefecto: pinTemporal,
+        cvv,
+        fechaExpiracion: formatearFechaExpiracion(fechaExpiracion),
+        estado: 'Activa',
+        marca: marca,
+        cupo: cupo,
+        saldoDisponible: cupo,
+        tasaInteres: tasa,
+        mensaje: 'IMPORTANTE: Su clave temporal es ' + pinTemporal + '. Al usar su tarjeta por primera vez deberá cambiarla obligatoriamente.'
+      }
+    });
+  } catch (error) {
+    console.error('Error generando tarjeta de crédito:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al generar la tarjeta',
+      error: error.message
+    });
+  }
+};
+
 // Funciones auxiliares para formateo
 function formatearNumeroTarjeta(numero) {
   return numero.replace(/(.{4})/g, '$1 ').trim();
@@ -133,6 +265,91 @@ function formatearFechaExpiracion(fecha) {
   const anio = String(fecha.getFullYear()).slice(-2);
   return `${mes}/${anio}`;
 }
+
+/**
+ * Limpiar tarjetas de prueba (sin registros en tarjeta_credito o tarjeta_debito)
+ */
+exports.limpiarTarjetasPrueba = async (req, res) => {
+  try {
+    const { id_persona } = req.params;
+
+    // 1. Obtener todas las tarjetas de las cuentas del usuario
+    const { data: cuentas, error: errorCuentas } = await supabase
+      .from('cuenta')
+      .select('id_cuenta')
+      .eq('id_persona', id_persona);
+
+    if (errorCuentas) throw errorCuentas;
+    
+    const idsCuentas = cuentas.map(c => c.id_cuenta);
+
+    // 2. Obtener todas las tarjetas de esas cuentas
+    const { data: tarjetas, error: errorTarjetas } = await supabase
+      .from('tarjeta')
+      .select('id_tarjeta')
+      .in('id_cuenta', idsCuentas);
+
+    if (errorTarjetas) throw errorTarjetas;
+
+    const idsTarjetas = tarjetas.map(t => t.id_tarjeta);
+
+    // 3. Obtener IDs de tarjetas que SÍ tienen registro en tarjeta_credito
+    const { data: tarjetasCredito, error: errorCredito } = await supabase
+      .from('tarjeta_credito')
+      .select('id_tarjeta')
+      .in('id_tarjeta', idsTarjetas);
+
+    if (errorCredito) throw errorCredito;
+
+    // 4. Obtener IDs de tarjetas que SÍ tienen registro en tarjeta_debito
+    const { data: tarjetasDebito, error: errorDebito } = await supabase
+      .from('tarjeta_debito')
+      .select('id_tarjeta')
+      .in('id_tarjeta', idsTarjetas);
+
+    if (errorDebito) throw errorDebito;
+
+    // 5. IDs válidas (tienen registro en crédito o débito)
+    const idsValidas = new Set([
+      ...tarjetasCredito.map(t => t.id_tarjeta),
+      ...tarjetasDebito.map(t => t.id_tarjeta)
+    ]);
+
+    // 6. IDs huérfanas (solo en tarjeta, sin crédito ni débito)
+    const idsHuerfanas = idsTarjetas.filter(id => !idsValidas.has(id));
+
+    if (idsHuerfanas.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No hay tarjetas de prueba para eliminar',
+        eliminadas: 0
+      });
+    }
+
+    // 7. Eliminar tarjetas huérfanas
+    const { error: errorEliminar } = await supabase
+      .from('tarjeta')
+      .delete()
+      .in('id_tarjeta', idsHuerfanas);
+
+    if (errorEliminar) throw errorEliminar;
+
+    res.json({
+      success: true,
+      message: `${idsHuerfanas.length} tarjetas de prueba eliminadas`,
+      eliminadas: idsHuerfanas.length,
+      ids: idsHuerfanas
+    });
+
+  } catch (error) {
+    console.error('Error limpiando tarjetas de prueba:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error eliminando tarjetas de prueba',
+      error: error.message
+    });
+  }
+};
 
 /**
  * Verificar si una cuenta tiene tarjeta débito

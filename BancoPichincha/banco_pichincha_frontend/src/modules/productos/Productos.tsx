@@ -21,6 +21,7 @@ function Productos({ cliente, onNavigate, showSaldos, onToggleSaldos }: Producto
   const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
   const [inversiones, setInversiones] = useState<InversionProducto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [limpiando, setLimpiando] = useState(false);
 
   useEffect(() => {
     const cargarProductos = async () => {
@@ -47,6 +48,32 @@ function Productos({ cliente, onNavigate, showSaldos, onToggleSaldos }: Producto
       style: 'currency',
       currency: 'USD'
     }).format(amount);
+  };
+
+  const limpiarTarjetasPrueba = async () => {
+    if (!confirm('¿Eliminar tarjetas de prueba sin registros válidos?')) return;
+    
+    try {
+      setLimpiando(true);
+      const response = await fetch(`http://localhost:3000/api/cajero/tarjeta/limpiar-pruebas/${cliente.id}`, {
+        method: 'DELETE'
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        alert(`✅ ${data.eliminadas} tarjetas eliminadas`);
+        // Recargar productos
+        const productos = await clienteService.obtenerProductos(cliente.id);
+        setTarjetas(productos.tarjetas);
+      } else {
+        alert('❌ Error: ' + data.message);
+      }
+    } catch (error) {
+      alert('❌ Error al limpiar tarjetas');
+    } finally {
+      setLimpiando(false);
+    }
   };
 
   if (loading) {
@@ -111,6 +138,16 @@ function Productos({ cliente, onNavigate, showSaldos, onToggleSaldos }: Producto
           <CreditCard size={24} />
           <h2>Tarjetas</h2>
           <span className="count">{tarjetas.length}</span>
+          {tarjetas.length > 2 && (
+            <button 
+              className="limpiar-btn" 
+              onClick={limpiarTarjetasPrueba}
+              disabled={limpiando}
+              style={{ marginLeft: 'auto', fontSize: '11px', padding: '4px 8px' }}
+            >
+              {limpiando ? 'Limpiando...' : '🧹 Limpiar pruebas'}
+            </button>
+          )}
         </div>
         
         {tarjetas.length === 0 ? (

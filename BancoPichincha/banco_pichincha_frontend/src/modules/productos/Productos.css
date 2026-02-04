@@ -124,21 +124,21 @@
 
 .productos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
-  gap: clamp(0.875rem, 2vw, 1.25rem);
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: 12px;
 }
 
 .producto-card {
   display: flex;
   align-items: center;
-  gap: clamp(0.875rem, 2vw, 1.25rem);
-  padding: clamp(1rem, 2.5vw, 1.5rem);
+  gap: 12px;
+  padding: 12px 14px;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 2px solid #e5e7eb;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: clamp(90px, 15vw, 120px);
+  min-height: 75px;
 }
 
 .producto-card:hover {
@@ -158,34 +158,34 @@
 
 .producto-nombre {
   display: block;
-  font-size: clamp(0.9375rem, 1.875vw, 1.0625rem);
+  font-size: 13px;
   font-weight: 600;
   color: #1a1a2e;
-  margin-bottom: 0.25rem;
+  margin-bottom: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .producto-numero {
-  font-size: clamp(0.8125rem, 1.625vw, 0.9375rem);
+  font-size: 11px;
   color: #666;
   display: block;
   font-family: 'Courier New', monospace;
-  margin-bottom: 0.25rem;
+  margin-bottom: 2px;
 }
 
 .producto-tipo {
   display: inline-block;
-  font-size: clamp(0.6875rem, 1.375vw, 0.8125rem);
+  font-size: 9px;
   font-weight: 600;
   color: #00377b;
   background: #e5f1ff;
-  padding: clamp(0.1875rem, 0.5vw, 0.25rem) clamp(0.5rem, 1.25vw, 0.75rem);
-  border-radius: 12px;
-  margin-top: 0.25rem;
+  padding: 2px 7px;
+  border-radius: 8px;
+  margin-top: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .producto-card.tarjeta .producto-tipo {
@@ -200,14 +200,14 @@
 
 .producto-saldo .saldo-label {
   display: block;
-  font-size: clamp(0.6875rem, 1.375vw, 0.8125rem);
+  font-size: 9px;
   color: #888;
-  margin-bottom: 0.25rem;
+  margin-bottom: 2px;
   white-space: nowrap;
 }
 
 .producto-saldo .saldo-valor {
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-size: 15px;
   font-weight: 700;
   color: #1a1a2e;
   white-space: nowrap;
