@@ -194,12 +194,12 @@
 
 /* Número de tarjeta */
 .tarjeta-numero {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 400;
   letter-spacing: 3px;
   font-family: 'Courier New', monospace;
-  margin-bottom: 16px;
-  margin-top: 70px;
+  margin-bottom: 10px;
+  margin-top: 45px;
   position: relative;
   z-index: 2;
 }
@@ -208,7 +208,7 @@
 .tarjeta-info-row {
   display: flex;
   gap: 24px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .tarjeta-vence,
@@ -577,7 +577,7 @@
 
 .modal-tarjeta-numero {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 400;
   color: #1a1a2e;
   font-family: 'Courier New', monospace;
   letter-spacing: 2px;
