@@ -28,7 +28,7 @@ interface TransferenciaConfirmacionProps {
   onBack: () => void;
 }
 
-const CODIGO_DURACION = 10; // segundos
+const CODIGO_DURACION = 20; // segundos
 
 const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({ 
   clienteId,
@@ -87,14 +87,30 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
   };
 
   const handleConfirmar = async () => {
+    console.log('\n=== DEBUG handleConfirmar - INICIO ===');
+    console.log('codigoIngresado:', codigoIngresado);
+    console.log('codigoGenerado:', codigoGenerado);
+    console.log('codigoIngresado.length:', codigoIngresado.length);
+    console.log('Validación pasada:', codigoIngresado === codigoGenerado);
+    
     if (codigoIngresado !== codigoGenerado) {
+      console.log('❌ Código incorrecto');
       setError('El código de seguridad es incorrecto');
       return;
     }
 
+    console.log('✅ Código correcto, procediendo...');
+
     try {
       setProcesando(true);
       setError(null);
+
+      // Validar que si hay contacto, tiene email
+      if (datos.contacto && !datos.contacto.email) {
+        setError('El contacto no tiene email registrado. Por favor, actualiza el contacto o usa una cuenta destino manual.');
+        setProcesando(false);
+        return;
+      }
 
       // Determinar tipo de transferencia para el backend
       const tipoTransferencia = datos.tipoTransferencia === 'INTERBANCARIA' ? '01' : '00';
@@ -102,7 +118,7 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
       const cuentaDestino = datos.contacto
         ? {
             numeroCuenta: datos.contacto.numeroCuenta,
-            email: datos.contacto.email || '',
+            email: datos.contacto.email,
             tipoIdentificacion: datos.contacto.tipoIdentificacion || '',
             identificacion: datos.contacto.identificacion || '',
             tipoCuenta: datos.contacto.tipoCuenta || '',
@@ -123,19 +139,31 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
           }
         : undefined;
 
+      console.log('\n=== DEBUG TransferenciaConfirmacion: handleConfirmar ===');
+      console.log('clienteId:', clienteId);
+      console.log('datos:', JSON.stringify(datos, null, 2));
+      console.log('tipoTransferencia:', tipoTransferencia);
+      console.log('cuentaDestino:', JSON.stringify(cuentaDestino, null, 2));
+
       const request = {
-        idPersona: clienteId,
-        idCuenta: datos.cuentaOrigen.id || datos.cuentaOrigen.numeroCuenta,
-        monto: datos.monto,
-        descripcion: datos.descripcion || '',
-        tipoTransferencia,
-        cuentaDestino,
-        saldoDisponible: datos.cuentaOrigen.saldoDisponible || 0,
-        saldoDisponibleAnterior: datos.cuentaOrigen.saldoDisponible || 0,
-        guardarContacto: datos.contacto ? { guardar: false } : undefined,
+        cliId: clienteId,
+        traCuentaOrigen: datos.cuentaOrigen.numeroCuenta,
+        traCuentaDestino: cuentaDestino?.numeroCuenta || '',
+        traMonto: datos.monto,
+        traDescripcion: datos.descripcion || '',
+        traTipoTransferencia: tipoTransferencia,
+        traEmail: cuentaDestino?.email || '',
+        traSaldoDisponible: datos.cuentaOrigen.saldoDisponible || 0,
         conId: datos.contacto?.id || undefined
       };
+      
+      console.log('Request final a enviar:', JSON.stringify(request, null, 2));
+      console.log('Validación: cliId=', request.cliId, ', traCuentaOrigen=', request.traCuentaOrigen, ', traCuentaDestino=', request.traCuentaDestino, ', traMonto=', request.traMonto, ', traTipoTransferencia=', request.traTipoTransferencia);
+      
       const resultado: TransferenciaResponse = await transferenciasService.crearTransferencia(request);
+      
+      console.log('✅ Transferencia exitosa:', resultado);
+      
       // Navegar a pantalla de éxito
       onNavigate('EXITO', {
         transferencia: resultado,
@@ -143,6 +171,7 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
       });
 
     } catch (err: any) {
+      console.log('❌ Error:', err);
       setError(err.response?.data?.message || 'Error al procesar la transferencia');
     } finally {
       setProcesando(false);
@@ -267,7 +296,13 @@ const TransferenciaConfirmacion: React.FC<TransferenciaConfirmacionProps> = ({
           Cancelar
         </ActionButton>
         <ActionButton 
-          onClick={handleConfirmar} 
+          onClick={() => {
+            console.log('🔴 BOTÓN PRESIONADO');
+            console.log('codigoIngresado:', codigoIngresado);
+            console.log('codigoIngresado.length:', codigoIngresado.length);
+            console.log('disabled:', codigoIngresado.length !== 6);
+            handleConfirmar();
+          }}
           loading={procesando}
           disabled={codigoIngresado.length !== 6}
         >

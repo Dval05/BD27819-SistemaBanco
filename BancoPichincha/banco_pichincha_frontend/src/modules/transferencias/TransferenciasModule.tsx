@@ -3,7 +3,7 @@
  * Gestiona la navegación entre las diferentes vistas del flujo de transferencias
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   TransferenciaInicio,
   NuevoContactoSeleccion,
@@ -15,6 +15,7 @@ import {
 } from './views';
 import { LoadingSpinner } from './components';
 import type { VistaTransferencia, Cuenta, Contacto } from './types/transferencias.types';
+import clienteService from '../../services/clienteService';
 import styles from './TransferenciasModule.module.css';
 
 // Tipo para el estado de navegación
@@ -30,42 +31,85 @@ interface TransferenciasModuleProps {
   onVolverInicio?: () => void;
 }
 
-// Mock de cuentas del cliente (esto vendría de un servicio real)
-const CUENTAS_MOCK: Cuenta[] = [
-  {
-    id: 1,
-    numeroCuenta: '2200123456',
-    tipoCuenta: 'Ahorros',
-    saldoDisponible: 5420.75
-  },
-  {
-    id: 2,
-    numeroCuenta: '3100987654',
-    tipoCuenta: 'Corriente',
-    saldoDisponible: 12350.00
-  }
-];
-
-const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({ 
+const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({
   clienteId: clienteIdProp,
   cliente,
-  onVolverInicio 
+  onVolverInicio
 }) => {
+
   // Obtener clienteId desde props o desde el objeto cliente
   const clienteId = clienteIdProp || cliente?.id_persona || '';
-  
+
   // Estado de navegación con historial
   const [navigationStack, setNavigationStack] = useState<NavigationState[]>([
     { vista: 'INICIO' }
   ]);
-  const [cuentas] = useState<Cuenta[]>(CUENTAS_MOCK);
-  const [loading] = useState(false);
 
-  // Estado actual (último en el stack)
+  const [cuentas, setCuentas] = useState<Cuenta[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [contactoActual, setContactoActual] = useState<Contacto | null>(null);
+
+  // Estado actual (último en el stack) - DEFINIR AQUÍ, ANTES DE LOS EFECTOS
   const currentState = navigationStack[navigationStack.length - 1];
+
+  // Función para cargar cuentas
+  const cargarCuentas = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      if (!clienteId) {
+        setCuentas([]);
+        return;
+      }
+
+      // Obtener productos del usuario
+      const productos = await clienteService.obtenerProductos(clienteId);
+
+      // Convertir cuentas al formato esperado (solo cuentas activas)
+      const cuentasFormateadas: Cuenta[] = (productos.cuentas || [])
+        .filter((cuenta: any) => cuenta.estado === '00')
+        .map((cuenta: any) => ({
+          id: cuenta.id,
+          numeroCuenta: cuenta.numeroCompleto || cuenta.numero,
+          tipoCuenta: cuenta.nombre || 'Cuenta',
+          saldoDisponible: Number(cuenta.saldo) || 0
+        }));
+
+      console.log('Cuentas del usuario cargadas:', cuentasFormateadas);
+      setCuentas(cuentasFormateadas);
+
+    } catch (error) {
+      console.error('Error cargando cuentas:', error);
+      setCuentas([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [clienteId]);
+
+  // Cargar cuentas del usuario al montar
+  useEffect(() => {
+    cargarCuentas();
+  }, [cargarCuentas]);
+
+  // Refrescar cuentas cuando se navega a la vista EXITO (transferencia completada)
+  useEffect(() => {
+    if (currentState.vista === 'EXITO') {
+      // Esperar 1 segundo para asegurar que el backend haya actualizado
+      const timer = setTimeout(() => {
+        console.log('📊 Refrescando cuentas después de transferencia exitosa...');
+        cargarCuentas();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentState.vista, cargarCuentas]);
 
   // Navegar a una nueva vista
   const handleNavigate = useCallback((vista: VistaTransferencia, datos?: any) => {
+    if (vista === 'MONTO' && datos?.contacto) {
+      setContactoActual(datos.contacto);
+    }
+
     setNavigationStack(prev => [...prev, { vista, datos }]);
   }, []);
 
@@ -80,14 +124,19 @@ const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({
   // Volver al inicio del módulo
   const handleVolverInicio = useCallback(() => {
     setNavigationStack([{ vista: 'INICIO' }]);
+    setContactoActual(null);
+
+    // Refrescar cuentas al volver al inicio
+    cargarCuentas();
+
     if (onVolverInicio) {
       onVolverInicio();
     }
-  }, [onVolverInicio]);
+  }, [onVolverInicio, cargarCuentas]);
 
   // Callback cuando se crea un contacto nuevo
   const handleContactoCreado = useCallback((contacto: Contacto) => {
-    // Aquí podrías actualizar algún estado global o cache
+    setContactoActual(contacto);
   }, []);
 
   // Renderizar la vista actual
@@ -95,6 +144,7 @@ const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({
     const { vista, datos } = currentState;
 
     switch (vista) {
+
       case 'INICIO':
         return (
           <TransferenciaInicio
@@ -135,7 +185,7 @@ const TransferenciasModule: React.FC<TransferenciasModuleProps> = ({
         return (
           <TransferenciaMonto
             clienteId={clienteId}
-            contacto={datos?.contacto}
+            contacto={datos?.contacto || contactoActual}
             tipoTransferencia={datos?.tipoTransferencia || 'INTERNA'}
             cuentas={cuentas}
             onNavigate={handleNavigate}

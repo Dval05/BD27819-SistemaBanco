@@ -15,13 +15,13 @@ class ContactoController {
    */
   async obtenerMisContactos(req, res) {
     try {
-      // Obtener ID de persona del usuario autenticado (desde middleware)
-      const idPersona = req.user?.id_persona || req.body?.idPersona;
+      // Obtener ID de persona desde el body o query params
+      const idPersona = req.body?.idPersona || req.query?.idPersona;
 
       if (!idPersona) {
-        return res.status(401).json({
+        return res.status(400).json({
           exito: false,
-          mensaje: 'Usuario no autenticado'
+          mensaje: 'ID de persona es requerido'
         });
       }
 
@@ -29,7 +29,6 @@ class ContactoController {
 
       return res.status(resultado.exito ? 200 : 404).json(resultado);
     } catch (error) {
-      console.error('Error en obtenerMisContactos:', error);
       return res.status(500).json({
         exito: false,
         mensaje: 'Error interno del servidor',
@@ -59,7 +58,6 @@ class ContactoController {
 
       return res.status(resultado.exito ? 200 : 404).json(resultado);
     } catch (error) {
-      console.error('Error en obtenerContactosPorCliente:', error);
       return res.status(500).json({
         exito: false,
         mensaje: 'Error interno del servidor',
@@ -89,7 +87,6 @@ class ContactoController {
 
       return res.status(resultado.exito ? 200 : 404).json(resultado);
     } catch (error) {
-      console.error('Error en obtenerContacto:', error);
       return res.status(500).json({
         exito: false,
         mensaje: 'Error interno del servidor',
@@ -119,12 +116,13 @@ class ContactoController {
    */
   async crearContacto(req, res) {
     try {
-      const idPersona = req.user?.id_persona || req.body?.idPersona;
+      // Obtener idPersona del body (viene desde el frontend con clienteId transformado a idPersona)
+      const idPersona = req.body?.idPersona;
 
       if (!idPersona) {
-        return res.status(401).json({
+        return res.status(400).json({
           exito: false,
-          mensaje: 'Usuario no autenticado'
+          mensaje: 'ID de persona es requerido'
         });
       }
 
@@ -140,10 +138,18 @@ class ContactoController {
       } = req.body;
 
       // Validación de campos requeridos
-      if (!conAlias || !conNumeroCuenta || !conEmail || !conTipoCuenta || !conTipoIdentificacion || !conIdentificacion) {
+      const camposFaltantes = [];
+      if (!conAlias) camposFaltantes.push('conAlias');
+      if (!conNumeroCuenta) camposFaltantes.push('conNumeroCuenta');
+      if (!conEmail) camposFaltantes.push('conEmail');
+      if (!conTipoCuenta) camposFaltantes.push('conTipoCuenta');
+      if (!conTipoIdentificacion) camposFaltantes.push('conTipoIdentificacion');
+      if (!conIdentificacion) camposFaltantes.push('conIdentificacion');
+
+      if (camposFaltantes.length > 0) {
         return res.status(400).json({
           exito: false,
-          mensaje: 'Faltan campos requeridos para crear el contacto'
+          mensaje: `Faltan campos requeridos: ${camposFaltantes.join(', ')}`
         });
       }
 
@@ -166,7 +172,6 @@ class ContactoController {
 
       return res.status(resultado.exito ? 201 : 400).json(resultado);
     } catch (error) {
-      console.error('Error en crearContacto:', error);
       return res.status(500).json({
         exito: false,
         mensaje: 'Error interno del servidor',
@@ -210,7 +215,6 @@ class ContactoController {
 
       return res.status(resultado.exito ? 200 : 400).json(resultado);
     } catch (error) {
-      console.error('Error en actualizarContacto:', error);
       return res.status(500).json({
         exito: false,
         mensaje: 'Error interno del servidor',
@@ -240,7 +244,6 @@ class ContactoController {
 
       return res.status(resultado.exito ? 200 : 400).json(resultado);
     } catch (error) {
-      console.error('Error en desactivarContacto:', error);
       return res.status(500).json({
         exito: false,
         mensaje: 'Error interno del servidor',

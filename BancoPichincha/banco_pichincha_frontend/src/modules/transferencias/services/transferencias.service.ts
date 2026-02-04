@@ -72,15 +72,50 @@ export const transferenciasService = {
    */
   crearContacto: async (contacto: CrearContactoRequest): Promise<Contacto> => {
     // El backend espera idPersona, no cliId
-    const contactoRequest = { ...contacto };
+    const contactoRequest: any = { ...contacto };
+    
+    // Convertir cliId a idPersona
     if (contactoRequest.cliId !== undefined) {
       contactoRequest.idPersona = contactoRequest.cliId;
       delete contactoRequest.cliId;
     }
+    
+    // Convertir banId a idBanco
+    if (contactoRequest.banId !== undefined) {
+      contactoRequest.idBanco = contactoRequest.banId;
+      delete contactoRequest.banId;
+    }
+    
+    // Remover SOLO propiedades undefined que son opcionales (no remover campos obligatorios)
+    const camposObligatorios = ['idPersona', 'conAlias', 'conNumeroCuenta', 'conEmail', 'conTipoCuenta', 'conTipoIdentificacion', 'conIdentificacion'];
+    Object.keys(contactoRequest).forEach(key => {
+      // Solo remover undefined si NO es un campo obligatorio
+      if (contactoRequest[key] === undefined && !camposObligatorios.includes(key)) {
+        delete contactoRequest[key];
+      }
+    });
+    
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const response = await axios.post(`${BASE_URL}/contactos`, contactoRequest, { headers });
-    return response.data.data || response.data;
+    
+    // Transformar respuesta del backend (snake_case) a camelCase
+    const contactoData = response.data.data || response.data;
+    if (contactoData) {
+      return {
+        ...contactoData,
+        numeroCuenta: contactoData.con_numero_cuenta || contactoData.numeroCuenta,
+        nombreBeneficiario: contactoData.con_nombre_beneficiario || contactoData.nombreBeneficiario,
+        alias: contactoData.con_alias || contactoData.alias,
+        email: contactoData.con_email || contactoData.email,
+        tipoCuenta: contactoData.con_tipo_cuenta || contactoData.tipoCuenta,
+        tipoIdentificacion: contactoData.con_tipo_identificacion || contactoData.tipoIdentificacion,
+        identificacion: contactoData.con_identificacion || contactoData.identificacion,
+        banco: contactoData.id_banco || contactoData.banco,
+        bancoNombre: contactoData.ban_nombre || contactoData.bancoNombre
+      };
+    }
+    return contactoData;
   },
 
   /**
@@ -115,7 +150,8 @@ export const transferenciasService = {
       transferenciasHoy: 0
     };
     try {
-      const response = await axios.get(`${BASE_URL}/limites/${idCuenta}/disponibles`);
+      // Usar ruta /limites/persona/:idPersona para pasar idPersona en lugar de idCuenta
+      const response = await axios.get(`${BASE_URL}/limites/persona/${idCuenta}/disponibles`);
       return response.data.datos || response.data.data || response.data || {
         montoMaximoDiario: 15000,
         montoMaximoTransaccion: 15000,
@@ -167,11 +203,30 @@ export const transferenciasService = {
    */
   crearTransferencia: async (datos: CrearTransferenciaRequest): Promise<TransferenciaResponse> => {
     // Validar datos obligatorios
+    console.log('\n=== DEBUG frontend: crearTransferencia ===');
+    console.log('1. Datos recibidos en servicio:', JSON.stringify(datos, null, 2));
+    
     if (!datos.traCuentaOrigen || !datos.traCuentaDestino || !datos.traMonto || !datos.traTipoTransferencia) {
+      console.log('❌ Faltan datos requeridos');
       throw new Error('Faltan datos requeridos para la transferencia');
     }
-    const response = await axios.post(`${BASE_URL}/crear`, datos);
-    return response.data.datos || response.data.data || response.data;
+    
+    const url = `${BASE_URL}/crear`;
+    console.log('2. URL del POST:', url);
+    console.log('3. Payload a enviar:', JSON.stringify(datos, null, 2));
+    
+    try {
+      // Obtener el token del localStorage
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const response = await axios.post(url, datos, { headers });
+      console.log('4. Respuesta recibida:', response.status, response.data);
+      return response.data.datos || response.data.data || response.data;
+    } catch (error: any) {
+      console.log('❌ Error en POST:', error.response?.status, error.response?.data);
+      throw error;
+    }
   },
 
   /**
@@ -229,8 +284,29 @@ export const transferenciasService = {
         mensaje: 'La cuenta no existe o no pertenece a Banco Pichincha'
       };
     }
-  }
+  },
+
+  // ============================================
+  // LÍMITES TRANSACCIONALES
+  // ============================================
+
+  /**
+   * Guarda los límites de transferencia para un cliente
+   */
+  guardarLimites: async (clienteId: number | string, limites: any): Promise<any> => {
+    try {
+      const url = `${BASE_URL}/limites/guardar`;
+      const response = await axios.post(url, {
+        idPersona: clienteId,
+        montoMaximoDiario: limites.montoMaximoDiario,
+        montoMaximoTransaccion: limites.montoMaximoTransaccion,
+        cantidadMaximaDiaria: limites.cantidadMaximaDiaria
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error al guardar límites:', error);
+      throw error;
+    }  }
 };
 
 export default transferenciasService;
-

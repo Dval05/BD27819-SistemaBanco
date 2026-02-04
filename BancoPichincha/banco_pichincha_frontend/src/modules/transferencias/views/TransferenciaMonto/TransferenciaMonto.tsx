@@ -32,11 +32,24 @@ const TransferenciaMonto: React.FC<TransferenciaMontoProps> = ({
 }) => {
   const [monto, setMonto] = useState('');
   const [descripcion, setDescripcion] = useState('');
-  const [cuentaOrigen, setCuentaOrigen] = useState<Cuenta | null>(cuentas[0] || null);
+  const [cuentaOrigen, setCuentaOrigen] = useState<Cuenta | null>(null);
   const [cuentaDestino, setCuentaDestino] = useState<Cuenta | null>(null);
+  const [contactoLocal, setContactoLocal] = useState<Contacto | undefined>(contacto);
   const [limites, setLimites] = useState<LimiteTransaccional | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log('TransferenciaMonto: contacto recibido como prop:', contacto);
+    setContactoLocal(contacto);
+  }, [contacto]);
+
+  // Cuando cambian las cuentas disponibles, actualizar la selección
+  useEffect(() => {
+    if (cuentas && cuentas.length > 0 && !cuentaOrigen) {
+      setCuentaOrigen(cuentas[0]);
+    }
+  }, [cuentas]);
 
   useEffect(() => {
     cargarLimites();
@@ -111,7 +124,7 @@ const TransferenciaMonto: React.FC<TransferenciaMontoProps> = ({
     if (!validarMonto()) return;
 
     const datosTransferencia = {
-      contacto,
+      contacto: contactoLocal,
       tipoTransferencia,
       cuentaOrigen,
       cuentaDestino: tipoTransferencia === 'ENTRE_CUENTAS' ? cuentaDestino : undefined,
@@ -142,6 +155,31 @@ const TransferenciaMonto: React.FC<TransferenciaMontoProps> = ({
     );
   }
 
+  // Validar que hay cuentas disponibles
+  if (!cuentas || cuentas.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <button className={styles.backButton} onClick={onBack}>
+            <ArrowLeft size={24} />
+          </button>
+          <div className={styles.headerText}>
+            <h1 className={styles.title}>Ingresa el monto</h1>
+          </div>
+        </div>
+        <div className={styles.error}>
+          <AlertCircle size={18} />
+          <span>No tienes cuentas disponibles para realizar una transferencia</span>
+        </div>
+        <div className={styles.actions}>
+          <ActionButton variant="outline" onClick={onBack}>
+            Volver
+          </ActionButton>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -156,24 +194,27 @@ const TransferenciaMonto: React.FC<TransferenciaMontoProps> = ({
               : 'Ingresa el monto'
             }
           </h1>
-          {contacto && (
+          {contactoLocal && (
             <p className={styles.subtitle}>
-              Para: {contacto.alias || contacto.nombreBeneficiario}
+              Para: {contactoLocal.alias || contactoLocal.nombreBeneficiario}
             </p>
           )}
         </div>
       </div>
 
       {/* Beneficiario info */}
-      {contacto && (
+      {contactoLocal && (
         <div className={styles.beneficiarioCard}>
           <div className={styles.beneficiarioInfo}>
-            <span className={styles.beneficiarioNombre}>{contacto.nombreBeneficiario}</span>
+            <span className={styles.beneficiarioNombre}>{contactoLocal.nombreBeneficiario}</span>
             <span className={styles.beneficiarioCuenta}>
-              {contacto.numeroCuenta.replace(/(\d{4})(\d{4})(\d+)/, '$1 $2 $3')}
+              {contactoLocal.numeroCuenta 
+                ? contactoLocal.numeroCuenta.replace(/(\d{4})(\d{4})(\d+)/, '$1 $2 $3')
+                : 'Cuenta no disponible'
+              }
             </span>
             <span className={styles.beneficiarioBanco}>
-              {contacto.banco ? contacto.bancoNombre : 'Banco Pichincha'}
+              {contactoLocal.banco ? contactoLocal.bancoNombre : 'Banco Pichincha'}
             </span>
           </div>
           {esInterbancaria && (

@@ -67,25 +67,30 @@ class ContactoRepository {
         conTipoCuenta
       } = datosContacto;
 
+      const insertData = {
+        id_contacto: idContacto,
+        id_persona: idPersona,
+        id_banco: idBanco,
+        con_nombre_beneficiario: conNombreBeneficiario,
+        con_alias: conAlias,
+        con_tipo_identificacion: conTipoIdentificacion,
+        con_identificacion: conIdentificacion,
+        con_numero_cuenta: conNumeroCuenta,
+        con_email: conEmail,
+        con_tipo_cuenta: conTipoCuenta,
+        con_estado: '00'
+      };
+
       const { data, error } = await supabase
         .from('contacto')
-        .insert({
-          id_contacto: idContacto,
-          id_persona: idPersona,
-          id_banco: idBanco,
-          con_nombre_beneficiario: conNombreBeneficiario,
-          con_alias: conAlias,
-          con_tipo_identificacion: conTipoIdentificacion,
-          con_identificacion: conIdentificacion,
-          con_numero_cuenta: conNumeroCuenta,
-          con_email: conEmail,
-          con_tipo_cuenta: conTipoCuenta,
-          con_estado: '00'
-        })
+        .insert(insertData)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
+
       return data;
     } catch (error) {
       throw new Error(`Error al crear contacto: ${error.message}`);

@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { CreditCard, ChevronDown } from 'lucide-react';
+import { CreditCard, ChevronDown, Wallet, Coins } from 'lucide-react';
 import type { Cuenta } from '../../types/transferencias.types';
 import styles from './CuentaSelector.module.css';
 
@@ -35,6 +35,24 @@ const CuentaSelector: React.FC<CuentaSelectorProps> = ({
     return cuenta.replace(/(\d{4})(\d{4})(\d{2})/, '$1-$2-$3');
   };
 
+  const obtenerNombreTipoCuenta = (tipo: string): string => {
+    if (tipo.includes('CORRIENTE') || tipo === '00') {
+      return 'Cuenta Corriente';
+    } else if (tipo.includes('AHORROS') || tipo === '01') {
+      return 'Cuenta de Ahorros';
+    }
+    return tipo;
+  };
+
+  const obtenerIconoCuenta = (tipo: string) => {
+    if (tipo.includes('CORRIENTE') || tipo === '00') {
+      return <Wallet size={20} />;
+    } else if (tipo.includes('AHORROS') || tipo === '01') {
+      return <Coins size={20} />;
+    }
+    return <CreditCard size={20} />;
+  };
+
   const handleSelect = (cuenta: Cuenta) => {
     onSelect(cuenta);
     setIsOpen(false);
@@ -49,12 +67,17 @@ const CuentaSelector: React.FC<CuentaSelectorProps> = ({
         onClick={() => !disabled && setIsOpen(!isOpen)}
       >
         <div className={styles.iconContainer}>
-          <CreditCard size={24} />
+          {cuentaSeleccionada ? obtenerIconoCuenta(cuentaSeleccionada.tipoCuenta) : <CreditCard size={24} />}
         </div>
 
         {cuentaSeleccionada ? (
           <div className={styles.cuentaInfo}>
-            <span className={styles.tipoCuenta}>{cuentaSeleccionada.tipoCuenta}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className={styles.tipoCuenta}>{obtenerNombreTipoCuenta(cuentaSeleccionada.tipoCuenta)}</span>
+              <span className={`${styles.mainTypeBadge} ${cuentaSeleccionada.tipoCuenta.includes('CORRIENTE') || cuentaSeleccionada.tipoCuenta === '00' ? styles.correinteBadge : styles.ahorrosBadge}`}>
+                {cuentaSeleccionada.tipoCuenta.includes('CORRIENTE') || cuentaSeleccionada.tipoCuenta === '00' ? 'CORRIENTE' : 'AHORROS'}
+              </span>
+            </div>
             <span className={styles.numeroCuenta}>
               {formatearCuenta(cuentaSeleccionada.numeroCuenta)}
             </span>
@@ -80,11 +103,16 @@ const CuentaSelector: React.FC<CuentaSelectorProps> = ({
               className={`${styles.option} ${cuentaSeleccionada?.id === cuenta.id ? styles.selected : ''}`}
               onClick={() => handleSelect(cuenta)}
             >
-              <div className={styles.optionIcon}>
-                <CreditCard size={20} />
+              <div className={`${styles.optionIcon} ${cuenta.tipoCuenta.includes('CORRIENTE') || cuenta.tipoCuenta === '00' ? styles.corriente : styles.ahorros}`}>
+                {obtenerIconoCuenta(cuenta.tipoCuenta)}
               </div>
               <div className={styles.optionInfo}>
-                <span className={styles.optionTipo}>{cuenta.tipoCuenta}</span>
+                <span className={styles.optionTipo}>
+                  {obtenerNombreTipoCuenta(cuenta.tipoCuenta)}
+                  <span className={`${styles.typeBadge} ${cuenta.tipoCuenta.includes('CORRIENTE') || cuenta.tipoCuenta === '00' ? styles.corriente : styles.ahorros}`}>
+                    {cuenta.tipoCuenta.includes('CORRIENTE') || cuenta.tipoCuenta === '00' ? 'CORRIENTE' : 'AHORROS'}
+                  </span>
+                </span>
                 <span className={styles.optionNumero}>
                   {formatearCuenta(cuenta.numeroCuenta)}
                 </span>

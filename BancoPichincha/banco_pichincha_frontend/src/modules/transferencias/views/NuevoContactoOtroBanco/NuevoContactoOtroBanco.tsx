@@ -119,6 +119,15 @@ const NuevoContactoOtroBanco: React.FC<NuevoContactoOtroBancoProps> = ({
       setError('El alias es obligatorio');
       return false;
     }
+    if (!formData.email.trim()) {
+      setError('El email es obligatorio');
+      return false;
+    }
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexEmail.test(formData.email.trim())) {
+      setError('El email no es válido');
+      return false;
+    }
     return true;
   };
 
@@ -129,7 +138,14 @@ const NuevoContactoOtroBanco: React.FC<NuevoContactoOtroBancoProps> = ({
       setGuardando(true);
       setError(null);
 
-      const nuevoContacto = await transferenciasService.crearContacto({
+      // Validar que clienteId existe
+      if (!clienteId) {
+        setError('Error: Cliente no identificado');
+        setGuardando(false);
+        return;
+      }
+
+      const datosAEnviar = {
         cliId: clienteId,
         banId: formData.bancoId!,
         conTipoIdentificacion: formData.tipoIdentificacion,
@@ -137,9 +153,24 @@ const NuevoContactoOtroBanco: React.FC<NuevoContactoOtroBancoProps> = ({
         conNombreBeneficiario: formData.nombreBeneficiario.trim(),
         conTipoCuenta: formData.tipoCuenta,
         conNumeroCuenta: formData.numeroCuenta,
-        conEmail: formData.email.trim() || undefined,
+        conEmail: formData.email.trim(),
         conAlias: formData.alias.trim()
-      });
+      };
+      
+      // Validar que ningún campo obligatorio esté vacío
+      if (!datosAEnviar.conTipoIdentificacion || 
+          !datosAEnviar.conIdentificacion || 
+          !datosAEnviar.conNombreBeneficiario ||
+          !datosAEnviar.conTipoCuenta || 
+          !datosAEnviar.conNumeroCuenta ||
+          !datosAEnviar.conEmail || 
+          !datosAEnviar.conAlias) {
+        setError('Todos los campos son requeridos y no deben estar vacíos');
+        setGuardando(false);
+        return;
+      }
+
+      const nuevoContacto = await transferenciasService.crearContacto(datosAEnviar);
 
       if (onContactoCreado) {
         onContactoCreado(nuevoContacto);

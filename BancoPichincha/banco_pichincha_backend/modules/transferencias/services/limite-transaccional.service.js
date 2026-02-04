@@ -211,7 +211,172 @@ class LimiteTransaccionalService {
   }
 
   /**
-   * Formatea un límite para respuesta
+   * Obtiene límites disponibles por idPersona (obtiene primero la cuenta)
+   * @param {string} idPersona - ID de la persona
+   * @param {string} tipoTransaccion - Tipo de transacción ('00'=Transferencia)
+   * @returns {Promise<Object>} Respuesta con límites
+   */
+  async obtenerLimitesDisponiblesPorPersona(idPersona, tipoTransaccion = '00') {
+    try {
+      if (!idPersona || typeof idPersona !== 'string') {
+        return {
+          exito: false,
+          mensaje: 'ID de persona inválido',
+          datos: null
+        };
+      }
+
+      // Obtener la primera cuenta de la persona (o la principal)
+      const cuentas = await limiteTransaccionalRepository.obtenerCuentasPorPersona(idPersona);
+
+      if (!cuentas || cuentas.length === 0) {
+        // Si no hay cuentas, retornar límites por defecto
+        return {
+          exito: true,
+          mensaje: 'No hay cuentas configuradas, retornando límites por defecto',
+          datos: {
+            montoMaximoDiario: 15000,
+            montoMaximoTransaccion: 15000,
+            cantidadMaximaDiaria: 20,
+            montoDisponibleDiario: 15000,
+            cantidadDisponibleDiaria: 20
+          }
+        };
+      }
+
+      // Usar la primera cuenta
+      const idCuenta = cuentas[0].id_cuenta;
+
+      // Obtener límites de esa cuenta
+      const limite = await limiteTransaccionalRepository.obtenerLimitePorCuentaYTipo(
+        idCuenta,
+        tipoTransaccion
+      );
+
+      if (!limite) {
+        // Si no hay límite configurado, retornar límites por defecto
+        return {
+          exito: true,
+          mensaje: 'No hay límite configurado, retornando límites por defecto',
+          datos: {
+            montoMaximoDiario: 15000,
+            montoMaximoTransaccion: 15000,
+            cantidadMaximaDiaria: 20,
+            montoDisponibleDiario: 15000,
+            cantidadDisponibleDiaria: 20
+          }
+        };
+      }
+
+      const limiteFormateado = this._formatarLimite(limite);
+
+      return {
+        exito: true,
+        mensaje: 'Límites disponibles obtenidos',
+        datos: {
+          montoMaximoDiario: limiteFormateado.montoMaximoDiario,
+          montoMaximoTransaccion: limiteFormateado.montoMaximoTransaccion,
+          cantidadMaximaDiaria: limiteFormateado.cantidadMaximaDiaria,
+          montoDisponibleDiario: limiteFormateado.montoMaximoDiario,
+          cantidadDisponibleDiaria: limiteFormateado.cantidadMaximaDiaria
+        }
+      };
+    } catch (error) {
+      console.error('Error en obtenerLimitesDisponiblesPorPersona:', error);
+      // Retornar límites por defecto en caso de error
+      return {
+        exito: true,
+        mensaje: 'Usando límites por defecto',
+        datos: {
+          montoMaximoDiario: 15000,
+          montoMaximoTransaccion: 15000,
+          cantidadMaximaDiaria: 20,
+          montoDisponibleDiario: 15000,
+          cantidadDisponibleDiaria: 20
+        }
+      };
+    }
+  }
+
+  /**
+   * Guarda los límites de transferencia para una persona
+   * @param {string} idPersona - ID de la persona
+   * @param {Object} limites - Objeto con montos y cantidades
+   * @returns {Promise<Object>} Respuesta de éxito/error
+   */
+  async guardarLimites(idPersona, limites) {
+    try {
+      console.log('=== DEBUG guardarLimites ===');
+      console.log('idPersona:', idPersona);
+      console.log('limites:', limites);
+
+      if (!idPersona) {
+        return {
+          exito: false,
+          codigo: 'PERSONA_REQUERIDA',
+          mensaje: 'ID de persona es requerido'
+        };
+      }
+
+      // Obtener TODAS las cuentas de la persona (no solo la primera)
+      const cuentas = await limiteTransaccionalRepository.obtenerCuentasPorPersona(idPersona);
+      console.log('Cuentas encontradas:', cuentas.length);
+
+      if (!cuentas || cuentas.length === 0) {
+        return {
+          exito: false,
+          codigo: 'CUENTA_NO_ENCONTRADA',
+          mensaje: 'No se encontró cuenta para esta persona'
+        };
+      }
+
+      // Guardar límites para TODAS las cuentas de la persona
+      const resultados = await Promise.all(
+        cuentas.map(cuenta => {
+          console.log('Guardando límites para cuenta:', cuenta.id_cuenta);
+          return limiteTransaccionalRepository.guardarLimitePorCuenta(
+            cuenta.id_cuenta,
+            '00',
+            limites.montoMaximoDiario,
+            limites.montoMaximoTransaccion,
+            limites.cantidadMaximaDiaria
+          );
+        })
+      );
+
+      // Verificar si al menos una fue exitosa
+      const alguna_exitosa = resultados.some(r => r !== null);
+
+      if (alguna_exitosa) {
+        return {
+          exito: true,
+          codigo: 'LIMITES_GUARDADOS',
+          mensaje: `Límites guardados correctamente para ${cuentas.length} cuenta(s)`,
+          datos: {
+            montoMaximoDiario: limites.montoMaximoDiario,
+            montoMaximoTransaccion: limites.montoMaximoTransaccion,
+            cantidadMaximaDiaria: limites.cantidadMaximaDiaria,
+            cuentasActualizadas: cuentas.length
+          }
+        };
+      } else {
+        return {
+          exito: false,
+          codigo: 'ERROR_GUARDAR',
+          mensaje: 'Error al guardar los límites'
+        };
+      }
+    } catch (error) {
+      console.error('Error en guardarLimites:', error);
+      return {
+        exito: false,
+        codigo: 'ERROR_SERVIDOR',
+        mensaje: `Error: ${error.message}`
+      };
+    }
+  }
+
+  /**
    * @param {Object} limite - Datos del límite
    * @returns {Object} Límite formateado
    * @private
