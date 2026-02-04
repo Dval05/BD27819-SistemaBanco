@@ -22,6 +22,7 @@ import './Dashboard.css';
 // Lazy loading de módulos
 const InicioModule = lazy(() => import('../modules/inicio/Inicio'));
 const ProductosModule = lazy(() => import('../modules/productos/Productos'));
+const TarjetaDetalleModule = lazy(() => import('../modules/productos/TarjetaDetalle'));
 const ContactosModule = lazy(() => import('../modules/contactos/Contactos'));
 const TransferenciasModule = lazy(() => import('../modules/transferencias/TransferenciasModule'));
 const PagosModule = lazy(() => import('../modules/pagos/Pagos'));
@@ -53,6 +54,7 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
   
   // Estado especial para vistas de detalle
   const [selectedCuenta, setSelectedCuenta] = useState<Cuenta | null>(null);
+  const [selectedTarjeta, setSelectedTarjeta] = useState<Tarjeta | null>(null);
 
   // Obtener menú dinámicamente desde la configuración
   const menuItems = getEnabledMenuItems();
@@ -72,9 +74,14 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
       setSelectedCuenta(data);
       return;
     }
+if (moduleId === 'tarjeta-detalle' && data) {
+      setSelectedTarjeta(data);
+      return;
+    }
 
     // Limpiar estado de detalle
     setSelectedCuenta(null);
+    setSelectedTarjeta(null);
 
     // Navegar al módulo
     setActiveMenu(moduleId as MenuOptionId);
@@ -84,6 +91,7 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
   // Función para volver al inicio
   const handleBackToMain = useCallback(() => {
     setSelectedCuenta(null);
+    setSelectedTarjeta(null);
     setNavigationData(null);
   }, []);
 
@@ -258,9 +266,17 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
 
       <main className="main-content">
         {selectedCuenta ? (
-          // Vista de detalle de cuenta - Layout independiente
+          // Vista de detalle de cuenta
           <Suspense fallback={<LoadingFallback />}>
             {renderModule()}
+          </Suspense>
+        ) : selectedTarjeta ? (
+          // Vista de detalle de tarjeta
+          <Suspense fallback={<LoadingFallback />}>
+            <TarjetaDetalleModule 
+              tarjeta={selectedTarjeta} 
+              onBack={handleBackToMain}
+            />
           </Suspense>
         ) : (
           // Vista normal con header
@@ -278,10 +294,10 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
                 <button 
                   className="solicitar-tarjeta-btn"
                   onClick={() => setShowSolicitudTarjeta(true)}
-                  title="Solicitar nueva tarjeta débito"
+                  title="Solicitar nueva tarjeta"
                 >
                   <CreditCard size={20} />
-                  Solicitar Tarjeta
+                  Nueva Tarjeta
                 </button>
               </div>
             </header>
@@ -309,9 +325,8 @@ function Dashboard({ cliente, onLogout }: DashboardProps) {
           <SolicitudTarjeta 
             cliente={cliente}
             onClose={() => setShowSolicitudTarjeta(false)}
-            onSuccess={(tarjeta) => {
+            onSuccess={() => {
               setShowSolicitudTarjeta(false);
-              // Aquí puedes actualizar el estado del cliente si es necesario
             }}
           />
         )}

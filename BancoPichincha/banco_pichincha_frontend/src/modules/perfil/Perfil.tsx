@@ -54,11 +54,9 @@ function Perfil({ cliente }: PerfilProps) {
     try {
       setLoading(true);
       const perfilData = await clienteService.obtenerPerfil(cliente.id_persona);
-      console.log('Perfil cargado:', perfilData);
       setPerfil(perfilData as PerfilCompleto);
       setFormData(perfilData);
     } catch (error) {
-      console.error('Error cargando perfil:', error);
       setMensaje({ tipo: 'error', texto: 'Error al cargar el perfil' });
     } finally {
       setLoading(false);
@@ -131,7 +129,6 @@ function Perfil({ cliente }: PerfilProps) {
       await cargarPerfil();
       setTimeout(() => setMensaje(null), 3000);
     } catch (error) {
-      console.error('Error guardando perfil:', error);
       setMensaje({ tipo: 'error', texto: 'Error al actualizar el perfil' });
     } finally {
       setGuardando(false);

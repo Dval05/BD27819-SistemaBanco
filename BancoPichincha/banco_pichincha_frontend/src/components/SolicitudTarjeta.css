@@ -245,6 +245,112 @@
   font-size: 14px;
 }
 
+/* Detalles de marca seleccionada */
+.marca-detalles {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid #00377B;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.marca-detalles h4 {
+  color: #00377B;
+  font-size: 20px;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.marca-descripcion {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 16px 0;
+  font-style: italic;
+}
+
+.marca-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 16px;
+  color: #00377B;
+  font-weight: 700;
+}
+
+.marca-beneficios {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.marca-beneficios h5 {
+  color: #00377B;
+  font-size: 16px;
+  margin: 0 0 12px 0;
+  font-weight: 600;
+}
+
+.marca-beneficios ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.marca-beneficios li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.marca-beneficios li svg {
+  color: #28a745;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.marca-beneficios li span {
+  flex: 1;
+}
+
 /* Buttons */
 .btn-solicitar,
 .btn-cerrar {
@@ -281,6 +387,481 @@
 .btn-cerrar:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(52, 199, 89, 0.3);
+}
+
+/* Nuevos estilos para solicitud mejorada */
+.solicitud-tarjeta {
+  max-width: 650px;
+}
+
+.solicitud-tarjeta .modal-header p {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.form-section {
+  margin-bottom: 25px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+/* Opciones de tipo de tarjeta */
+.tipo-opciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.tipo-card {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+}
+
+.tipo-card:hover {
+  border-color: #00377B;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 55, 123, 0.1);
+}
+
+.tipo-card.selected {
+  border-color: #00377B;
+  background: linear-gradient(135deg, rgba(0, 55, 123, 0.05) 0%, rgba(0, 55, 123, 0.1) 100%);
+  box-shadow: 0 0 0 3px rgba(0, 55, 123, 0.1);
+}
+
+.tipo-card svg {
+  color: #00377B;
+  margin-bottom: 10px;
+}
+
+.tipo-card h3 {
+  margin: 0 0 5px 0;
+  font-size: 18px;
+  color: #1a1a2e;
+}
+
+.tipo-card p {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.tipo-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+}
+
+.tipo-card li {
+  font-size: 12px;
+  color: #666;
+  padding: 4px 0 4px 18px;
+  position: relative;
+}
+
+.tipo-card li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #34C759;
+  font-weight: bold;
+}
+
+/* Opciones de marca */
+.avaluo-info {
+  margin-left: 10px;
+  font-size: 13px;
+  color: #00377B;
+  font-weight: 600;
+}
+
+.marca-recomendacion {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(52, 199, 89, 0.05) 100%);
+  border: 1px solid rgba(52, 199, 89, 0.3);
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #00754a;
+}
+
+.marca-recomendacion svg {
+  color: #34C759;
+  flex-shrink: 0;
+}
+
+.marca-opciones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.marca-option {
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+
+.marca-option:hover:not(.disabled) {
+  border-color: #00377B;
+  transform: translateY(-2px);
+}
+
+.marca-option.selected {
+  border-color: #00377B;
+  background: rgba(0, 55, 123, 0.05);
+  box-shadow: 0 0 0 3px rgba(0, 55, 123, 0.1);
+}
+
+.marca-option.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
+.marca-option.disabled:hover {
+  transform: none;
+}
+
+.marca-requisito {
+  font-size: 11px;
+  color: #f44336;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.marca-logo {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.marca-logo.visa {
+  color: #1A1F71;
+}
+
+.marca-logo.mastercard {
+  color: #EB001B;
+}
+
+.marca-logo.diners {
+  color: #0079BE;
+}
+
+.marca-logo.amex {
+  color: #006FCF;
+}
+
+.marca-logo.discover {
+  color: #FF6000;
+}
+
+.marca-logo.jcb {
+  color: #0066B2;
+}
+
+/* Input con prefijo */
+.input-with-prefix {
+  position: relative;
+}
+
+.input-with-prefix .prefix {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 15px 12px 35px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00377B;
+  box-shadow: 0 0 0 3px rgba(0, 55, 123, 0.1);
+}
+
+.input-help {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #666;
+}
+
+/* Política de cupo */
+.politica-cupo {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+.politica-cupo h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #00377B;
+}
+
+.politica-cupo ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.politica-cupo li {
+  font-size: 13px;
+  padding: 5px 0 5px 20px;
+  position: relative;
+  color: #666;
+}
+
+.politica-cupo li::before {
+  content: '•';
+  position: absolute;
+  left: 5px;
+  color: #00377B;
+  font-weight: bold;
+}
+
+/* Resumen de solicitud */
+.resumen-solicitud {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.resumen-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.resumen-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.resumen-item.destacado {
+  background: linear-gradient(135deg, rgba(0, 55, 123, 0.05) 0%, rgba(0, 55, 123, 0.1) 100%);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.resumen-label {
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.resumen-value {
+  font-size: 15px;
+  color: #1a1a2e;
+  font-weight: 600;
+}
+
+.resumen-value.cupo {
+  color: #00377B;
+  font-size: 20px;
+}
+
+.form-select {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+/* Pantalla de éxito */
+.success-screen {
+  padding: 40px 30px;
+  text-align: center;
+}
+
+.success-screen .success-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #34C759 0%, #00A84F 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.success-screen h2 {
+  margin: 0 0 10px 0;
+  color: #1a1a2e;
+  font-size: 24px;
+}
+
+.success-message {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+.tarjeta-preview {
+  margin: 30px 0;
+}
+
+.mini-tarjeta {
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  aspect-ratio: 1.586;
+}
+
+.mini-tarjeta.debito {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+}
+
+.mini-tarjeta.credito {
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+.mini-marca {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+
+.mini-numero {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+.mini-tipo {
+  font-size: 12px;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.info-aprobacion {
+  background: #e3f2fd;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+}
+
+.info-aprobacion p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.info-small {
+  color: #666 !important;
+  font-size: 12px !important;
+}
+
+.pin-info {
+  background: #fff3cd;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.pin-info svg {
+  color: #ff9500;
+  flex-shrink: 0;
+}
+
+.pin-info p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Acciones del formulario */
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  flex: 1;
+  background: white;
+  border: 2px solid #e5e7eb;
+  color: #666;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  border-color: #00377B;
+  color: #00377B;
+  background: #f9fafb;
+}
+
+.form-actions .btn-solicitar {
+  flex: 2;
+}
+
+@media (max-width: 640px) {
+  .tipo-opciones,
+  .marca-opciones {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn-solicitar,
+  .btn-secondary {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {

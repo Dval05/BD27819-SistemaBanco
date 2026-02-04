@@ -23,21 +23,6 @@ const SeleccionCuenta: React.FC<Props> = ({
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState<Cuenta | null>(null);
   const [errorSaldo, setErrorSaldo] = useState<string | null>(null);
 
-  // ✅ DEBUG: Ver qué datos llegan
-  useEffect(() => {
-    console.log('=== DEBUG SELECCIÓN CUENTA ===');
-    console.log('Monto requerido:', montoRequerido, typeof montoRequerido);
-    console.log('Cuentas cargadas:', cuentas.length);
-    cuentas.forEach((cuenta, index) => {
-      console.log(`Cuenta ${index}:`, {
-        numero: cuenta.cue_numero,
-        saldo: cuenta.cue_saldo_disponible,
-        tipo_saldo: typeof cuenta.cue_saldo_disponible,
-        saldo_parseado: Number(cuenta.cue_saldo_disponible)
-      });
-    });
-  }, [cuentas, montoRequerido]);
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-EC', { 
       style: 'currency', 
@@ -53,12 +38,6 @@ const SeleccionCuenta: React.FC<Props> = ({
     // ✅ CONVERSIÓN ROBUSTA A NÚMERO
     const saldoNumerico = Number(cuenta.cue_saldo_disponible);
     const montoNumerico = Number(montoRequerido);
-    
-    console.log('Comparación:', {
-      saldo: saldoNumerico,
-      monto: montoNumerico,
-      suficiente: saldoNumerico >= montoNumerico
-    });
     
     if (isNaN(saldoNumerico) || isNaN(montoNumerico)) {
       setErrorSaldo('Error en los montos. Por favor, recarga la página.');
@@ -81,10 +60,7 @@ const SeleccionCuenta: React.FC<Props> = ({
     const montoNumerico = Number(montoRequerido);
     
     if (saldoNumerico >= montoNumerico) {
-      console.log('✅ Continuando con cuenta seleccionada:', cuentaSeleccionada);
       onCuentaSeleccionada(cuentaSeleccionada);
-    } else {
-      console.error('❌ Saldo insuficiente:', { saldoNumerico, montoNumerico });
     }
   };
 
@@ -92,9 +68,7 @@ const SeleccionCuenta: React.FC<Props> = ({
     const saldo = Number(cuenta.cue_saldo_disponible);
     const monto = Number(montoRequerido);
     
-    // ✅ VALIDACIÓN SEGURA
     if (isNaN(saldo) || isNaN(monto)) {
-      console.warn('⚠️ Valores inválidos:', { saldo, monto });
       return false;
     }
     

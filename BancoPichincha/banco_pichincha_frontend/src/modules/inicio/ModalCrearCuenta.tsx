@@ -19,7 +19,7 @@ const ModalCrearCuenta: React.FC<ModalCrearCuentaProps> = ({ onClose, onCrear })
       await onCrear(tipoSeleccionado);
       onClose();
     } catch (error) {
-      console.error('Error al crear cuenta:', error);
+      // Error manejado por padre
     } finally {
       setCreando(false);
     }

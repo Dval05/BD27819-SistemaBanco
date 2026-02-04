@@ -146,7 +146,7 @@ function PagoServicioDetalle({
         }
       }
     } catch (err) {
-      console.error('Error al cargar cuentas:', err);
+      // Error silencioso
     }
   };
 
@@ -163,7 +163,7 @@ function PagoServicioDetalle({
         return Array.isArray(lista) && lista.length > 0;
       }
     } catch (err) {
-      console.error('Error al cargar subtipos:', err);
+      // Error silencioso
     } finally {
       setLoadingSubtipos(false);
     }
@@ -287,7 +287,7 @@ function PagoServicioDetalle({
                 return;
               }
             } catch (e) {
-              console.error('Error en regex:', e);
+              // Error de regex
             }
           }
         }

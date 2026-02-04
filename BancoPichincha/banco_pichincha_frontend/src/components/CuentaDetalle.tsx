@@ -52,7 +52,6 @@ function CuentaDetalle({ cuenta, onBack }: CuentaDetalleProps) {
         const data = await clienteService.obtenerMovimientos(cuenta.id);
         setMovimientos(data);
       } catch (err) {
-        console.error('Error al cargar movimientos:', err);
         setError('No se pudieron cargar los movimientos. Intente nuevamente.');
         setMovimientos([]);
       } finally {
